@@ -1,0 +1,18 @@
+services:
+  ebpf-monitor:
+    build: .
+    container_name: ebpf-monitor
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    pid: host
+    volumes:
+      - ./src:/app
+      - /sys/fs/bpf:/sys/fs/bpf
+      - /lib/modules:/lib/modules
+      - /usr/src:/usr/src
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: /bin/bash

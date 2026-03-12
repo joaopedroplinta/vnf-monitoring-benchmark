@@ -1,18 +1,72 @@
+version: '3.8'
+
 services:
-  ebpf-monitor:
-    build: .
-    container_name: ebpf-monitor
-    stdin_open: true
-    tty: true
-    restart: unless-stopped
+  # Servidor socket
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: socket-server
+    ports:
+      - "9999:9999"
+    networks:
+      - socket-net
     privileged: true
-    network_mode: host
-    pid: host
     volumes:
-      - ./src:/app
-      - /sys/fs/bpf:/sys/fs/bpf
-      - /lib/modules:/lib/modules
-      - /usr/src:/usr/src
-    environment:
-      - PYTHONUNBUFFERED=1
-    command: /bin/bash
+      - ./server:/app
+    command: python server.py
+
+  # Cliente socket
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: socket-client
+    networks:
+      - socket-net
+    depends_on:
+      - server
+    volumes:
+      - ./client:/app
+    command: python client.py
+
+  # Monitor eBPF
+  ebpf-monitor:
+    image: alpine:latest
+    container_name: ebpf-monitor
+    pid: "host"
+    privileged: true
+    network_mode: "host"
+    volumes:
+      - /sys/kernel/debug:/sys/kernel/debug:ro
+      - ./ebpf:/ebpf
+    command: |
+      sh -c "
+      apk add --no-cache bpftool curl && 
+      echo '📊 Monitorando eventos eBPF...' &&
+      while true; do
+        echo '=== Conexões detectadas ===' &&
+        bpftool prog list 2>/dev/null | grep -A2 tracepoint ||
+        echo 'Aguardando programas eBPF...' &&
+        sleep 5
+      done
+      "
+
+  # Visualizador de logs
+  viewer:
+    image: alpine:latest
+    container_name: log-viewer
+    pid: "host"
+    privileged: true
+    volumes:
+      - /sys/kernel/debug:/sys/kernel/debug:ro
+    command: |
+      sh -c "
+      apk add --no-cache bpftool &&
+      echo '📝 Acompanhando trace_pipe (pressione Ctrl+C para sair)...' &&
+      cat /sys/kernel/debug/tracing/trace_pipe
+      "
+
+networks:
+  socket-net:
+    driver: bridge

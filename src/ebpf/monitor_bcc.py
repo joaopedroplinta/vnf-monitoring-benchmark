@@ -58,6 +58,20 @@ TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
     return 0;
 }
 
+// Bytes TX via send (servidor usa send())
+TRACEPOINT_PROBE(syscalls, sys_enter_send) {
+    u32 pid = bpf_get_current_pid_tgid() >> 32;
+    u8 *ok  = pid_filter.lookup(&pid);
+    if (!ok) return 0;
+    u64 ts   = bpf_ktime_get_ns();
+    u64 size = (u64)args->len;
+    u64 zero = 0, *acc;
+    send_ts.update(&pid, &ts);
+    acc = bytes_tx_map.lookup_or_try_init(&pid, &zero);
+    if (acc) (*acc) += size;
+    return 0;
+}
+
 // Bytes RX + latência
 TRACEPOINT_PROBE(syscalls, sys_enter_recvfrom) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;

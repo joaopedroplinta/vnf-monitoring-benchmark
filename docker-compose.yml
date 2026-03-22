@@ -8,10 +8,7 @@ services:
       context: .
       dockerfile: configs/Dockerfile.server
     container_name: socket-server
-    ports:
-      - "9999:9999"
-    networks:
-      - socket-net
+    network_mode: "host"   # mesma rede do eBPF para capturar conexões
     volumes:
       - ./src/socket:/app
     command: python server.py
@@ -22,8 +19,7 @@ services:
       context: .
       dockerfile: configs/Dockerfile.client
     container_name: socket-client
-    networks:
-      - socket-net
+    network_mode: "host"   # conecta ao server via localhost
     depends_on:
       - server
     volumes:
@@ -71,7 +67,7 @@ services:
       context: .
       dockerfile: configs/Dockerfile
     container_name: prometheus-collector
-    network_mode: "host"   # porta 8000 já acessível automaticamente no host
+    network_mode: "host"
     pid: "host"
     volumes:
       - ./src/prometheus:/app/prometheus
@@ -86,6 +82,7 @@ services:
       context: .
       dockerfile: configs/Dockerfile
     container_name: comparator
+    network_mode: "host"
     volumes:
       - ./src:/app/src
       - results_vol:/app/results
@@ -107,8 +104,5 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/results   # mapeia para ./results no projeto
+      device: ${PWD}/results
 
-networks:
-  socket-net:
-    driver: bridge

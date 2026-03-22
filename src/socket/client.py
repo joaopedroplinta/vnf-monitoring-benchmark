@@ -4,7 +4,7 @@ import random
 import sys
 
 class SocketClient:
-    def __init__(self, host='server', port=9999):
+    def __init__(self, host='localhost', port=9999):
         self.host = host
         self.port = port
         self.socket = None

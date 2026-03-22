@@ -102,7 +102,12 @@ services:
       - prometheus-collector
 
 volumes:
-  results_vol:   # volume compartilhado entre todos os coletores
+  results_vol:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/results   # mapeia para ./results no projeto
 
 networks:
   socket-net:

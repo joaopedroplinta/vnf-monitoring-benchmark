@@ -1,50 +1,63 @@
+Creating network "tcc_gerenciamento_rede_socket-net" with driver "bridge"
+Creating network "tcc_gerenciamento_rede_default" with the default driver
+Creating volume "tcc_gerenciamento_rede_results_vol" with default driver
 Building server
 DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
 
-Sending build context to Docker daemon  268.8kB
+Sending build context to Docker daemon  274.9kB
 Step 1/5 : FROM python:3.9-slim
  ---> 085da638e1b8
 Step 2/5 : WORKDIR /app
  ---> Using cache
  ---> eae766f66823
 Step 3/5 : COPY src/socket/server.py .
- ---> Using cache
- ---> ab8ed1371e28
+ ---> fec46beac60f
 Step 4/5 : RUN pip install --no-cache-dir numpy
- ---> Using cache
- ---> 580b0ef4ae85
+ ---> Running in 9e8b590c96ae
+Collecting numpy
+  Downloading numpy-2.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (19.5 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 19.5/19.5 MB 23.3 MB/s eta 0:00:00
+Installing collected packages: numpy
+Successfully installed numpy-2.0.2
+[91mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[0m[91m
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+[0m ---> Removed intermediate container 9e8b590c96ae
+ ---> 63c74f2e9f4b
 Step 5/5 : CMD ["python", "server.py"]
- ---> Using cache
- ---> a3a007cf886e
-Successfully built a3a007cf886e
+ ---> Running in 53283953ea94
+ ---> Removed intermediate container 53283953ea94
+ ---> 732849887b08
+Successfully built 732849887b08
 Successfully tagged tcc_gerenciamento_rede_server:latest
 Building client
 DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
 
-Sending build context to Docker daemon  269.3kB
+Sending build context to Docker daemon  276.5kB
 Step 1/4 : FROM python:3.9-slim
  ---> 085da638e1b8
 Step 2/4 : WORKDIR /app
  ---> Using cache
  ---> eae766f66823
 Step 3/4 : COPY src/socket/client.py .
- ---> ed74fabc0a5c
+ ---> 060f9f582012
 Step 4/4 : CMD ["python", "client.py"]
- ---> Running in 81bf12b6a428
- ---> Removed intermediate container 81bf12b6a428
- ---> 93d568f0ced5
-Successfully built 93d568f0ced5
+ ---> Running in 58945e586b8c
+ ---> Removed intermediate container 58945e586b8c
+ ---> 970a0d388b18
+Successfully built 970a0d388b18
 Successfully tagged tcc_gerenciamento_rede_client:latest
 Building ebpf-collector
 DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
 
-Sending build context to Docker daemon  270.3kB
+Sending build context to Docker daemon  277.5kB
 Step 1/6 : FROM ubuntu:22.04
  ---> 8ea4cbcf3a26
 Step 2/6 : ENV DEBIAN_FRONTEND=noninteractive
@@ -54,25 +67,13 @@ Step 3/6 : RUN apt update && apt install -y     python3     python3-pip     bpfc
  ---> Using cache
  ---> a74b54fa76f7
 Step 4/6 : RUN pip3 install --no-cache-dir psutil prometheus_client
- ---> Running in 99499baacab0
-Collecting psutil
-  Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (155 kB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 155.6/155.6 KB 7.6 MB/s eta 0:00:00
-Collecting prometheus_client
-  Downloading prometheus_client-0.24.1-py3-none-any.whl (64 kB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.1/64.1 KB 297.4 MB/s eta 0:00:00
-Installing collected packages: psutil, prometheus_client
-Successfully installed prometheus_client-0.24.1 psutil-7.2.2
-[91mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
-[0m ---> Removed intermediate container 99499baacab0
+ ---> Using cache
  ---> add5a33d21e8
 Step 5/6 : WORKDIR /app
- ---> Running in fa7693ac56c0
- ---> Removed intermediate container fa7693ac56c0
+ ---> Using cache
  ---> 4a647476eddf
 Step 6/6 : CMD ["/bin/bash"]
- ---> Running in b25333fbf168
- ---> Removed intermediate container b25333fbf168
+ ---> Using cache
  ---> 39153128af1b
 Successfully built 39153128af1b
 Successfully tagged tcc_gerenciamento_rede_ebpf-collector:latest
@@ -81,7 +82,7 @@ DEPRECATED: The legacy builder is deprecated and will be removed in a future rel
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
 
-Sending build context to Docker daemon  272.4kB
+Sending build context to Docker daemon  278.5kB
 Step 1/6 : FROM ubuntu:22.04
  ---> 8ea4cbcf3a26
 Step 2/6 : ENV DEBIAN_FRONTEND=noninteractive
@@ -106,7 +107,7 @@ DEPRECATED: The legacy builder is deprecated and will be removed in a future rel
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
 
-Sending build context to Docker daemon  273.4kB
+Sending build context to Docker daemon  279.6kB
 Step 1/6 : FROM ubuntu:22.04
  ---> 8ea4cbcf3a26
 Step 2/6 : ENV DEBIAN_FRONTEND=noninteractive
@@ -131,7 +132,7 @@ DEPRECATED: The legacy builder is deprecated and will be removed in a future rel
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
 
-Sending build context to Docker daemon  274.4kB
+Sending build context to Docker daemon  280.6kB
 Step 1/6 : FROM ubuntu:22.04
  ---> 8ea4cbcf3a26
 Step 2/6 : ENV DEBIAN_FRONTEND=noninteractive
@@ -151,85 +152,15 @@ Step 6/6 : CMD ["/bin/bash"]
  ---> 39153128af1b
 Successfully built 39153128af1b
 Successfully tagged tcc_gerenciamento_rede_comparator:latest
-socket-server is up-to-date
-Recreating socket-client ... 
-Recreating ebpf-collector ... 
-Recreating prometheus-collector ... 
-Recreating sysstat-collector    ... 
-
-ERROR: for prometheus-collector  'ContainerConfig'
-
-ERROR: for socket-client  'ContainerConfig'
-
-ERROR: for sysstat-collector  'ContainerConfig'
-
-ERROR: for ebpf-collector  'ContainerConfig'
-
-ERROR: for prometheus-collector  'ContainerConfig'
-
-ERROR: for client  'ContainerConfig'
-
-ERROR: for sysstat-collector  'ContainerConfig'
-
-ERROR: for ebpf-collector  'ContainerConfig'
-Traceback (most recent call last):
-  File "/usr/bin/docker-compose", line 33, in <module>
-    sys.exit(load_entry_point('docker-compose==1.29.2', 'console_scripts', 'docker-compose')())
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 81, in main
-    command_func()
-  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 203, in perform_command
-    handler(command, command_options)
-  File "/usr/lib/python3/dist-packages/compose/metrics/decorator.py", line 18, in wrapper
-    result = fn(*args, **kwargs)
-             ^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 1186, in up
-    to_attach = up(False)
-                ^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 1166, in up
-    return self.project.up(
-           ^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/project.py", line 697, in up
-    results, errors = parallel.parallel_execute(
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 108, in parallel_execute
-    raise error_to_reraise
-  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 206, in producer
-    result = func(obj)
-             ^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/project.py", line 679, in do
-    return service.execute_convergence_plan(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 579, in execute_convergence_plan
-    return self._execute_convergence_recreate(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 499, in _execute_convergence_recreate
-    containers, errors = parallel_execute(
-                         ^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 108, in parallel_execute
-    raise error_to_reraise
-  File "/usr/lib/python3/dist-packages/compose/parallel.py", line 206, in producer
-    result = func(obj)
-             ^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 494, in recreate
-    return self.recreate_container(
-           ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 612, in recreate_container
-    new_container = self.create_container(
-                    ^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 330, in create_container
-    container_options = self._get_container_create_options(
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 921, in _get_container_create_options
-    container_options, override_options = self._build_container_volume_options(
-                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 960, in _build_container_volume_options
-    binds, affinity = merge_volume_bindings(
-                      ^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 1548, in merge_volume_bindings
-    old_volumes, old_mounts = get_container_data_volumes(
-                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 1579, in get_container_data_volumes
-    container.image_config['ContainerConfig'].get('Volumes') or {}
-    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
-KeyError: 'ContainerConfig'
+Creating socket-server ... 
+Creating socket-server ... done
+Creating socket-client ... 
+Creating ebpf-collector ... 
+Creating sysstat-collector ... 
+Creating prometheus-collector ... 
+Creating prometheus-collector ... done
+Creating sysstat-collector    ... done
+Creating ebpf-collector       ... done
+Creating comparator           ... 
+Creating socket-client        ... done
+Creating comparator           ... done

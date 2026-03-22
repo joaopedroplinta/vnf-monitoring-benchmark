@@ -1,5 +1,3 @@
-docker-compose up --build 2>&1 | tee build.log
-
 # TCC — Gerenciamento e Monitoramento de Rede
 
 Comparação de ferramentas de monitoramento de sockets TCP:

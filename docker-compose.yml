@@ -71,10 +71,8 @@ services:
       context: .
       dockerfile: configs/Dockerfile
     container_name: prometheus-collector
-    network_mode: "host"
+    network_mode: "host"   # porta 8000 já acessível automaticamente no host
     pid: "host"
-    ports:
-      - "8000:8000"
     volumes:
       - ./src/prometheus:/app/prometheus
       - results_vol:/app/results

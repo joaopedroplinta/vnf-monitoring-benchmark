@@ -1,0 +1,7125 @@
+{
+  "collector": "sysstat",
+  "timestamp": "2026-03-22T19:07:44.786674",
+  "duration_s": 897.8,
+  "connections": 2,
+  "bytes_tx": 1080237,
+  "bytes_rx": 12879167,
+  "latency_avg_ms": 0.2396,
+  "latency_max_ms": 4.9614,
+  "latency_min_ms": 0.051,
+  "cpu_avg_pct": 9.8,
+  "mem_avg_mb": 8.8,
+  "samples": [
+    {
+      "time": "18:52:46.988",
+      "connections": 1,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.6,
+      "latency_ms": 1.0828,
+      "bytes_tx": 1149,
+      "bytes_rx": 1213
+    },
+    {
+      "time": "18:52:48.145",
+      "connections": 5,
+      "cpu_pct": 0.0,
+      "mem_mb": 9.27,
+      "latency_ms": 0.3298,
+      "bytes_tx": 2607,
+      "bytes_rx": 2671
+    },
+    {
+      "time": "18:52:49.512",
+      "connections": 6,
+      "cpu_pct": 0.0,
+      "mem_mb": 9.3,
+      "latency_ms": 0.0832,
+      "bytes_tx": 3507,
+      "bytes_rx": 3571
+    },
+    {
+      "time": "18:52:51.700",
+      "connections": 8,
+      "cpu_pct": 0.0,
+      "mem_mb": 9.3,
+      "latency_ms": 0.2341,
+      "bytes_tx": 10288,
+      "bytes_rx": 14305
+    },
+    {
+      "time": "18:52:53.081",
+      "connections": 10,
+      "cpu_pct": 0.0,
+      "mem_mb": 9.3,
+      "latency_ms": 0.4275,
+      "bytes_tx": 17835,
+      "bytes_rx": 25139
+    },
+    {
+      "time": "18:52:54.466",
+      "connections": 12,
+      "cpu_pct": 0.0,
+      "mem_mb": 9.3,
+      "latency_ms": 0.2428,
+      "bytes_tx": 18841,
+      "bytes_rx": 26085
+    },
+    {
+      "time": "18:52:55.901",
+      "connections": 12,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.6424,
+      "bytes_tx": 19887,
+      "bytes_rx": 27131
+    },
+    {
+      "time": "18:52:57.018",
+      "connections": 14,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2877,
+      "bytes_tx": 20595,
+      "bytes_rx": 27839
+    },
+    {
+      "time": "18:52:58.146",
+      "connections": 15,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.5671,
+      "bytes_tx": 21117,
+      "bytes_rx": 28227
+    },
+    {
+      "time": "18:52:59.261",
+      "connections": 17,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2179,
+      "bytes_tx": 21825,
+      "bytes_rx": 28935
+    },
+    {
+      "time": "18:53:00.385",
+      "connections": 18,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2076,
+      "bytes_tx": 22153,
+      "bytes_rx": 29263
+    },
+    {
+      "time": "18:53:01.505",
+      "connections": 20,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2098,
+      "bytes_tx": 22913,
+      "bytes_rx": 30023
+    },
+    {
+      "time": "18:53:02.641",
+      "connections": 21,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1457,
+      "bytes_tx": 23241,
+      "bytes_rx": 30351
+    },
+    {
+      "time": "18:53:03.773",
+      "connections": 23,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1901,
+      "bytes_tx": 24356,
+      "bytes_rx": 31343
+    },
+    {
+      "time": "18:53:05.048",
+      "connections": 24,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2048,
+      "bytes_tx": 24684,
+      "bytes_rx": 31671
+    },
+    {
+      "time": "18:53:06.163",
+      "connections": 26,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2448,
+      "bytes_tx": 25586,
+      "bytes_rx": 32573
+    },
+    {
+      "time": "18:53:07.309",
+      "connections": 27,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.293,
+      "bytes_tx": 26138,
+      "bytes_rx": 33125
+    },
+    {
+      "time": "18:53:08.426",
+      "connections": 29,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.5274,
+      "bytes_tx": 26622,
+      "bytes_rx": 33609
+    },
+    {
+      "time": "18:53:09.582",
+      "connections": 31,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.235,
+      "bytes_tx": 27382,
+      "bytes_rx": 34369
+    },
+    {
+      "time": "18:53:10.701",
+      "connections": 32,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.237,
+      "bytes_tx": 27710,
+      "bytes_rx": 34697
+    },
+    {
+      "time": "18:53:11.820",
+      "connections": 34,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2479,
+      "bytes_tx": 28418,
+      "bytes_rx": 35405
+    },
+    {
+      "time": "18:53:12.973",
+      "connections": 35,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1808,
+      "bytes_tx": 28798,
+      "bytes_rx": 35785
+    },
+    {
+      "time": "18:53:14.108",
+      "connections": 37,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.7736,
+      "bytes_tx": 29454,
+      "bytes_rx": 36441
+    },
+    {
+      "time": "18:53:15.250",
+      "connections": 38,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2662,
+      "bytes_tx": 29782,
+      "bytes_rx": 36769
+    },
+    {
+      "time": "18:53:16.369",
+      "connections": 40,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1672,
+      "bytes_tx": 30788,
+      "bytes_rx": 37775
+    },
+    {
+      "time": "18:53:17.485",
+      "connections": 41,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2653,
+      "bytes_tx": 31116,
+      "bytes_rx": 38103
+    },
+    {
+      "time": "18:53:18.608",
+      "connections": 43,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2166,
+      "bytes_tx": 31772,
+      "bytes_rx": 38759
+    },
+    {
+      "time": "18:53:19.743",
+      "connections": 44,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1871,
+      "bytes_tx": 32100,
+      "bytes_rx": 39087
+    },
+    {
+      "time": "18:53:20.949",
+      "connections": 46,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.433,
+      "bytes_tx": 32808,
+      "bytes_rx": 39795
+    },
+    {
+      "time": "18:53:22.142",
+      "connections": 47,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.178,
+      "bytes_tx": 33136,
+      "bytes_rx": 40123
+    },
+    {
+      "time": "18:53:23.263",
+      "connections": 49,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2297,
+      "bytes_tx": 33896,
+      "bytes_rx": 40883
+    },
+    {
+      "time": "18:53:24.387",
+      "connections": 50,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.166,
+      "bytes_tx": 34224,
+      "bytes_rx": 41211
+    },
+    {
+      "time": "18:53:25.502",
+      "connections": 52,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.4062,
+      "bytes_tx": 34984,
+      "bytes_rx": 41971
+    },
+    {
+      "time": "18:53:26.634",
+      "connections": 53,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.5115,
+      "bytes_tx": 35558,
+      "bytes_rx": 42545
+    },
+    {
+      "time": "18:53:27.874",
+      "connections": 55,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.3147,
+      "bytes_tx": 36318,
+      "bytes_rx": 43305
+    },
+    {
+      "time": "18:53:28.998",
+      "connections": 57,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2251,
+      "bytes_tx": 36974,
+      "bytes_rx": 43961
+    },
+    {
+      "time": "18:53:30.119",
+      "connections": 58,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1875,
+      "bytes_tx": 37496,
+      "bytes_rx": 44479
+    },
+    {
+      "time": "18:53:31.247",
+      "connections": 60,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2708,
+      "bytes_tx": 38298,
+      "bytes_rx": 45285
+    },
+    {
+      "time": "18:53:32.366",
+      "connections": 61,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1676,
+      "bytes_tx": 38678,
+      "bytes_rx": 45665
+    },
+    {
+      "time": "18:53:33.482",
+      "connections": 63,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2237,
+      "bytes_tx": 39386,
+      "bytes_rx": 46373
+    },
+    {
+      "time": "18:53:34.597",
+      "connections": 64,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1847,
+      "bytes_tx": 39818,
+      "bytes_rx": 46805
+    },
+    {
+      "time": "18:53:35.716",
+      "connections": 66,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2384,
+      "bytes_tx": 40474,
+      "bytes_rx": 47461
+    },
+    {
+      "time": "18:53:36.833",
+      "connections": 67,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2914,
+      "bytes_tx": 41048,
+      "bytes_rx": 48035
+    },
+    {
+      "time": "18:53:37.948",
+      "connections": 69,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2188,
+      "bytes_tx": 41808,
+      "bytes_rx": 48795
+    },
+    {
+      "time": "18:53:39.072",
+      "connections": 70,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1918,
+      "bytes_tx": 42308,
+      "bytes_rx": 49295
+    },
+    {
+      "time": "18:53:40.191",
+      "connections": 71,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2512,
+      "bytes_tx": 43160,
+      "bytes_rx": 50147
+    },
+    {
+      "time": "18:53:41.307",
+      "connections": 72,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2023,
+      "bytes_tx": 43592,
+      "bytes_rx": 50579
+    },
+    {
+      "time": "18:53:42.424",
+      "connections": 74,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2018,
+      "bytes_tx": 44352,
+      "bytes_rx": 51339
+    },
+    {
+      "time": "18:53:43.548",
+      "connections": 75,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1682,
+      "bytes_tx": 44680,
+      "bytes_rx": 51667
+    },
+    {
+      "time": "18:53:44.663",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1689,
+      "bytes_tx": 45388,
+      "bytes_rx": 52375
+    },
+    {
+      "time": "18:53:45.784",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.2124,
+      "bytes_tx": 45716,
+      "bytes_rx": 52703
+    },
+    {
+      "time": "18:53:46.905",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.79,
+      "latency_ms": 0.1976,
+      "bytes_tx": 54513,
+      "bytes_rx": 136975
+    },
+    {
+      "time": "18:53:48.023",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2076,
+      "bytes_tx": 55221,
+      "bytes_rx": 137683
+    },
+    {
+      "time": "18:53:49.167",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1726,
+      "bytes_tx": 55549,
+      "bytes_rx": 138011
+    },
+    {
+      "time": "18:53:50.285",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2241,
+      "bytes_tx": 56560,
+      "bytes_rx": 138899
+    },
+    {
+      "time": "18:53:51.409",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2041,
+      "bytes_tx": 56992,
+      "bytes_rx": 139331
+    },
+    {
+      "time": "18:53:52.587",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1989,
+      "bytes_tx": 57700,
+      "bytes_rx": 140039
+    },
+    {
+      "time": "18:53:53.740",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.189,
+      "bytes_tx": 58080,
+      "bytes_rx": 140419
+    },
+    {
+      "time": "18:53:54.895",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1958,
+      "bytes_tx": 58736,
+      "bytes_rx": 141075
+    },
+    {
+      "time": "18:53:56.075",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2195,
+      "bytes_tx": 59064,
+      "bytes_rx": 141403
+    },
+    {
+      "time": "18:53:57.196",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1324,
+      "bytes_tx": 59966,
+      "bytes_rx": 142305
+    },
+    {
+      "time": "18:53:58.376",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2451,
+      "bytes_tx": 60346,
+      "bytes_rx": 142685
+    },
+    {
+      "time": "18:53:59.747",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1675,
+      "bytes_tx": 61054,
+      "bytes_rx": 143393
+    },
+    {
+      "time": "18:54:00.899",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.205,
+      "bytes_tx": 61658,
+      "bytes_rx": 143997
+    },
+    {
+      "time": "18:54:02.021",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3801,
+      "bytes_tx": 62194,
+      "bytes_rx": 144533
+    },
+    {
+      "time": "18:54:03.139",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4151,
+      "bytes_tx": 62902,
+      "bytes_rx": 145241
+    },
+    {
+      "time": "18:54:04.255",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1826,
+      "bytes_tx": 63282,
+      "bytes_rx": 145621
+    },
+    {
+      "time": "18:54:05.380",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2146,
+      "bytes_tx": 63990,
+      "bytes_rx": 146329
+    },
+    {
+      "time": "18:54:06.504",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1804,
+      "bytes_tx": 64370,
+      "bytes_rx": 146709
+    },
+    {
+      "time": "18:54:07.623",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1818,
+      "bytes_tx": 65324,
+      "bytes_rx": 147663
+    },
+    {
+      "time": "18:54:08.739",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2181,
+      "bytes_tx": 65652,
+      "bytes_rx": 147991
+    },
+    {
+      "time": "18:54:09.885",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1903,
+      "bytes_tx": 66360,
+      "bytes_rx": 148699
+    },
+    {
+      "time": "18:54:11.068",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2264,
+      "bytes_tx": 66688,
+      "bytes_rx": 149027
+    },
+    {
+      "time": "18:54:12.184",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1568,
+      "bytes_tx": 67448,
+      "bytes_rx": 149787
+    },
+    {
+      "time": "18:54:13.300",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2433,
+      "bytes_tx": 67880,
+      "bytes_rx": 150219
+    },
+    {
+      "time": "18:54:14.426",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1648,
+      "bytes_tx": 68640,
+      "bytes_rx": 150979
+    },
+    {
+      "time": "18:54:15.546",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.225,
+      "bytes_tx": 69020,
+      "bytes_rx": 151359
+    },
+    {
+      "time": "18:54:16.684",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2376,
+      "bytes_tx": 69728,
+      "bytes_rx": 152067
+    },
+    {
+      "time": "18:54:17.804",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2566,
+      "bytes_tx": 70354,
+      "bytes_rx": 152693
+    },
+    {
+      "time": "18:54:18.924",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1607,
+      "bytes_tx": 71114,
+      "bytes_rx": 153453
+    },
+    {
+      "time": "18:54:20.044",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.273,
+      "bytes_tx": 71442,
+      "bytes_rx": 153781
+    },
+    {
+      "time": "18:54:21.164",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1668,
+      "bytes_tx": 72202,
+      "bytes_rx": 154541
+    },
+    {
+      "time": "18:54:22.288",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2088,
+      "bytes_tx": 72642,
+      "bytes_rx": 154985
+    },
+    {
+      "time": "18:54:23.407",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1555,
+      "bytes_tx": 73462,
+      "bytes_rx": 155805
+    },
+    {
+      "time": "18:54:24.522",
+      "connections": 79,
+      "cpu_pct": 9.9,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2084,
+      "bytes_tx": 74222,
+      "bytes_rx": 156565
+    },
+    {
+      "time": "18:54:25.640",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1666,
+      "bytes_tx": 74550,
+      "bytes_rx": 156893
+    },
+    {
+      "time": "18:54:26.763",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3003,
+      "bytes_tx": 75362,
+      "bytes_rx": 157705
+    },
+    {
+      "time": "18:54:27.880",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1907,
+      "bytes_tx": 75944,
+      "bytes_rx": 158287
+    },
+    {
+      "time": "18:54:29.003",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1296,
+      "bytes_tx": 76600,
+      "bytes_rx": 158943
+    },
+    {
+      "time": "18:54:30.342",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2477,
+      "bytes_tx": 76980,
+      "bytes_rx": 159323
+    },
+    {
+      "time": "18:54:31.474",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1623,
+      "bytes_tx": 77762,
+      "bytes_rx": 160105
+    },
+    {
+      "time": "18:54:32.611",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2118,
+      "bytes_tx": 78176,
+      "bytes_rx": 160519
+    },
+    {
+      "time": "18:54:33.741",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1779,
+      "bytes_tx": 78936,
+      "bytes_rx": 161279
+    },
+    {
+      "time": "18:54:34.872",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1275,
+      "bytes_tx": 79264,
+      "bytes_rx": 161607
+    },
+    {
+      "time": "18:54:36.017",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1777,
+      "bytes_tx": 80328,
+      "bytes_rx": 162547
+    },
+    {
+      "time": "18:54:37.158",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2167,
+      "bytes_tx": 80760,
+      "bytes_rx": 162979
+    },
+    {
+      "time": "18:54:38.275",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1781,
+      "bytes_tx": 81662,
+      "bytes_rx": 163881
+    },
+    {
+      "time": "18:54:39.403",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1251,
+      "bytes_tx": 82462,
+      "bytes_rx": 164681
+    },
+    {
+      "time": "18:54:40.549",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2419,
+      "bytes_tx": 82790,
+      "bytes_rx": 165009
+    },
+    {
+      "time": "18:54:41.669",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2464,
+      "bytes_tx": 83886,
+      "bytes_rx": 166105
+    },
+    {
+      "time": "18:54:42.791",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2163,
+      "bytes_tx": 84266,
+      "bytes_rx": 166485
+    },
+    {
+      "time": "18:54:43.908",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1584,
+      "bytes_tx": 84974,
+      "bytes_rx": 167193
+    },
+    {
+      "time": "18:54:45.027",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.147,
+      "bytes_tx": 85354,
+      "bytes_rx": 167573
+    },
+    {
+      "time": "18:54:46.140",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1929,
+      "bytes_tx": 86114,
+      "bytes_rx": 168333
+    },
+    {
+      "time": "18:54:47.263",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2395,
+      "bytes_tx": 86494,
+      "bytes_rx": 168713
+    },
+    {
+      "time": "18:54:48.455",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.248,
+      "bytes_tx": 87254,
+      "bytes_rx": 169473
+    },
+    {
+      "time": "18:54:49.575",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1855,
+      "bytes_tx": 87634,
+      "bytes_rx": 169853
+    },
+    {
+      "time": "18:54:50.695",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2138,
+      "bytes_tx": 88394,
+      "bytes_rx": 170613
+    },
+    {
+      "time": "18:54:51.812",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1956,
+      "bytes_tx": 88774,
+      "bytes_rx": 170993
+    },
+    {
+      "time": "18:54:52.952",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2423,
+      "bytes_tx": 89534,
+      "bytes_rx": 171753
+    },
+    {
+      "time": "18:54:54.088",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1078,
+      "bytes_tx": 89862,
+      "bytes_rx": 172081
+    },
+    {
+      "time": "18:54:55.209",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1755,
+      "bytes_tx": 90570,
+      "bytes_rx": 172789
+    },
+    {
+      "time": "18:54:56.326",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4212,
+      "bytes_tx": 90898,
+      "bytes_rx": 173117
+    },
+    {
+      "time": "18:54:57.587",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.366,
+      "bytes_tx": 91554,
+      "bytes_rx": 173773
+    },
+    {
+      "time": "18:54:58.765",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1053,
+      "bytes_tx": 91934,
+      "bytes_rx": 174213
+    },
+    {
+      "time": "18:54:59.888",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2155,
+      "bytes_tx": 92590,
+      "bytes_rx": 174869
+    },
+    {
+      "time": "18:55:01.009",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2327,
+      "bytes_tx": 92918,
+      "bytes_rx": 175197
+    },
+    {
+      "time": "18:55:02.201",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.223,
+      "bytes_tx": 93634,
+      "bytes_rx": 175913
+    },
+    {
+      "time": "18:55:03.366",
+      "connections": 84,
+      "cpu_pct": 9.9,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2073,
+      "bytes_tx": 94394,
+      "bytes_rx": 176673
+    },
+    {
+      "time": "18:55:04.501",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1707,
+      "bytes_tx": 95204,
+      "bytes_rx": 177473
+    },
+    {
+      "time": "18:55:05.620",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1227,
+      "bytes_tx": 96060,
+      "bytes_rx": 178482
+    },
+    {
+      "time": "18:55:06.737",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1977,
+      "bytes_tx": 96388,
+      "bytes_rx": 178810
+    },
+    {
+      "time": "18:55:07.909",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1377,
+      "bytes_tx": 97156,
+      "bytes_rx": 179582
+    },
+    {
+      "time": "18:55:09.026",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 3.9676,
+      "bytes_tx": 97536,
+      "bytes_rx": 179962
+    },
+    {
+      "time": "18:55:10.147",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3019,
+      "bytes_tx": 98296,
+      "bytes_rx": 180722
+    },
+    {
+      "time": "18:55:11.260",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1441,
+      "bytes_tx": 98676,
+      "bytes_rx": 181102
+    },
+    {
+      "time": "18:55:12.386",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0946,
+      "bytes_tx": 99332,
+      "bytes_rx": 181758
+    },
+    {
+      "time": "18:55:13.507",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0925,
+      "bytes_tx": 99764,
+      "bytes_rx": 182190
+    },
+    {
+      "time": "18:55:14.624",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1585,
+      "bytes_tx": 103912,
+      "bytes_rx": 184912
+    },
+    {
+      "time": "18:55:15.796",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2326,
+      "bytes_tx": 104240,
+      "bytes_rx": 185240
+    },
+    {
+      "time": "18:55:16.945",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1797,
+      "bytes_tx": 105222,
+      "bytes_rx": 186285
+    },
+    {
+      "time": "18:55:18.217",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2453,
+      "bytes_tx": 105602,
+      "bytes_rx": 186665
+    },
+    {
+      "time": "18:55:19.367",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1797,
+      "bytes_tx": 106310,
+      "bytes_rx": 187373
+    },
+    {
+      "time": "18:55:20.505",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.153,
+      "bytes_tx": 106638,
+      "bytes_rx": 187701
+    },
+    {
+      "time": "18:55:21.681",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2112,
+      "bytes_tx": 107649,
+      "bytes_rx": 188589
+    },
+    {
+      "time": "18:55:22.831",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1624,
+      "bytes_tx": 108305,
+      "bytes_rx": 189245
+    },
+    {
+      "time": "18:55:23.952",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2959,
+      "bytes_tx": 108685,
+      "bytes_rx": 189625
+    },
+    {
+      "time": "18:55:25.076",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.6328,
+      "bytes_tx": 109393,
+      "bytes_rx": 190333
+    },
+    {
+      "time": "18:55:26.191",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1441,
+      "bytes_tx": 109773,
+      "bytes_rx": 190713
+    },
+    {
+      "time": "18:55:27.308",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1423,
+      "bytes_tx": 110481,
+      "bytes_rx": 191421
+    },
+    {
+      "time": "18:55:28.431",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2324,
+      "bytes_tx": 110861,
+      "bytes_rx": 191801
+    },
+    {
+      "time": "18:55:29.548",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0889,
+      "bytes_tx": 111711,
+      "bytes_rx": 192647
+    },
+    {
+      "time": "18:55:30.667",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3947,
+      "bytes_tx": 112091,
+      "bytes_rx": 193027
+    },
+    {
+      "time": "18:55:32.198",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2156,
+      "bytes_tx": 112851,
+      "bytes_rx": 193787
+    },
+    {
+      "time": "18:55:33.338",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4908,
+      "bytes_tx": 113507,
+      "bytes_rx": 194443
+    },
+    {
+      "time": "18:55:34.516",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1592,
+      "bytes_tx": 114627,
+      "bytes_rx": 195489
+    },
+    {
+      "time": "18:55:35.725",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1414,
+      "bytes_tx": 118066,
+      "bytes_rx": 201598
+    },
+    {
+      "time": "18:55:36.838",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2151,
+      "bytes_tx": 118394,
+      "bytes_rx": 201926
+    },
+    {
+      "time": "18:55:37.967",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1617,
+      "bytes_tx": 119154,
+      "bytes_rx": 202686
+    },
+    {
+      "time": "18:55:39.087",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1649,
+      "bytes_tx": 119482,
+      "bytes_rx": 203014
+    },
+    {
+      "time": "18:55:40.205",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2298,
+      "bytes_tx": 120294,
+      "bytes_rx": 203826
+    },
+    {
+      "time": "18:55:41.350",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2268,
+      "bytes_tx": 120998,
+      "bytes_rx": 204470
+    },
+    {
+      "time": "18:55:42.471",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.292,
+      "bytes_tx": 125305,
+      "bytes_rx": 211446
+    },
+    {
+      "time": "18:55:43.644",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0923,
+      "bytes_tx": 125633,
+      "bytes_rx": 211774
+    },
+    {
+      "time": "18:55:44.762",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3797,
+      "bytes_tx": 126341,
+      "bytes_rx": 212482
+    },
+    {
+      "time": "18:55:45.913",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.6532,
+      "bytes_tx": 126773,
+      "bytes_rx": 212914
+    },
+    {
+      "time": "18:55:47.030",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3438,
+      "bytes_tx": 127377,
+      "bytes_rx": 213518
+    },
+    {
+      "time": "18:55:48.150",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1405,
+      "bytes_tx": 127705,
+      "bytes_rx": 213846
+    },
+    {
+      "time": "18:55:49.264",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.5503,
+      "bytes_tx": 146636,
+      "bytes_rx": 224751
+    },
+    {
+      "time": "18:55:50.382",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1425,
+      "bytes_tx": 147248,
+      "bytes_rx": 225670
+    },
+    {
+      "time": "18:55:51.509",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1929,
+      "bytes_tx": 147576,
+      "bytes_rx": 225998
+    },
+    {
+      "time": "18:55:52.631",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.092,
+      "bytes_tx": 148284,
+      "bytes_rx": 226706
+    },
+    {
+      "time": "18:55:53.745",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1437,
+      "bytes_tx": 148664,
+      "bytes_rx": 227086
+    },
+    {
+      "time": "18:55:54.863",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1585,
+      "bytes_tx": 149372,
+      "bytes_rx": 227794
+    },
+    {
+      "time": "18:55:55.978",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1518,
+      "bytes_tx": 149752,
+      "bytes_rx": 228174
+    },
+    {
+      "time": "18:55:57.097",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.19,
+      "bytes_tx": 150460,
+      "bytes_rx": 228882
+    },
+    {
+      "time": "18:55:58.217",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2202,
+      "bytes_tx": 150840,
+      "bytes_rx": 229262
+    },
+    {
+      "time": "18:55:59.333",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.5141,
+      "bytes_tx": 151548,
+      "bytes_rx": 229970
+    },
+    {
+      "time": "18:56:00.446",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4459,
+      "bytes_tx": 154576,
+      "bytes_rx": 230612
+    },
+    {
+      "time": "18:56:01.567",
+      "connections": 87,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1665,
+      "bytes_tx": 155493,
+      "bytes_rx": 231627
+    },
+    {
+      "time": "18:56:02.687",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1516,
+      "bytes_tx": 155873,
+      "bytes_rx": 232007
+    },
+    {
+      "time": "18:56:03.853",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2124,
+      "bytes_tx": 156529,
+      "bytes_rx": 232663
+    },
+    {
+      "time": "18:56:05.040",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2952,
+      "bytes_tx": 156857,
+      "bytes_rx": 232991
+    },
+    {
+      "time": "18:56:06.158",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3093,
+      "bytes_tx": 157565,
+      "bytes_rx": 233699
+    },
+    {
+      "time": "18:56:07.275",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2371,
+      "bytes_tx": 158248,
+      "bytes_rx": 234259
+    },
+    {
+      "time": "18:56:08.497",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1456,
+      "bytes_tx": 158956,
+      "bytes_rx": 234967
+    },
+    {
+      "time": "18:56:09.618",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2299,
+      "bytes_tx": 159664,
+      "bytes_rx": 235675
+    },
+    {
+      "time": "18:56:10.735",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1877,
+      "bytes_tx": 159992,
+      "bytes_rx": 236003
+    },
+    {
+      "time": "18:56:11.851",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0895,
+      "bytes_tx": 163658,
+      "bytes_rx": 237258
+    },
+    {
+      "time": "18:56:12.974",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1385,
+      "bytes_tx": 164038,
+      "bytes_rx": 237638
+    },
+    {
+      "time": "18:56:14.180",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2551,
+      "bytes_tx": 164694,
+      "bytes_rx": 238294
+    },
+    {
+      "time": "18:56:15.401",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3217,
+      "bytes_tx": 165074,
+      "bytes_rx": 238674
+    },
+    {
+      "time": "18:56:16.593",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1459,
+      "bytes_tx": 165782,
+      "bytes_rx": 239382
+    },
+    {
+      "time": "18:56:17.737",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4816,
+      "bytes_tx": 166162,
+      "bytes_rx": 239762
+    },
+    {
+      "time": "18:56:18.859",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2362,
+      "bytes_tx": 166922,
+      "bytes_rx": 240522
+    },
+    {
+      "time": "18:56:19.982",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0895,
+      "bytes_tx": 167250,
+      "bytes_rx": 240850
+    },
+    {
+      "time": "18:56:21.099",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1396,
+      "bytes_tx": 167958,
+      "bytes_rx": 241558
+    },
+    {
+      "time": "18:56:22.218",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1657,
+      "bytes_tx": 171244,
+      "bytes_rx": 242433
+    },
+    {
+      "time": "18:56:23.374",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0991,
+      "bytes_tx": 171952,
+      "bytes_rx": 243141
+    },
+    {
+      "time": "18:56:24.500",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0945,
+      "bytes_tx": 172608,
+      "bytes_rx": 243797
+    },
+    {
+      "time": "18:56:25.626",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2163,
+      "bytes_tx": 172936,
+      "bytes_rx": 244125
+    },
+    {
+      "time": "18:56:26.747",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1508,
+      "bytes_tx": 188721,
+      "bytes_rx": 245699
+    },
+    {
+      "time": "18:56:27.881",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1372,
+      "bytes_tx": 189049,
+      "bytes_rx": 246027
+    },
+    {
+      "time": "18:56:28.995",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3232,
+      "bytes_tx": 189705,
+      "bytes_rx": 246683
+    },
+    {
+      "time": "18:56:30.112",
+      "connections": 87,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0858,
+      "bytes_tx": 190033,
+      "bytes_rx": 247011
+    },
+    {
+      "time": "18:56:31.232",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.5704,
+      "bytes_tx": 190793,
+      "bytes_rx": 247771
+    },
+    {
+      "time": "18:56:32.348",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1377,
+      "bytes_tx": 193777,
+      "bytes_rx": 248279
+    },
+    {
+      "time": "18:56:33.479",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1626,
+      "bytes_tx": 194776,
+      "bytes_rx": 249339
+    },
+    {
+      "time": "18:56:34.597",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.356,
+      "bytes_tx": 195104,
+      "bytes_rx": 249667
+    },
+    {
+      "time": "18:56:35.712",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2348,
+      "bytes_tx": 195812,
+      "bytes_rx": 250375
+    },
+    {
+      "time": "18:56:36.913",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1476,
+      "bytes_tx": 196140,
+      "bytes_rx": 250703
+    },
+    {
+      "time": "18:56:38.047",
+      "connections": 87,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4689,
+      "bytes_tx": 196848,
+      "bytes_rx": 251411
+    },
+    {
+      "time": "18:56:39.182",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1799,
+      "bytes_tx": 219748,
+      "bytes_rx": 253047
+    },
+    {
+      "time": "18:56:40.302",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.126,
+      "bytes_tx": 220508,
+      "bytes_rx": 253807
+    },
+    {
+      "time": "18:56:41.435",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.051,
+      "bytes_tx": 221216,
+      "bytes_rx": 254515
+    },
+    {
+      "time": "18:56:42.551",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1942,
+      "bytes_tx": 244086,
+      "bytes_rx": 256098
+    },
+    {
+      "time": "18:56:43.670",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.307,
+      "bytes_tx": 254748,
+      "bytes_rx": 257234
+    },
+    {
+      "time": "18:56:44.793",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.8248,
+      "bytes_tx": 255188,
+      "bytes_rx": 257762
+    },
+    {
+      "time": "18:56:45.914",
+      "connections": 87,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1474,
+      "bytes_tx": 258733,
+      "bytes_rx": 265408
+    },
+    {
+      "time": "18:56:47.036",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1613,
+      "bytes_tx": 287104,
+      "bytes_rx": 1744424
+    },
+    {
+      "time": "18:56:48.164",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.9894,
+      "bytes_tx": 330341,
+      "bytes_rx": 3487228
+    },
+    {
+      "time": "18:56:49.279",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1452,
+      "bytes_tx": 345119,
+      "bytes_rx": 5317211
+    },
+    {
+      "time": "18:56:50.399",
+      "connections": 87,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0838,
+      "bytes_tx": 359398,
+      "bytes_rx": 6281306
+    },
+    {
+      "time": "18:56:51.519",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.209,
+      "bytes_tx": 365783,
+      "bytes_rx": 7479574
+    },
+    {
+      "time": "18:56:52.638",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0952,
+      "bytes_tx": 381779,
+      "bytes_rx": 8456461
+    },
+    {
+      "time": "18:56:53.761",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1669,
+      "bytes_tx": 392393,
+      "bytes_rx": 9620029
+    },
+    {
+      "time": "18:56:54.881",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1403,
+      "bytes_tx": 398294,
+      "bytes_rx": 10534166
+    },
+    {
+      "time": "18:56:56.004",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1528,
+      "bytes_tx": 402928,
+      "bytes_rx": 11368289
+    },
+    {
+      "time": "18:56:57.121",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0858,
+      "bytes_tx": 408410,
+      "bytes_rx": 12196656
+    },
+    {
+      "time": "18:56:58.247",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1458,
+      "bytes_tx": 409002,
+      "bytes_rx": 12211095
+    },
+    {
+      "time": "18:56:59.370",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1997,
+      "bytes_tx": 409710,
+      "bytes_rx": 12211803
+    },
+    {
+      "time": "18:57:00.484",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1791,
+      "bytes_tx": 410038,
+      "bytes_rx": 12212131
+    },
+    {
+      "time": "18:57:01.609",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1685,
+      "bytes_tx": 410798,
+      "bytes_rx": 12212891
+    },
+    {
+      "time": "18:57:02.727",
+      "connections": 87,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1263,
+      "bytes_tx": 411506,
+      "bytes_rx": 12213599
+    },
+    {
+      "time": "18:57:03.841",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1387,
+      "bytes_tx": 411834,
+      "bytes_rx": 12213927
+    },
+    {
+      "time": "18:57:04.958",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.173,
+      "bytes_tx": 412490,
+      "bytes_rx": 12214583
+    },
+    {
+      "time": "18:57:06.074",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3209,
+      "bytes_tx": 412870,
+      "bytes_rx": 12214963
+    },
+    {
+      "time": "18:57:07.194",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2324,
+      "bytes_tx": 413526,
+      "bytes_rx": 12215619
+    },
+    {
+      "time": "18:57:08.318",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2321,
+      "bytes_tx": 413854,
+      "bytes_rx": 12215947
+    },
+    {
+      "time": "18:57:09.435",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0861,
+      "bytes_tx": 414562,
+      "bytes_rx": 12216655
+    },
+    {
+      "time": "18:57:10.595",
+      "connections": 87,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.377,
+      "bytes_tx": 414890,
+      "bytes_rx": 12216983
+    },
+    {
+      "time": "18:57:11.708",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4233,
+      "bytes_tx": 415650,
+      "bytes_rx": 12217743
+    },
+    {
+      "time": "18:57:12.834",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1614,
+      "bytes_tx": 416030,
+      "bytes_rx": 12218123
+    },
+    {
+      "time": "18:57:13.950",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0878,
+      "bytes_tx": 416738,
+      "bytes_rx": 12218831
+    },
+    {
+      "time": "18:57:15.067",
+      "connections": 87,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1633,
+      "bytes_tx": 417066,
+      "bytes_rx": 12219159
+    },
+    {
+      "time": "18:57:16.192",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2618,
+      "bytes_tx": 417878,
+      "bytes_rx": 12219971
+    },
+    {
+      "time": "18:57:17.306",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1893,
+      "bytes_tx": 418102,
+      "bytes_rx": 12220195
+    },
+    {
+      "time": "18:57:18.434",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3667,
+      "bytes_tx": 418902,
+      "bytes_rx": 12220995
+    },
+    {
+      "time": "18:57:19.551",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1991,
+      "bytes_tx": 419290,
+      "bytes_rx": 12221383
+    },
+    {
+      "time": "18:57:20.743",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2705,
+      "bytes_tx": 420142,
+      "bytes_rx": 12222235
+    },
+    {
+      "time": "18:57:21.875",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.231,
+      "bytes_tx": 420798,
+      "bytes_rx": 12222891
+    },
+    {
+      "time": "18:57:22.993",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1245,
+      "bytes_tx": 421178,
+      "bytes_rx": 12223271
+    },
+    {
+      "time": "18:57:24.109",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1373,
+      "bytes_tx": 421886,
+      "bytes_rx": 12223979
+    },
+    {
+      "time": "18:57:25.223",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.142,
+      "bytes_tx": 429232,
+      "bytes_rx": 12231705
+    },
+    {
+      "time": "18:57:26.347",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2118,
+      "bytes_tx": 429992,
+      "bytes_rx": 12232465
+    },
+    {
+      "time": "18:57:27.467",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4874,
+      "bytes_tx": 430424,
+      "bytes_rx": 12232897
+    },
+    {
+      "time": "18:57:28.585",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.6999,
+      "bytes_tx": 434893,
+      "bytes_rx": 12240286
+    },
+    {
+      "time": "18:57:29.703",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1609,
+      "bytes_tx": 435319,
+      "bytes_rx": 12240648
+    },
+    {
+      "time": "18:57:30.821",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1394,
+      "bytes_tx": 435975,
+      "bytes_rx": 12241304
+    },
+    {
+      "time": "18:57:31.938",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3671,
+      "bytes_tx": 436303,
+      "bytes_rx": 12241632
+    },
+    {
+      "time": "18:57:33.055",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1422,
+      "bytes_tx": 436959,
+      "bytes_rx": 12242288
+    },
+    {
+      "time": "18:57:34.190",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3632,
+      "bytes_tx": 437287,
+      "bytes_rx": 12242616
+    },
+    {
+      "time": "18:57:35.311",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1434,
+      "bytes_tx": 448274,
+      "bytes_rx": 12244119
+    },
+    {
+      "time": "18:57:36.471",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1662,
+      "bytes_tx": 448654,
+      "bytes_rx": 12244499
+    },
+    {
+      "time": "18:57:37.588",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3377,
+      "bytes_tx": 449414,
+      "bytes_rx": 12245259
+    },
+    {
+      "time": "18:57:38.708",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0865,
+      "bytes_tx": 450097,
+      "bytes_rx": 12245820
+    },
+    {
+      "time": "18:57:39.824",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1352,
+      "bytes_tx": 450857,
+      "bytes_rx": 12246580
+    },
+    {
+      "time": "18:57:40.946",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.6077,
+      "bytes_tx": 451341,
+      "bytes_rx": 12247064
+    },
+    {
+      "time": "18:57:42.064",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2683,
+      "bytes_tx": 451945,
+      "bytes_rx": 12247668
+    },
+    {
+      "time": "18:57:43.186",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1599,
+      "bytes_tx": 462790,
+      "bytes_rx": 12248997
+    },
+    {
+      "time": "18:57:44.305",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1605,
+      "bytes_tx": 463267,
+      "bytes_rx": 12249539
+    },
+    {
+      "time": "18:57:45.420",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.154,
+      "bytes_tx": 464027,
+      "bytes_rx": 12250299
+    },
+    {
+      "time": "18:57:46.542",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3329,
+      "bytes_tx": 464355,
+      "bytes_rx": 12250627
+    },
+    {
+      "time": "18:57:47.655",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1971,
+      "bytes_tx": 465115,
+      "bytes_rx": 12251387
+    },
+    {
+      "time": "18:57:48.781",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1312,
+      "bytes_tx": 465391,
+      "bytes_rx": 12251663
+    },
+    {
+      "time": "18:57:49.898",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.196,
+      "bytes_tx": 466159,
+      "bytes_rx": 12252431
+    },
+    {
+      "time": "18:57:51.013",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2091,
+      "bytes_tx": 471170,
+      "bytes_rx": 12255550
+    },
+    {
+      "time": "18:57:52.139",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1669,
+      "bytes_tx": 473064,
+      "bytes_rx": 12263161
+    },
+    {
+      "time": "18:57:53.263",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1447,
+      "bytes_tx": 473444,
+      "bytes_rx": 12263541
+    },
+    {
+      "time": "18:57:54.377",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.251,
+      "bytes_tx": 477019,
+      "bytes_rx": 12266079
+    },
+    {
+      "time": "18:57:55.503",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1407,
+      "bytes_tx": 477347,
+      "bytes_rx": 12266407
+    },
+    {
+      "time": "18:57:56.624",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1401,
+      "bytes_tx": 478003,
+      "bytes_rx": 12267063
+    },
+    {
+      "time": "18:57:57.739",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3369,
+      "bytes_tx": 478443,
+      "bytes_rx": 12267503
+    },
+    {
+      "time": "18:57:58.854",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1349,
+      "bytes_tx": 479159,
+      "bytes_rx": 12268219
+    },
+    {
+      "time": "18:57:59.975",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1096,
+      "bytes_tx": 479487,
+      "bytes_rx": 12268547
+    },
+    {
+      "time": "18:58:01.127",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0953,
+      "bytes_tx": 480195,
+      "bytes_rx": 12269255
+    },
+    {
+      "time": "18:58:02.245",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2071,
+      "bytes_tx": 480955,
+      "bytes_rx": 12270015
+    },
+    {
+      "time": "18:58:03.361",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1653,
+      "bytes_tx": 481283,
+      "bytes_rx": 12270343
+    },
+    {
+      "time": "18:58:04.476",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3526,
+      "bytes_tx": 481991,
+      "bytes_rx": 12271051
+    },
+    {
+      "time": "18:58:05.601",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1436,
+      "bytes_tx": 482319,
+      "bytes_rx": 12271379
+    },
+    {
+      "time": "18:58:06.736",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1511,
+      "bytes_tx": 483027,
+      "bytes_rx": 12272087
+    },
+    {
+      "time": "18:58:07.885",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1711,
+      "bytes_tx": 504332,
+      "bytes_rx": 12274579
+    },
+    {
+      "time": "18:58:09.012",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3981,
+      "bytes_tx": 513972,
+      "bytes_rx": 12286993
+    },
+    {
+      "time": "18:58:10.344",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1846,
+      "bytes_tx": 514300,
+      "bytes_rx": 12287321
+    },
+    {
+      "time": "18:58:11.503",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2712,
+      "bytes_tx": 515008,
+      "bytes_rx": 12288029
+    },
+    {
+      "time": "18:58:12.716",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1718,
+      "bytes_tx": 515336,
+      "bytes_rx": 12288357
+    },
+    {
+      "time": "18:58:13.842",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3197,
+      "bytes_tx": 516096,
+      "bytes_rx": 12289117
+    },
+    {
+      "time": "18:58:14.955",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2913,
+      "bytes_tx": 516752,
+      "bytes_rx": 12289773
+    },
+    {
+      "time": "18:58:16.071",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1701,
+      "bytes_tx": 517132,
+      "bytes_rx": 12290153
+    },
+    {
+      "time": "18:58:17.188",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1797,
+      "bytes_tx": 517788,
+      "bytes_rx": 12290809
+    },
+    {
+      "time": "18:58:18.320",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.143,
+      "bytes_tx": 518168,
+      "bytes_rx": 12291189
+    },
+    {
+      "time": "18:58:19.511",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1511,
+      "bytes_tx": 519126,
+      "bytes_rx": 12292129
+    },
+    {
+      "time": "18:58:20.624",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2112,
+      "bytes_tx": 519454,
+      "bytes_rx": 12292457
+    },
+    {
+      "time": "18:58:21.739",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2539,
+      "bytes_tx": 520306,
+      "bytes_rx": 12293309
+    },
+    {
+      "time": "18:58:22.855",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0908,
+      "bytes_tx": 520634,
+      "bytes_rx": 12293637
+    },
+    {
+      "time": "18:58:23.976",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2008,
+      "bytes_tx": 521645,
+      "bytes_rx": 12294525
+    },
+    {
+      "time": "18:58:25.098",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1576,
+      "bytes_tx": 521973,
+      "bytes_rx": 12294853
+    },
+    {
+      "time": "18:58:26.285",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1642,
+      "bytes_tx": 522681,
+      "bytes_rx": 12295561
+    },
+    {
+      "time": "18:58:27.507",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1496,
+      "bytes_tx": 523207,
+      "bytes_rx": 12296069
+    },
+    {
+      "time": "18:58:28.625",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3048,
+      "bytes_tx": 524113,
+      "bytes_rx": 12297074
+    },
+    {
+      "time": "18:58:29.741",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3456,
+      "bytes_tx": 524493,
+      "bytes_rx": 12297454
+    },
+    {
+      "time": "18:58:30.856",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1503,
+      "bytes_tx": 525201,
+      "bytes_rx": 12298162
+    },
+    {
+      "time": "18:58:32.032",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1612,
+      "bytes_tx": 525857,
+      "bytes_rx": 12298818
+    },
+    {
+      "time": "18:58:33.152",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1601,
+      "bytes_tx": 526185,
+      "bytes_rx": 12299146
+    },
+    {
+      "time": "18:58:34.286",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2864,
+      "bytes_tx": 526945,
+      "bytes_rx": 12299906
+    },
+    {
+      "time": "18:58:35.404",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4289,
+      "bytes_tx": 527273,
+      "bytes_rx": 12300234
+    },
+    {
+      "time": "18:58:36.517",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2991,
+      "bytes_tx": 527929,
+      "bytes_rx": 12300890
+    },
+    {
+      "time": "18:58:37.633",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1941,
+      "bytes_tx": 528421,
+      "bytes_rx": 12301382
+    },
+    {
+      "time": "18:58:38.752",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.19,
+      "bytes_tx": 529129,
+      "bytes_rx": 12302090
+    },
+    {
+      "time": "18:58:39.867",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0994,
+      "bytes_tx": 529509,
+      "bytes_rx": 12302470
+    },
+    {
+      "time": "18:58:40.992",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.199,
+      "bytes_tx": 530217,
+      "bytes_rx": 12303178
+    },
+    {
+      "time": "18:58:42.111",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0954,
+      "bytes_tx": 543588,
+      "bytes_rx": 12304465
+    },
+    {
+      "time": "18:58:43.235",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1465,
+      "bytes_tx": 544296,
+      "bytes_rx": 12305173
+    },
+    {
+      "time": "18:58:44.353",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3181,
+      "bytes_tx": 544624,
+      "bytes_rx": 12305501
+    },
+    {
+      "time": "18:58:45.468",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.429,
+      "bytes_tx": 545332,
+      "bytes_rx": 12306209
+    },
+    {
+      "time": "18:58:46.583",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1476,
+      "bytes_tx": 553117,
+      "bytes_rx": 12389723
+    },
+    {
+      "time": "18:58:47.697",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1599,
+      "bytes_tx": 553825,
+      "bytes_rx": 12390431
+    },
+    {
+      "time": "18:58:48.817",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1097,
+      "bytes_tx": 554153,
+      "bytes_rx": 12390759
+    },
+    {
+      "time": "18:58:49.937",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1384,
+      "bytes_tx": 554809,
+      "bytes_rx": 12391415
+    },
+    {
+      "time": "18:58:51.055",
+      "connections": 83,
+      "cpu_pct": 9.8,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3076,
+      "bytes_tx": 555569,
+      "bytes_rx": 12392175
+    },
+    {
+      "time": "18:58:52.178",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0934,
+      "bytes_tx": 556001,
+      "bytes_rx": 12392607
+    },
+    {
+      "time": "18:58:53.296",
+      "connections": 87,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3542,
+      "bytes_tx": 556657,
+      "bytes_rx": 12393263
+    },
+    {
+      "time": "18:58:54.413",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3358,
+      "bytes_tx": 557111,
+      "bytes_rx": 12393717
+    },
+    {
+      "time": "18:58:55.531",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3853,
+      "bytes_tx": 557767,
+      "bytes_rx": 12394373
+    },
+    {
+      "time": "18:58:56.647",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1542,
+      "bytes_tx": 558095,
+      "bytes_rx": 12394701
+    },
+    {
+      "time": "18:58:57.765",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.305,
+      "bytes_tx": 558855,
+      "bytes_rx": 12395461
+    },
+    {
+      "time": "18:58:58.959",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1386,
+      "bytes_tx": 559183,
+      "bytes_rx": 12395789
+    },
+    {
+      "time": "18:59:00.079",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3094,
+      "bytes_tx": 559891,
+      "bytes_rx": 12396497
+    },
+    {
+      "time": "18:59:01.260",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2026,
+      "bytes_tx": 560219,
+      "bytes_rx": 12396825
+    },
+    {
+      "time": "18:59:02.379",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1952,
+      "bytes_tx": 560875,
+      "bytes_rx": 12397481
+    },
+    {
+      "time": "18:59:03.579",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1524,
+      "bytes_tx": 561255,
+      "bytes_rx": 12397861
+    },
+    {
+      "time": "18:59:04.728",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1893,
+      "bytes_tx": 561911,
+      "bytes_rx": 12398517
+    },
+    {
+      "time": "18:59:05.841",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3709,
+      "bytes_tx": 562291,
+      "bytes_rx": 12398897
+    },
+    {
+      "time": "18:59:06.953",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1599,
+      "bytes_tx": 562947,
+      "bytes_rx": 12399553
+    },
+    {
+      "time": "18:59:08.115",
+      "connections": 83,
+      "cpu_pct": 10.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2134,
+      "bytes_tx": 563751,
+      "bytes_rx": 12400420
+    },
+    {
+      "time": "18:59:09.229",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1387,
+      "bytes_tx": 564486,
+      "bytes_rx": 12401032
+    },
+    {
+      "time": "18:59:10.344",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1441,
+      "bytes_tx": 565298,
+      "bytes_rx": 12401844
+    },
+    {
+      "time": "18:59:11.464",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1559,
+      "bytes_tx": 565678,
+      "bytes_rx": 12402224
+    },
+    {
+      "time": "18:59:12.581",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1726,
+      "bytes_tx": 566386,
+      "bytes_rx": 12402932
+    },
+    {
+      "time": "18:59:13.701",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1714,
+      "bytes_tx": 566714,
+      "bytes_rx": 12403260
+    },
+    {
+      "time": "18:59:14.818",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2137,
+      "bytes_tx": 567370,
+      "bytes_rx": 12403916
+    },
+    {
+      "time": "18:59:16.113",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.14,
+      "bytes_tx": 567698,
+      "bytes_rx": 12404244
+    },
+    {
+      "time": "18:59:17.536",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2327,
+      "bytes_tx": 568406,
+      "bytes_rx": 12404952
+    },
+    {
+      "time": "18:59:18.666",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1793,
+      "bytes_tx": 569206,
+      "bytes_rx": 12405752
+    },
+    {
+      "time": "18:59:19.784",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0871,
+      "bytes_tx": 569586,
+      "bytes_rx": 12406132
+    },
+    {
+      "time": "18:59:20.919",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2978,
+      "bytes_tx": 570294,
+      "bytes_rx": 12406840
+    },
+    {
+      "time": "18:59:22.105",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1625,
+      "bytes_tx": 570622,
+      "bytes_rx": 12407168
+    },
+    {
+      "time": "18:59:23.221",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1744,
+      "bytes_tx": 571442,
+      "bytes_rx": 12407988
+    },
+    {
+      "time": "18:59:24.437",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1618,
+      "bytes_tx": 571822,
+      "bytes_rx": 12408368
+    },
+    {
+      "time": "18:59:25.713",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2829,
+      "bytes_tx": 572530,
+      "bytes_rx": 12409076
+    },
+    {
+      "time": "18:59:26.834",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4306,
+      "bytes_tx": 572858,
+      "bytes_rx": 12409404
+    },
+    {
+      "time": "18:59:27.954",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1676,
+      "bytes_tx": 573514,
+      "bytes_rx": 12410060
+    },
+    {
+      "time": "18:59:29.067",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0921,
+      "bytes_tx": 573842,
+      "bytes_rx": 12410388
+    },
+    {
+      "time": "18:59:30.233",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1987,
+      "bytes_tx": 574640,
+      "bytes_rx": 12411182
+    },
+    {
+      "time": "18:59:31.354",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1669,
+      "bytes_tx": 575028,
+      "bytes_rx": 12411570
+    },
+    {
+      "time": "18:59:32.469",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1592,
+      "bytes_tx": 575736,
+      "bytes_rx": 12412278
+    },
+    {
+      "time": "18:59:33.592",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1669,
+      "bytes_tx": 576116,
+      "bytes_rx": 12412658
+    },
+    {
+      "time": "18:59:34.711",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1599,
+      "bytes_tx": 576846,
+      "bytes_rx": 12413388
+    },
+    {
+      "time": "18:59:35.826",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.16,
+      "bytes_tx": 577174,
+      "bytes_rx": 12413716
+    },
+    {
+      "time": "18:59:36.945",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1572,
+      "bytes_tx": 577934,
+      "bytes_rx": 12414476
+    },
+    {
+      "time": "18:59:38.069",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1406,
+      "bytes_tx": 578314,
+      "bytes_rx": 12414856
+    },
+    {
+      "time": "18:59:39.183",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1732,
+      "bytes_tx": 579022,
+      "bytes_rx": 12415564
+    },
+    {
+      "time": "18:59:40.342",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.144,
+      "bytes_tx": 579488,
+      "bytes_rx": 12416030
+    },
+    {
+      "time": "18:59:41.463",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2681,
+      "bytes_tx": 580248,
+      "bytes_rx": 12416790
+    },
+    {
+      "time": "18:59:42.679",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.143,
+      "bytes_tx": 580576,
+      "bytes_rx": 12417118
+    },
+    {
+      "time": "18:59:43.795",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1626,
+      "bytes_tx": 581336,
+      "bytes_rx": 12417878
+    },
+    {
+      "time": "18:59:45.034",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3875,
+      "bytes_tx": 582044,
+      "bytes_rx": 12418586
+    },
+    {
+      "time": "18:59:46.147",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3962,
+      "bytes_tx": 582372,
+      "bytes_rx": 12418914
+    },
+    {
+      "time": "18:59:47.269",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.299,
+      "bytes_tx": 583080,
+      "bytes_rx": 12419622
+    },
+    {
+      "time": "18:59:48.383",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1437,
+      "bytes_tx": 583408,
+      "bytes_rx": 12419950
+    },
+    {
+      "time": "18:59:49.570",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0985,
+      "bytes_tx": 584168,
+      "bytes_rx": 12420710
+    },
+    {
+      "time": "18:59:50.715",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1611,
+      "bytes_tx": 584496,
+      "bytes_rx": 12421038
+    },
+    {
+      "time": "18:59:51.828",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1672,
+      "bytes_tx": 585256,
+      "bytes_rx": 12421798
+    },
+    {
+      "time": "18:59:52.949",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1614,
+      "bytes_tx": 585636,
+      "bytes_rx": 12422178
+    },
+    {
+      "time": "18:59:54.065",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1601,
+      "bytes_tx": 586418,
+      "bytes_rx": 12422960
+    },
+    {
+      "time": "18:59:55.200",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1595,
+      "bytes_tx": 587154,
+      "bytes_rx": 12423572
+    },
+    {
+      "time": "18:59:56.317",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3693,
+      "bytes_tx": 587810,
+      "bytes_rx": 12424228
+    },
+    {
+      "time": "18:59:57.441",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1373,
+      "bytes_tx": 588138,
+      "bytes_rx": 12424556
+    },
+    {
+      "time": "18:59:58.617",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3824,
+      "bytes_tx": 588990,
+      "bytes_rx": 12425408
+    },
+    {
+      "time": "18:59:59.738",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3625,
+      "bytes_tx": 589646,
+      "bytes_rx": 12426064
+    },
+    {
+      "time": "19:00:00.862",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3749,
+      "bytes_tx": 590034,
+      "bytes_rx": 12426456
+    },
+    {
+      "time": "19:00:01.979",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1816,
+      "bytes_tx": 590690,
+      "bytes_rx": 12427112
+    },
+    {
+      "time": "19:00:03.102",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1452,
+      "bytes_tx": 591078,
+      "bytes_rx": 12427500
+    },
+    {
+      "time": "19:00:04.218",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1603,
+      "bytes_tx": 592124,
+      "bytes_rx": 12428620
+    },
+    {
+      "time": "19:00:05.335",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1373,
+      "bytes_tx": 592598,
+      "bytes_rx": 12429000
+    },
+    {
+      "time": "19:00:06.454",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1647,
+      "bytes_tx": 593784,
+      "bytes_rx": 12430161
+    },
+    {
+      "time": "19:00:07.575",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.208,
+      "bytes_tx": 594256,
+      "bytes_rx": 12430633
+    },
+    {
+      "time": "19:00:08.771",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1627,
+      "bytes_tx": 595016,
+      "bytes_rx": 12431393
+    },
+    {
+      "time": "19:00:09.888",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.253,
+      "bytes_tx": 595396,
+      "bytes_rx": 12431773
+    },
+    {
+      "time": "19:00:11.001",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1681,
+      "bytes_tx": 596248,
+      "bytes_rx": 12432625
+    },
+    {
+      "time": "19:00:12.126",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1666,
+      "bytes_tx": 596576,
+      "bytes_rx": 12432953
+    },
+    {
+      "time": "19:00:13.242",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1648,
+      "bytes_tx": 597284,
+      "bytes_rx": 12433661
+    },
+    {
+      "time": "19:00:14.357",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2214,
+      "bytes_tx": 597664,
+      "bytes_rx": 12434041
+    },
+    {
+      "time": "19:00:15.471",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1906,
+      "bytes_tx": 598536,
+      "bytes_rx": 12434913
+    },
+    {
+      "time": "19:00:16.597",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1466,
+      "bytes_tx": 599012,
+      "bytes_rx": 12435526
+    },
+    {
+      "time": "19:00:17.711",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3357,
+      "bytes_tx": 599812,
+      "bytes_rx": 12436326
+    },
+    {
+      "time": "19:00:18.833",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1361,
+      "bytes_tx": 600140,
+      "bytes_rx": 12436654
+    },
+    {
+      "time": "19:00:19.951",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3443,
+      "bytes_tx": 600900,
+      "bytes_rx": 12437414
+    },
+    {
+      "time": "19:00:21.071",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1394,
+      "bytes_tx": 601556,
+      "bytes_rx": 12438070
+    },
+    {
+      "time": "19:00:22.184",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1444,
+      "bytes_tx": 601936,
+      "bytes_rx": 12438450
+    },
+    {
+      "time": "19:00:23.431",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2217,
+      "bytes_tx": 602644,
+      "bytes_rx": 12439158
+    },
+    {
+      "time": "19:00:24.553",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2373,
+      "bytes_tx": 603024,
+      "bytes_rx": 12439538
+    },
+    {
+      "time": "19:00:25.691",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1413,
+      "bytes_tx": 603824,
+      "bytes_rx": 12440338
+    },
+    {
+      "time": "19:00:26.810",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1742,
+      "bytes_tx": 604152,
+      "bytes_rx": 12440666
+    },
+    {
+      "time": "19:00:27.968",
+      "connections": 76,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2769,
+      "bytes_tx": 604912,
+      "bytes_rx": 12441426
+    },
+    {
+      "time": "19:00:29.086",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2901,
+      "bytes_tx": 605240,
+      "bytes_rx": 12441754
+    },
+    {
+      "time": "19:00:30.263",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1642,
+      "bytes_tx": 605948,
+      "bytes_rx": 12442462
+    },
+    {
+      "time": "19:00:31.379",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1676,
+      "bytes_tx": 606276,
+      "bytes_rx": 12442790
+    },
+    {
+      "time": "19:00:32.493",
+      "connections": 76,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1628,
+      "bytes_tx": 607036,
+      "bytes_rx": 12443550
+    },
+    {
+      "time": "19:00:33.609",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1033,
+      "bytes_tx": 607468,
+      "bytes_rx": 12443982
+    },
+    {
+      "time": "19:00:34.775",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1577,
+      "bytes_tx": 608176,
+      "bytes_rx": 12444690
+    },
+    {
+      "time": "19:00:35.894",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1367,
+      "bytes_tx": 608648,
+      "bytes_rx": 12445162
+    },
+    {
+      "time": "19:00:37.035",
+      "connections": 76,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3502,
+      "bytes_tx": 609356,
+      "bytes_rx": 12445870
+    },
+    {
+      "time": "19:00:38.153",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1603,
+      "bytes_tx": 610064,
+      "bytes_rx": 12446578
+    },
+    {
+      "time": "19:00:39.293",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1622,
+      "bytes_tx": 610392,
+      "bytes_rx": 12446906
+    },
+    {
+      "time": "19:00:40.475",
+      "connections": 76,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3982,
+      "bytes_tx": 611226,
+      "bytes_rx": 12447740
+    },
+    {
+      "time": "19:00:41.637",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1085,
+      "bytes_tx": 612406,
+      "bytes_rx": 12448869
+    },
+    {
+      "time": "19:00:42.834",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1398,
+      "bytes_tx": 613114,
+      "bytes_rx": 12449577
+    },
+    {
+      "time": "19:00:43.958",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1523,
+      "bytes_tx": 613442,
+      "bytes_rx": 12449905
+    },
+    {
+      "time": "19:00:45.088",
+      "connections": 76,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1415,
+      "bytes_tx": 614098,
+      "bytes_rx": 12450561
+    },
+    {
+      "time": "19:00:46.242",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1873,
+      "bytes_tx": 614426,
+      "bytes_rx": 12450889
+    },
+    {
+      "time": "19:00:47.401",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1804,
+      "bytes_tx": 615186,
+      "bytes_rx": 12451649
+    },
+    {
+      "time": "19:00:48.671",
+      "connections": 75,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4325,
+      "bytes_tx": 615574,
+      "bytes_rx": 12452097
+    },
+    {
+      "time": "19:00:49.821",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1455,
+      "bytes_tx": 616282,
+      "bytes_rx": 12452805
+    },
+    {
+      "time": "19:00:50.962",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4123,
+      "bytes_tx": 617042,
+      "bytes_rx": 12453565
+    },
+    {
+      "time": "19:00:52.219",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3799,
+      "bytes_tx": 617370,
+      "bytes_rx": 12453893
+    },
+    {
+      "time": "19:00:53.364",
+      "connections": 76,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1552,
+      "bytes_tx": 618078,
+      "bytes_rx": 12454601
+    },
+    {
+      "time": "19:00:54.485",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1435,
+      "bytes_tx": 618406,
+      "bytes_rx": 12454929
+    },
+    {
+      "time": "19:00:55.661",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1451,
+      "bytes_tx": 619166,
+      "bytes_rx": 12455689
+    },
+    {
+      "time": "19:00:56.806",
+      "connections": 74,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3191,
+      "bytes_tx": 619546,
+      "bytes_rx": 12456069
+    },
+    {
+      "time": "19:00:57.926",
+      "connections": 76,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1445,
+      "bytes_tx": 620254,
+      "bytes_rx": 12456777
+    },
+    {
+      "time": "19:00:59.108",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1635,
+      "bytes_tx": 620634,
+      "bytes_rx": 12457157
+    },
+    {
+      "time": "19:01:00.267",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1598,
+      "bytes_tx": 621342,
+      "bytes_rx": 12457865
+    },
+    {
+      "time": "19:01:01.380",
+      "connections": 76,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2745,
+      "bytes_tx": 621670,
+      "bytes_rx": 12458193
+    },
+    {
+      "time": "19:01:02.495",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1746,
+      "bytes_tx": 622326,
+      "bytes_rx": 12458849
+    },
+    {
+      "time": "19:01:03.613",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3031,
+      "bytes_tx": 623034,
+      "bytes_rx": 12459557
+    },
+    {
+      "time": "19:01:04.735",
+      "connections": 76,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2032,
+      "bytes_tx": 623362,
+      "bytes_rx": 12459885
+    },
+    {
+      "time": "19:01:05.867",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0947,
+      "bytes_tx": 624018,
+      "bytes_rx": 12460541
+    },
+    {
+      "time": "19:01:07.152",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0954,
+      "bytes_tx": 624346,
+      "bytes_rx": 12460869
+    },
+    {
+      "time": "19:01:08.286",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1674,
+      "bytes_tx": 625146,
+      "bytes_rx": 12461669
+    },
+    {
+      "time": "19:01:09.484",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3488,
+      "bytes_tx": 625474,
+      "bytes_rx": 12461997
+    },
+    {
+      "time": "19:01:10.596",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.375,
+      "bytes_tx": 626182,
+      "bytes_rx": 12462705
+    },
+    {
+      "time": "19:01:11.778",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1418,
+      "bytes_tx": 626510,
+      "bytes_rx": 12463033
+    },
+    {
+      "time": "19:01:12.898",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2979,
+      "bytes_tx": 627166,
+      "bytes_rx": 12463689
+    },
+    {
+      "time": "19:01:14.011",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3791,
+      "bytes_tx": 627494,
+      "bytes_rx": 12464017
+    },
+    {
+      "time": "19:01:15.130",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1419,
+      "bytes_tx": 628202,
+      "bytes_rx": 12464725
+    },
+    {
+      "time": "19:01:16.245",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1565,
+      "bytes_tx": 628582,
+      "bytes_rx": 12465105
+    },
+    {
+      "time": "19:01:17.370",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2256,
+      "bytes_tx": 629290,
+      "bytes_rx": 12465813
+    },
+    {
+      "time": "19:01:18.562",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.169,
+      "bytes_tx": 629670,
+      "bytes_rx": 12466193
+    },
+    {
+      "time": "19:01:19.676",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2639,
+      "bytes_tx": 630378,
+      "bytes_rx": 12466901
+    },
+    {
+      "time": "19:01:20.814",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3925,
+      "bytes_tx": 631086,
+      "bytes_rx": 12467609
+    },
+    {
+      "time": "19:01:21.937",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1512,
+      "bytes_tx": 631558,
+      "bytes_rx": 12468081
+    },
+    {
+      "time": "19:01:23.051",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1606,
+      "bytes_tx": 636412,
+      "bytes_rx": 12472952
+    },
+    {
+      "time": "19:01:24.168",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1601,
+      "bytes_tx": 636740,
+      "bytes_rx": 12473280
+    },
+    {
+      "time": "19:01:25.280",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1467,
+      "bytes_tx": 637574,
+      "bytes_rx": 12474114
+    },
+    {
+      "time": "19:01:26.454",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1263,
+      "bytes_tx": 638250,
+      "bytes_rx": 12474554
+    },
+    {
+      "time": "19:01:27.567",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2682,
+      "bytes_tx": 639018,
+      "bytes_rx": 12475434
+    },
+    {
+      "time": "19:01:28.785",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1412,
+      "bytes_tx": 639346,
+      "bytes_rx": 12475762
+    },
+    {
+      "time": "19:01:29.940",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.099,
+      "bytes_tx": 640196,
+      "bytes_rx": 12476608
+    },
+    {
+      "time": "19:01:31.122",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2318,
+      "bytes_tx": 640662,
+      "bytes_rx": 12477074
+    },
+    {
+      "time": "19:01:32.255",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.148,
+      "bytes_tx": 641422,
+      "bytes_rx": 12477834
+    },
+    {
+      "time": "19:01:33.379",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2831,
+      "bytes_tx": 641948,
+      "bytes_rx": 12478402
+    },
+    {
+      "time": "19:01:34.557",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.6509,
+      "bytes_tx": 642604,
+      "bytes_rx": 12479058
+    },
+    {
+      "time": "19:01:35.671",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1311,
+      "bytes_tx": 643260,
+      "bytes_rx": 12479714
+    },
+    {
+      "time": "19:01:36.783",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2077,
+      "bytes_tx": 643588,
+      "bytes_rx": 12480042
+    },
+    {
+      "time": "19:01:37.964",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1476,
+      "bytes_tx": 649587,
+      "bytes_rx": 12482907
+    },
+    {
+      "time": "19:01:39.080",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1408,
+      "bytes_tx": 653276,
+      "bytes_rx": 12491011
+    },
+    {
+      "time": "19:01:40.203",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0901,
+      "bytes_tx": 653984,
+      "bytes_rx": 12491719
+    },
+    {
+      "time": "19:01:41.530",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1716,
+      "bytes_tx": 654312,
+      "bytes_rx": 12492047
+    },
+    {
+      "time": "19:01:42.661",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.162,
+      "bytes_tx": 655020,
+      "bytes_rx": 12492755
+    },
+    {
+      "time": "19:01:43.784",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1819,
+      "bytes_tx": 655400,
+      "bytes_rx": 12493135
+    },
+    {
+      "time": "19:01:44.904",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1423,
+      "bytes_tx": 656108,
+      "bytes_rx": 12493843
+    },
+    {
+      "time": "19:01:46.023",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1893,
+      "bytes_tx": 656488,
+      "bytes_rx": 12494223
+    },
+    {
+      "time": "19:01:47.144",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1986,
+      "bytes_tx": 657196,
+      "bytes_rx": 12494931
+    },
+    {
+      "time": "19:01:48.273",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0905,
+      "bytes_tx": 657576,
+      "bytes_rx": 12495311
+    },
+    {
+      "time": "19:01:49.607",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1741,
+      "bytes_tx": 658336,
+      "bytes_rx": 12496071
+    },
+    {
+      "time": "19:01:50.722",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1577,
+      "bytes_tx": 659044,
+      "bytes_rx": 12496779
+    },
+    {
+      "time": "19:01:51.837",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1673,
+      "bytes_tx": 659424,
+      "bytes_rx": 12497159
+    },
+    {
+      "time": "19:01:52.959",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1389,
+      "bytes_tx": 660132,
+      "bytes_rx": 12497867
+    },
+    {
+      "time": "19:01:54.075",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.155,
+      "bytes_tx": 660460,
+      "bytes_rx": 12498195
+    },
+    {
+      "time": "19:01:55.203",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.363,
+      "bytes_tx": 661116,
+      "bytes_rx": 12498851
+    },
+    {
+      "time": "19:01:56.324",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1403,
+      "bytes_tx": 661444,
+      "bytes_rx": 12499179
+    },
+    {
+      "time": "19:01:57.439",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1594,
+      "bytes_tx": 662100,
+      "bytes_rx": 12499835
+    },
+    {
+      "time": "19:01:58.562",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3377,
+      "bytes_tx": 662428,
+      "bytes_rx": 12500163
+    },
+    {
+      "time": "19:01:59.679",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1357,
+      "bytes_tx": 663084,
+      "bytes_rx": 12500819
+    },
+    {
+      "time": "19:02:00.794",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1646,
+      "bytes_tx": 663464,
+      "bytes_rx": 12501199
+    },
+    {
+      "time": "19:02:01.909",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3684,
+      "bytes_tx": 664172,
+      "bytes_rx": 12501907
+    },
+    {
+      "time": "19:02:03.021",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1463,
+      "bytes_tx": 664552,
+      "bytes_rx": 12502287
+    },
+    {
+      "time": "19:02:04.134",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.138,
+      "bytes_tx": 665312,
+      "bytes_rx": 12503047
+    },
+    {
+      "time": "19:02:05.250",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1432,
+      "bytes_tx": 665692,
+      "bytes_rx": 12503427
+    },
+    {
+      "time": "19:02:06.371",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1751,
+      "bytes_tx": 666400,
+      "bytes_rx": 12504135
+    },
+    {
+      "time": "19:02:07.497",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2386,
+      "bytes_tx": 666780,
+      "bytes_rx": 12504515
+    },
+    {
+      "time": "19:02:08.611",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1494,
+      "bytes_tx": 667488,
+      "bytes_rx": 12505223
+    },
+    {
+      "time": "19:02:09.724",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1486,
+      "bytes_tx": 667868,
+      "bytes_rx": 12505603
+    },
+    {
+      "time": "19:02:10.840",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1679,
+      "bytes_tx": 668702,
+      "bytes_rx": 12506437
+    },
+    {
+      "time": "19:02:11.958",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1718,
+      "bytes_tx": 669766,
+      "bytes_rx": 12507377
+    },
+    {
+      "time": "19:02:13.079",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1553,
+      "bytes_tx": 670146,
+      "bytes_rx": 12507757
+    },
+    {
+      "time": "19:02:14.196",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1638,
+      "bytes_tx": 670854,
+      "bytes_rx": 12508465
+    },
+    {
+      "time": "19:02:15.309",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0878,
+      "bytes_tx": 671234,
+      "bytes_rx": 12508845
+    },
+    {
+      "time": "19:02:16.423",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1441,
+      "bytes_tx": 672034,
+      "bytes_rx": 12509645
+    },
+    {
+      "time": "19:02:17.544",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1563,
+      "bytes_tx": 672414,
+      "bytes_rx": 12510025
+    },
+    {
+      "time": "19:02:18.663",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2461,
+      "bytes_tx": 673234,
+      "bytes_rx": 12510845
+    },
+    {
+      "time": "19:02:19.777",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1626,
+      "bytes_tx": 673562,
+      "bytes_rx": 12511173
+    },
+    {
+      "time": "19:02:20.893",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1625,
+      "bytes_tx": 674270,
+      "bytes_rx": 12511881
+    },
+    {
+      "time": "19:02:22.015",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1707,
+      "bytes_tx": 674650,
+      "bytes_rx": 12512261
+    },
+    {
+      "time": "19:02:23.241",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1495,
+      "bytes_tx": 675306,
+      "bytes_rx": 12512917
+    },
+    {
+      "time": "19:02:24.487",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2062,
+      "bytes_tx": 675634,
+      "bytes_rx": 12513245
+    },
+    {
+      "time": "19:02:25.612",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3039,
+      "bytes_tx": 676547,
+      "bytes_rx": 12514158
+    },
+    {
+      "time": "19:02:26.817",
+      "connections": 80,
+      "cpu_pct": 9.2,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0633,
+      "bytes_tx": 677255,
+      "bytes_rx": 12514866
+    },
+    {
+      "time": "19:02:27.989",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3314,
+      "bytes_tx": 677583,
+      "bytes_rx": 12515194
+    },
+    {
+      "time": "19:02:29.670",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1061,
+      "bytes_tx": 678291,
+      "bytes_rx": 12515902
+    },
+    {
+      "time": "19:02:30.791",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3879,
+      "bytes_tx": 678671,
+      "bytes_rx": 12516282
+    },
+    {
+      "time": "19:02:31.915",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1683,
+      "bytes_tx": 679051,
+      "bytes_rx": 12516662
+    },
+    {
+      "time": "19:02:33.032",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3596,
+      "bytes_tx": 679759,
+      "bytes_rx": 12517370
+    },
+    {
+      "time": "19:02:34.146",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3163,
+      "bytes_tx": 680415,
+      "bytes_rx": 12518026
+    },
+    {
+      "time": "19:02:35.260",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1674,
+      "bytes_tx": 680743,
+      "bytes_rx": 12518354
+    },
+    {
+      "time": "19:02:36.378",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2873,
+      "bytes_tx": 681503,
+      "bytes_rx": 12519114
+    },
+    {
+      "time": "19:02:37.497",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4202,
+      "bytes_tx": 682196,
+      "bytes_rx": 12519807
+    },
+    {
+      "time": "19:02:38.616",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2269,
+      "bytes_tx": 682904,
+      "bytes_rx": 12520515
+    },
+    {
+      "time": "19:02:39.831",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3749,
+      "bytes_tx": 683232,
+      "bytes_rx": 12520843
+    },
+    {
+      "time": "19:02:40.963",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1876,
+      "bytes_tx": 684044,
+      "bytes_rx": 12521655
+    },
+    {
+      "time": "19:02:42.082",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.6262,
+      "bytes_tx": 684372,
+      "bytes_rx": 12521983
+    },
+    {
+      "time": "19:02:43.201",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.226,
+      "bytes_tx": 685080,
+      "bytes_rx": 12522691
+    },
+    {
+      "time": "19:02:44.334",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1065,
+      "bytes_tx": 685408,
+      "bytes_rx": 12523019
+    },
+    {
+      "time": "19:02:45.455",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3948,
+      "bytes_tx": 686168,
+      "bytes_rx": 12523779
+    },
+    {
+      "time": "19:02:46.589",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2479,
+      "bytes_tx": 686496,
+      "bytes_rx": 12524107
+    },
+    {
+      "time": "19:02:47.714",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1401,
+      "bytes_tx": 687256,
+      "bytes_rx": 12524867
+    },
+    {
+      "time": "19:02:48.828",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0951,
+      "bytes_tx": 687584,
+      "bytes_rx": 12525195
+    },
+    {
+      "time": "19:02:49.950",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1076,
+      "bytes_tx": 688344,
+      "bytes_rx": 12525955
+    },
+    {
+      "time": "19:02:51.065",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.6246,
+      "bytes_tx": 689052,
+      "bytes_rx": 12526663
+    },
+    {
+      "time": "19:02:52.188",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2184,
+      "bytes_tx": 696931,
+      "bytes_rx": 12538391
+    },
+    {
+      "time": "19:02:53.308",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0883,
+      "bytes_tx": 704271,
+      "bytes_rx": 12547679
+    },
+    {
+      "time": "19:02:54.425",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.152,
+      "bytes_tx": 704599,
+      "bytes_rx": 12548007
+    },
+    {
+      "time": "19:02:55.546",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1477,
+      "bytes_tx": 714290,
+      "bytes_rx": 12549467
+    },
+    {
+      "time": "19:02:56.662",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.166,
+      "bytes_tx": 714670,
+      "bytes_rx": 12549847
+    },
+    {
+      "time": "19:02:57.777",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1699,
+      "bytes_tx": 715735,
+      "bytes_rx": 12550787
+    },
+    {
+      "time": "19:02:58.890",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1928,
+      "bytes_tx": 717015,
+      "bytes_rx": 12552263
+    },
+    {
+      "time": "19:03:00.004",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2313,
+      "bytes_tx": 720350,
+      "bytes_rx": 12558372
+    },
+    {
+      "time": "19:03:01.118",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1347,
+      "bytes_tx": 720764,
+      "bytes_rx": 12558786
+    },
+    {
+      "time": "19:03:02.242",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3742,
+      "bytes_tx": 721472,
+      "bytes_rx": 12559494
+    },
+    {
+      "time": "19:03:03.364",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1025,
+      "bytes_tx": 721852,
+      "bytes_rx": 12559874
+    },
+    {
+      "time": "19:03:04.488",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1628,
+      "bytes_tx": 725462,
+      "bytes_rx": 12561068
+    },
+    {
+      "time": "19:03:05.607",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1497,
+      "bytes_tx": 725842,
+      "bytes_rx": 12561448
+    },
+    {
+      "time": "19:03:06.723",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1486,
+      "bytes_tx": 726498,
+      "bytes_rx": 12562104
+    },
+    {
+      "time": "19:03:07.844",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1257,
+      "bytes_tx": 726878,
+      "bytes_rx": 12562484
+    },
+    {
+      "time": "19:03:08.959",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.098,
+      "bytes_tx": 727638,
+      "bytes_rx": 12563244
+    },
+    {
+      "time": "19:03:10.144",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1583,
+      "bytes_tx": 728018,
+      "bytes_rx": 12563624
+    },
+    {
+      "time": "19:03:11.264",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2927,
+      "bytes_tx": 728674,
+      "bytes_rx": 12564280
+    },
+    {
+      "time": "19:03:12.385",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.454,
+      "bytes_tx": 729382,
+      "bytes_rx": 12564988
+    },
+    {
+      "time": "19:03:13.505",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0901,
+      "bytes_tx": 729710,
+      "bytes_rx": 12565316
+    },
+    {
+      "time": "19:03:14.649",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0866,
+      "bytes_tx": 745839,
+      "bytes_rx": 12567103
+    },
+    {
+      "time": "19:03:15.767",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2054,
+      "bytes_tx": 746219,
+      "bytes_rx": 12567483
+    },
+    {
+      "time": "19:03:16.882",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0988,
+      "bytes_tx": 746927,
+      "bytes_rx": 12568191
+    },
+    {
+      "time": "19:03:18.001",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2897,
+      "bytes_tx": 747255,
+      "bytes_rx": 12568519
+    },
+    {
+      "time": "19:03:19.120",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1031,
+      "bytes_tx": 747911,
+      "bytes_rx": 12569175
+    },
+    {
+      "time": "19:03:20.261",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1517,
+      "bytes_tx": 748291,
+      "bytes_rx": 12569555
+    },
+    {
+      "time": "19:03:21.430",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1486,
+      "bytes_tx": 748999,
+      "bytes_rx": 12570263
+    },
+    {
+      "time": "19:03:22.545",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0889,
+      "bytes_tx": 749471,
+      "bytes_rx": 12570869
+    },
+    {
+      "time": "19:03:23.662",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1804,
+      "bytes_tx": 750231,
+      "bytes_rx": 12571629
+    },
+    {
+      "time": "19:03:24.786",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1988,
+      "bytes_tx": 750559,
+      "bytes_rx": 12571957
+    },
+    {
+      "time": "19:03:25.912",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1687,
+      "bytes_tx": 751420,
+      "bytes_rx": 12572818
+    },
+    {
+      "time": "19:03:27.077",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.17,
+      "bytes_tx": 754494,
+      "bytes_rx": 12573378
+    },
+    {
+      "time": "19:03:28.198",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 1.6688,
+      "bytes_tx": 755411,
+      "bytes_rx": 12574393
+    },
+    {
+      "time": "19:03:29.333",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0995,
+      "bytes_tx": 756261,
+      "bytes_rx": 12575239
+    },
+    {
+      "time": "19:03:30.478",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1779,
+      "bytes_tx": 756589,
+      "bytes_rx": 12575567
+    },
+    {
+      "time": "19:03:31.605",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0933,
+      "bytes_tx": 757297,
+      "bytes_rx": 12576275
+    },
+    {
+      "time": "19:03:32.768",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1903,
+      "bytes_tx": 757677,
+      "bytes_rx": 12576655
+    },
+    {
+      "time": "19:03:33.890",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1396,
+      "bytes_tx": 758437,
+      "bytes_rx": 12577415
+    },
+    {
+      "time": "19:03:35.009",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4238,
+      "bytes_tx": 766713,
+      "bytes_rx": 12578468
+    },
+    {
+      "time": "19:03:36.124",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.161,
+      "bytes_tx": 767562,
+      "bytes_rx": 12579464
+    },
+    {
+      "time": "19:03:37.280",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1976,
+      "bytes_tx": 767890,
+      "bytes_rx": 12579792
+    },
+    {
+      "time": "19:03:38.397",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.088,
+      "bytes_tx": 768690,
+      "bytes_rx": 12580592
+    },
+    {
+      "time": "19:03:39.511",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1395,
+      "bytes_tx": 769070,
+      "bytes_rx": 12580972
+    },
+    {
+      "time": "19:03:40.631",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1689,
+      "bytes_tx": 769912,
+      "bytes_rx": 12581814
+    },
+    {
+      "time": "19:03:41.753",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.142,
+      "bytes_tx": 770240,
+      "bytes_rx": 12582142
+    },
+    {
+      "time": "19:03:42.877",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1337,
+      "bytes_tx": 774048,
+      "bytes_rx": 12583476
+    },
+    {
+      "time": "19:03:43.994",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1484,
+      "bytes_tx": 774376,
+      "bytes_rx": 12583804
+    },
+    {
+      "time": "19:03:45.124",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3308,
+      "bytes_tx": 775136,
+      "bytes_rx": 12584564
+    },
+    {
+      "time": "19:03:46.245",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1542,
+      "bytes_tx": 775688,
+      "bytes_rx": 12585116
+    },
+    {
+      "time": "19:03:47.423",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.271,
+      "bytes_tx": 783801,
+      "bytes_rx": 12668704
+    },
+    {
+      "time": "19:03:48.550",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.632,
+      "bytes_tx": 784509,
+      "bytes_rx": 12669412
+    },
+    {
+      "time": "19:03:49.669",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.8043,
+      "bytes_tx": 784837,
+      "bytes_rx": 12669740
+    },
+    {
+      "time": "19:03:50.800",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.347,
+      "bytes_tx": 803265,
+      "bytes_rx": 12671332
+    },
+    {
+      "time": "19:03:51.917",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1479,
+      "bytes_tx": 803578,
+      "bytes_rx": 12671770
+    },
+    {
+      "time": "19:03:53.030",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4277,
+      "bytes_tx": 804372,
+      "bytes_rx": 12672564
+    },
+    {
+      "time": "19:03:54.193",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2391,
+      "bytes_tx": 804700,
+      "bytes_rx": 12672892
+    },
+    {
+      "time": "19:03:55.332",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1772,
+      "bytes_tx": 805356,
+      "bytes_rx": 12673548
+    },
+    {
+      "time": "19:03:56.449",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1547,
+      "bytes_tx": 809845,
+      "bytes_rx": 12676082
+    },
+    {
+      "time": "19:03:57.599",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1556,
+      "bytes_tx": 810642,
+      "bytes_rx": 12677004
+    },
+    {
+      "time": "19:03:58.788",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1585,
+      "bytes_tx": 810970,
+      "bytes_rx": 12677332
+    },
+    {
+      "time": "19:03:59.917",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1941,
+      "bytes_tx": 811678,
+      "bytes_rx": 12678040
+    },
+    {
+      "time": "19:04:01.040",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.149,
+      "bytes_tx": 812058,
+      "bytes_rx": 12678420
+    },
+    {
+      "time": "19:04:02.157",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1442,
+      "bytes_tx": 812818,
+      "bytes_rx": 12679180
+    },
+    {
+      "time": "19:04:03.276",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1424,
+      "bytes_tx": 813198,
+      "bytes_rx": 12679560
+    },
+    {
+      "time": "19:04:04.390",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3719,
+      "bytes_tx": 813906,
+      "bytes_rx": 12680268
+    },
+    {
+      "time": "19:04:05.512",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3084,
+      "bytes_tx": 814286,
+      "bytes_rx": 12680648
+    },
+    {
+      "time": "19:04:06.664",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1731,
+      "bytes_tx": 814994,
+      "bytes_rx": 12681356
+    },
+    {
+      "time": "19:04:07.799",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1639,
+      "bytes_tx": 818605,
+      "bytes_rx": 12682551
+    },
+    {
+      "time": "19:04:08.915",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3681,
+      "bytes_tx": 818985,
+      "bytes_rx": 12682931
+    },
+    {
+      "time": "19:04:10.069",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1638,
+      "bytes_tx": 819641,
+      "bytes_rx": 12683587
+    },
+    {
+      "time": "19:04:11.202",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3745,
+      "bytes_tx": 820021,
+      "bytes_rx": 12683967
+    },
+    {
+      "time": "19:04:12.322",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3502,
+      "bytes_tx": 820677,
+      "bytes_rx": 12684623
+    },
+    {
+      "time": "19:04:13.436",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1818,
+      "bytes_tx": 821109,
+      "bytes_rx": 12685055
+    },
+    {
+      "time": "19:04:14.561",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2363,
+      "bytes_tx": 822116,
+      "bytes_rx": 12686089
+    },
+    {
+      "time": "19:04:15.677",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1548,
+      "bytes_tx": 822496,
+      "bytes_rx": 12686469
+    },
+    {
+      "time": "19:04:16.793",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2803,
+      "bytes_tx": 823256,
+      "bytes_rx": 12687229
+    },
+    {
+      "time": "19:04:17.907",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1851,
+      "bytes_tx": 826385,
+      "bytes_rx": 12687849
+    },
+    {
+      "time": "19:04:19.025",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3613,
+      "bytes_tx": 827446,
+      "bytes_rx": 12689008
+    },
+    {
+      "time": "19:04:20.140",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.171,
+      "bytes_tx": 827774,
+      "bytes_rx": 12689336
+    },
+    {
+      "time": "19:04:21.261",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1817,
+      "bytes_tx": 828534,
+      "bytes_rx": 12690096
+    },
+    {
+      "time": "19:04:22.396",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1566,
+      "bytes_tx": 828914,
+      "bytes_rx": 12690476
+    },
+    {
+      "time": "19:04:23.512",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1863,
+      "bytes_tx": 829726,
+      "bytes_rx": 12691288
+    },
+    {
+      "time": "19:04:24.639",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1673,
+      "bytes_tx": 830106,
+      "bytes_rx": 12691668
+    },
+    {
+      "time": "19:04:25.754",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1628,
+      "bytes_tx": 830896,
+      "bytes_rx": 12692458
+    },
+    {
+      "time": "19:04:26.869",
+      "connections": 81,
+      "cpu_pct": 10.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3625,
+      "bytes_tx": 831604,
+      "bytes_rx": 12693166
+    },
+    {
+      "time": "19:04:28.012",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1809,
+      "bytes_tx": 832275,
+      "bytes_rx": 12693786
+    },
+    {
+      "time": "19:04:29.286",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1816,
+      "bytes_tx": 836548,
+      "bytes_rx": 12695539
+    },
+    {
+      "time": "19:04:30.402",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1587,
+      "bytes_tx": 836928,
+      "bytes_rx": 12695919
+    },
+    {
+      "time": "19:04:31.520",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1575,
+      "bytes_tx": 837688,
+      "bytes_rx": 12696679
+    },
+    {
+      "time": "19:04:32.638",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1831,
+      "bytes_tx": 838068,
+      "bytes_rx": 12697059
+    },
+    {
+      "time": "19:04:33.764",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1652,
+      "bytes_tx": 838850,
+      "bytes_rx": 12697841
+    },
+    {
+      "time": "19:04:34.899",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1694,
+      "bytes_tx": 839230,
+      "bytes_rx": 12698221
+    },
+    {
+      "time": "19:04:36.027",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2131,
+      "bytes_tx": 840082,
+      "bytes_rx": 12699073
+    },
+    {
+      "time": "19:04:37.141",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.8286,
+      "bytes_tx": 840462,
+      "bytes_rx": 12699453
+    },
+    {
+      "time": "19:04:38.269",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1618,
+      "bytes_tx": 841274,
+      "bytes_rx": 12700265
+    },
+    {
+      "time": "19:04:39.384",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.284,
+      "bytes_tx": 847028,
+      "bytes_rx": 12701133
+    },
+    {
+      "time": "19:04:40.502",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.167,
+      "bytes_tx": 847893,
+      "bytes_rx": 12702003
+    },
+    {
+      "time": "19:04:41.630",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1881,
+      "bytes_tx": 848273,
+      "bytes_rx": 12702383
+    },
+    {
+      "time": "19:04:42.749",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1914,
+      "bytes_tx": 848981,
+      "bytes_rx": 12703091
+    },
+    {
+      "time": "19:04:43.868",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.8407,
+      "bytes_tx": 849689,
+      "bytes_rx": 12703799
+    },
+    {
+      "time": "19:04:45.006",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1641,
+      "bytes_tx": 850017,
+      "bytes_rx": 12704127
+    },
+    {
+      "time": "19:04:46.122",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1362,
+      "bytes_tx": 850673,
+      "bytes_rx": 12704783
+    },
+    {
+      "time": "19:04:47.239",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3077,
+      "bytes_tx": 851053,
+      "bytes_rx": 12705163
+    },
+    {
+      "time": "19:04:48.356",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0871,
+      "bytes_tx": 851709,
+      "bytes_rx": 12705819
+    },
+    {
+      "time": "19:04:49.472",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1061,
+      "bytes_tx": 852089,
+      "bytes_rx": 12706199
+    },
+    {
+      "time": "19:04:50.595",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1282,
+      "bytes_tx": 855649,
+      "bytes_rx": 12707342
+    },
+    {
+      "time": "19:04:51.712",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1393,
+      "bytes_tx": 855977,
+      "bytes_rx": 12707670
+    },
+    {
+      "time": "19:04:52.826",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1531,
+      "bytes_tx": 856633,
+      "bytes_rx": 12708326
+    },
+    {
+      "time": "19:04:53.942",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0917,
+      "bytes_tx": 856961,
+      "bytes_rx": 12708654
+    },
+    {
+      "time": "19:04:55.057",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1506,
+      "bytes_tx": 857617,
+      "bytes_rx": 12709310
+    },
+    {
+      "time": "19:04:56.186",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1638,
+      "bytes_tx": 857945,
+      "bytes_rx": 12709638
+    },
+    {
+      "time": "19:04:57.300",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4516,
+      "bytes_tx": 858653,
+      "bytes_rx": 12710346
+    },
+    {
+      "time": "19:04:58.417",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1607,
+      "bytes_tx": 859033,
+      "bytes_rx": 12710726
+    },
+    {
+      "time": "19:04:59.536",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1557,
+      "bytes_tx": 859741,
+      "bytes_rx": 12711434
+    },
+    {
+      "time": "19:05:00.651",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.0928,
+      "bytes_tx": 864548,
+      "bytes_rx": 12714280
+    },
+    {
+      "time": "19:05:01.793",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1086,
+      "bytes_tx": 866357,
+      "bytes_rx": 12716350
+    },
+    {
+      "time": "19:05:02.911",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.284,
+      "bytes_tx": 869959,
+      "bytes_rx": 12722459
+    },
+    {
+      "time": "19:05:04.028",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.141,
+      "bytes_tx": 878178,
+      "bytes_rx": 12723629
+    },
+    {
+      "time": "19:05:05.143",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1513,
+      "bytes_tx": 879270,
+      "bytes_rx": 12724790
+    },
+    {
+      "time": "19:05:06.265",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3394,
+      "bytes_tx": 879598,
+      "bytes_rx": 12725118
+    },
+    {
+      "time": "19:05:07.394",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1796,
+      "bytes_tx": 888085,
+      "bytes_rx": 12726452
+    },
+    {
+      "time": "19:05:08.547",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1779,
+      "bytes_tx": 888465,
+      "bytes_rx": 12726832
+    },
+    {
+      "time": "19:05:09.663",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1169,
+      "bytes_tx": 889403,
+      "bytes_rx": 12727770
+    },
+    {
+      "time": "19:05:10.827",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2024,
+      "bytes_tx": 889857,
+      "bytes_rx": 12728224
+    },
+    {
+      "time": "19:05:12.033",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.175,
+      "bytes_tx": 893280,
+      "bytes_rx": 12729266
+    },
+    {
+      "time": "19:05:13.157",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.2219,
+      "bytes_tx": 893608,
+      "bytes_rx": 12729594
+    },
+    {
+      "time": "19:05:14.276",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.222,
+      "bytes_tx": 894671,
+      "bytes_rx": 12730535
+    },
+    {
+      "time": "19:05:15.403",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1754,
+      "bytes_tx": 894999,
+      "bytes_rx": 12730863
+    },
+    {
+      "time": "19:05:16.597",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1137,
+      "bytes_tx": 895655,
+      "bytes_rx": 12731519
+    },
+    {
+      "time": "19:05:17.717",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.301,
+      "bytes_tx": 896637,
+      "bytes_rx": 12732564
+    },
+    {
+      "time": "19:05:18.869",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1798,
+      "bytes_tx": 896965,
+      "bytes_rx": 12732892
+    },
+    {
+      "time": "19:05:19.986",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.3673,
+      "bytes_tx": 897673,
+      "bytes_rx": 12733600
+    },
+    {
+      "time": "19:05:21.128",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1523,
+      "bytes_tx": 898001,
+      "bytes_rx": 12733928
+    },
+    {
+      "time": "19:05:22.241",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1634,
+      "bytes_tx": 901612,
+      "bytes_rx": 12735123
+    },
+    {
+      "time": "19:05:23.361",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.153,
+      "bytes_tx": 901940,
+      "bytes_rx": 12735451
+    },
+    {
+      "time": "19:05:24.476",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.4998,
+      "bytes_tx": 902648,
+      "bytes_rx": 12736159
+    },
+    {
+      "time": "19:05:25.598",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1857,
+      "bytes_tx": 904026,
+      "bytes_rx": 12737329
+    },
+    {
+      "time": "19:05:26.713",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.1514,
+      "bytes_tx": 912053,
+      "bytes_rx": 12751698
+    },
+    {
+      "time": "19:05:27.835",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.8,
+      "latency_ms": 0.5869,
+      "bytes_tx": 919387,
+      "bytes_rx": 12769699
+    },
+    {
+      "time": "19:05:28.963",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.2589,
+      "bytes_tx": 920234,
+      "bytes_rx": 12772857
+    },
+    {
+      "time": "19:05:30.101",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 4.0334,
+      "bytes_tx": 934441,
+      "bytes_rx": 12774241
+    },
+    {
+      "time": "19:05:31.225",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.162,
+      "bytes_tx": 934993,
+      "bytes_rx": 12774793
+    },
+    {
+      "time": "19:05:32.363",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1622,
+      "bytes_tx": 935321,
+      "bytes_rx": 12775121
+    },
+    {
+      "time": "19:05:33.482",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1217,
+      "bytes_tx": 936029,
+      "bytes_rx": 12775829
+    },
+    {
+      "time": "19:05:34.607",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1764,
+      "bytes_tx": 939773,
+      "bytes_rx": 12777805
+    },
+    {
+      "time": "19:05:35.731",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.2767,
+      "bytes_tx": 940429,
+      "bytes_rx": 12778461
+    },
+    {
+      "time": "19:05:36.847",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 4.9614,
+      "bytes_tx": 941085,
+      "bytes_rx": 12779117
+    },
+    {
+      "time": "19:05:37.973",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.2083,
+      "bytes_tx": 941465,
+      "bytes_rx": 12779497
+    },
+    {
+      "time": "19:05:39.099",
+      "connections": 87,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1224,
+      "bytes_tx": 942173,
+      "bytes_rx": 12780205
+    },
+    {
+      "time": "19:05:40.218",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1594,
+      "bytes_tx": 942553,
+      "bytes_rx": 12780585
+    },
+    {
+      "time": "19:05:41.363",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1764,
+      "bytes_tx": 943383,
+      "bytes_rx": 12781437
+    },
+    {
+      "time": "19:05:42.489",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1685,
+      "bytes_tx": 944085,
+      "bytes_rx": 12782190
+    },
+    {
+      "time": "19:05:43.617",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.4247,
+      "bytes_tx": 944741,
+      "bytes_rx": 12782846
+    },
+    {
+      "time": "19:05:44.760",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.2528,
+      "bytes_tx": 945069,
+      "bytes_rx": 12783174
+    },
+    {
+      "time": "19:05:45.885",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.2037,
+      "bytes_tx": 945777,
+      "bytes_rx": 12783882
+    },
+    {
+      "time": "19:05:47.015",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.25,
+      "bytes_tx": 946157,
+      "bytes_rx": 12784262
+    },
+    {
+      "time": "19:05:48.135",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.2288,
+      "bytes_tx": 946813,
+      "bytes_rx": 12784918
+    },
+    {
+      "time": "19:05:49.255",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1554,
+      "bytes_tx": 947193,
+      "bytes_rx": 12785298
+    },
+    {
+      "time": "19:05:50.384",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1689,
+      "bytes_tx": 947953,
+      "bytes_rx": 12786058
+    },
+    {
+      "time": "19:05:51.509",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.207,
+      "bytes_tx": 948281,
+      "bytes_rx": 12786386
+    },
+    {
+      "time": "19:05:52.637",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1507,
+      "bytes_tx": 949041,
+      "bytes_rx": 12787146
+    },
+    {
+      "time": "19:05:53.769",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.4484,
+      "bytes_tx": 949369,
+      "bytes_rx": 12787474
+    },
+    {
+      "time": "19:05:54.897",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.358,
+      "bytes_tx": 950325,
+      "bytes_rx": 12788430
+    },
+    {
+      "time": "19:05:56.019",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1875,
+      "bytes_tx": 950929,
+      "bytes_rx": 12789034
+    },
+    {
+      "time": "19:05:57.139",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1651,
+      "bytes_tx": 951309,
+      "bytes_rx": 12789414
+    },
+    {
+      "time": "19:05:58.274",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.2039,
+      "bytes_tx": 952257,
+      "bytes_rx": 12790473
+    },
+    {
+      "time": "19:05:59.397",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.2442,
+      "bytes_tx": 952993,
+      "bytes_rx": 12791086
+    },
+    {
+      "time": "19:06:00.517",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1093,
+      "bytes_tx": 953845,
+      "bytes_rx": 12791938
+    },
+    {
+      "time": "19:06:01.643",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1929,
+      "bytes_tx": 954277,
+      "bytes_rx": 12792370
+    },
+    {
+      "time": "19:06:02.772",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1347,
+      "bytes_tx": 954985,
+      "bytes_rx": 12793078
+    },
+    {
+      "time": "19:06:03.932",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.81,
+      "latency_ms": 0.1003,
+      "bytes_tx": 955365,
+      "bytes_rx": 12793458
+    },
+    {
+      "time": "19:06:05.049",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.0986,
+      "bytes_tx": 957011,
+      "bytes_rx": 12794677
+    },
+    {
+      "time": "19:06:06.174",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1247,
+      "bytes_tx": 957391,
+      "bytes_rx": 12795057
+    },
+    {
+      "time": "19:06:07.302",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.0934,
+      "bytes_tx": 958099,
+      "bytes_rx": 12795765
+    },
+    {
+      "time": "19:06:08.419",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1038,
+      "bytes_tx": 976329,
+      "bytes_rx": 12799186
+    },
+    {
+      "time": "19:06:09.539",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.3273,
+      "bytes_tx": 977089,
+      "bytes_rx": 12799946
+    },
+    {
+      "time": "19:06:10.653",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.0966,
+      "bytes_tx": 981603,
+      "bytes_rx": 12806883
+    },
+    {
+      "time": "19:06:11.780",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1675,
+      "bytes_tx": 982311,
+      "bytes_rx": 12807591
+    },
+    {
+      "time": "19:06:12.900",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2417,
+      "bytes_tx": 982639,
+      "bytes_rx": 12807919
+    },
+    {
+      "time": "19:06:14.019",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1491,
+      "bytes_tx": 983295,
+      "bytes_rx": 12808575
+    },
+    {
+      "time": "19:06:15.148",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.3523,
+      "bytes_tx": 986748,
+      "bytes_rx": 12809677
+    },
+    {
+      "time": "19:06:16.265",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1071,
+      "bytes_tx": 987128,
+      "bytes_rx": 12810057
+    },
+    {
+      "time": "19:06:17.386",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.3512,
+      "bytes_tx": 995414,
+      "bytes_rx": 12811125
+    },
+    {
+      "time": "19:06:18.524",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2474,
+      "bytes_tx": 995802,
+      "bytes_rx": 12811607
+    },
+    {
+      "time": "19:06:19.649",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1628,
+      "bytes_tx": 996510,
+      "bytes_rx": 12812315
+    },
+    {
+      "time": "19:06:20.769",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1541,
+      "bytes_tx": 996942,
+      "bytes_rx": 12812747
+    },
+    {
+      "time": "19:06:21.884",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1694,
+      "bytes_tx": 997650,
+      "bytes_rx": 12813455
+    },
+    {
+      "time": "19:06:22.999",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1996,
+      "bytes_tx": 998030,
+      "bytes_rx": 12813835
+    },
+    {
+      "time": "19:06:24.117",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 1.572,
+      "bytes_tx": 1007412,
+      "bytes_rx": 12832565
+    },
+    {
+      "time": "19:06:25.248",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1378,
+      "bytes_tx": 1007636,
+      "bytes_rx": 12832789
+    },
+    {
+      "time": "19:06:26.371",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.0986,
+      "bytes_tx": 1008344,
+      "bytes_rx": 12833497
+    },
+    {
+      "time": "19:06:27.550",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.4941,
+      "bytes_tx": 1013970,
+      "bytes_rx": 12834125
+    },
+    {
+      "time": "19:06:28.664",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2496,
+      "bytes_tx": 1014887,
+      "bytes_rx": 12835130
+    },
+    {
+      "time": "19:06:29.791",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.5928,
+      "bytes_tx": 1015267,
+      "bytes_rx": 12835510
+    },
+    {
+      "time": "19:06:30.922",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1759,
+      "bytes_tx": 1016027,
+      "bytes_rx": 12836270
+    },
+    {
+      "time": "19:06:32.044",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1486,
+      "bytes_tx": 1016407,
+      "bytes_rx": 12836650
+    },
+    {
+      "time": "19:06:33.163",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.614,
+      "bytes_tx": 1017167,
+      "bytes_rx": 12837410
+    },
+    {
+      "time": "19:06:34.283",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.0974,
+      "bytes_tx": 1017495,
+      "bytes_rx": 12837738
+    },
+    {
+      "time": "19:06:35.411",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.0954,
+      "bytes_tx": 1018255,
+      "bytes_rx": 12838498
+    },
+    {
+      "time": "19:06:36.547",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1049,
+      "bytes_tx": 1018963,
+      "bytes_rx": 12839206
+    },
+    {
+      "time": "19:06:37.679",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2144,
+      "bytes_tx": 1027010,
+      "bytes_rx": 12840160
+    },
+    {
+      "time": "19:06:38.796",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.0905,
+      "bytes_tx": 1027912,
+      "bytes_rx": 12841058
+    },
+    {
+      "time": "19:06:39.911",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1775,
+      "bytes_tx": 1028292,
+      "bytes_rx": 12841438
+    },
+    {
+      "time": "19:06:41.028",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.187,
+      "bytes_tx": 1029092,
+      "bytes_rx": 12842238
+    },
+    {
+      "time": "19:06:42.143",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2042,
+      "bytes_tx": 1029420,
+      "bytes_rx": 12842566
+    },
+    {
+      "time": "19:06:43.263",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1914,
+      "bytes_tx": 1030128,
+      "bytes_rx": 12843274
+    },
+    {
+      "time": "19:06:44.379",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.369,
+      "bytes_tx": 1030864,
+      "bytes_rx": 12843886
+    },
+    {
+      "time": "19:06:45.507",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2138,
+      "bytes_tx": 1031572,
+      "bytes_rx": 12844594
+    },
+    {
+      "time": "19:06:46.655",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1533,
+      "bytes_tx": 1034556,
+      "bytes_rx": 12845102
+    },
+    {
+      "time": "19:06:47.779",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.4352,
+      "bytes_tx": 1035353,
+      "bytes_rx": 12846024
+    },
+    {
+      "time": "19:06:48.918",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.19,
+      "bytes_tx": 1035681,
+      "bytes_rx": 12846352
+    },
+    {
+      "time": "19:06:50.035",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1887,
+      "bytes_tx": 1036337,
+      "bytes_rx": 12847008
+    },
+    {
+      "time": "19:06:51.152",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1706,
+      "bytes_tx": 1036717,
+      "bytes_rx": 12847388
+    },
+    {
+      "time": "19:06:52.272",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2071,
+      "bytes_tx": 1037477,
+      "bytes_rx": 12848148
+    },
+    {
+      "time": "19:06:53.389",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1861,
+      "bytes_tx": 1037917,
+      "bytes_rx": 12848588
+    },
+    {
+      "time": "19:06:54.504",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2265,
+      "bytes_tx": 1038625,
+      "bytes_rx": 12849296
+    },
+    {
+      "time": "19:06:55.623",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1823,
+      "bytes_tx": 1038953,
+      "bytes_rx": 12849624
+    },
+    {
+      "time": "19:06:56.739",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.4161,
+      "bytes_tx": 1039661,
+      "bytes_rx": 12850332
+    },
+    {
+      "time": "19:06:57.858",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2989,
+      "bytes_tx": 1042944,
+      "bytes_rx": 12851199
+    },
+    {
+      "time": "19:06:58.978",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.4383,
+      "bytes_tx": 1043600,
+      "bytes_rx": 12851855
+    },
+    {
+      "time": "19:07:00.109",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.4519,
+      "bytes_tx": 1043980,
+      "bytes_rx": 12852235
+    },
+    {
+      "time": "19:07:01.232",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1775,
+      "bytes_tx": 1044740,
+      "bytes_rx": 12852995
+    },
+    {
+      "time": "19:07:02.352",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.149,
+      "bytes_tx": 1045448,
+      "bytes_rx": 12853703
+    },
+    {
+      "time": "19:07:03.467",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1268,
+      "bytes_tx": 1045828,
+      "bytes_rx": 12854083
+    },
+    {
+      "time": "19:07:04.615",
+      "connections": 86,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1926,
+      "bytes_tx": 1046484,
+      "bytes_rx": 12854739
+    },
+    {
+      "time": "19:07:05.734",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1089,
+      "bytes_tx": 1046864,
+      "bytes_rx": 12855119
+    },
+    {
+      "time": "19:07:06.859",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1776,
+      "bytes_tx": 1047572,
+      "bytes_rx": 12855827
+    },
+    {
+      "time": "19:07:07.979",
+      "connections": 85,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2171,
+      "bytes_tx": 1052219,
+      "bytes_rx": 12858585
+    },
+    {
+      "time": "19:07:09.093",
+      "connections": 87,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.181,
+      "bytes_tx": 1053188,
+      "bytes_rx": 12859559
+    },
+    {
+      "time": "19:07:10.216",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1654,
+      "bytes_tx": 1053516,
+      "bytes_rx": 12859887
+    },
+    {
+      "time": "19:07:11.350",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1923,
+      "bytes_tx": 1054368,
+      "bytes_rx": 12860739
+    },
+    {
+      "time": "19:07:12.472",
+      "connections": 84,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.193,
+      "bytes_tx": 1054748,
+      "bytes_rx": 12861119
+    },
+    {
+      "time": "19:07:13.679",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1811,
+      "bytes_tx": 1055456,
+      "bytes_rx": 12861827
+    },
+    {
+      "time": "19:07:14.858",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1139,
+      "bytes_tx": 1055928,
+      "bytes_rx": 12862299
+    },
+    {
+      "time": "19:07:16.020",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.3898,
+      "bytes_tx": 1056584,
+      "bytes_rx": 12862955
+    },
+    {
+      "time": "19:07:17.478",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2456,
+      "bytes_tx": 1057344,
+      "bytes_rx": 12863715
+    },
+    {
+      "time": "19:07:18.616",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.5413,
+      "bytes_tx": 1060479,
+      "bytes_rx": 12864368
+    },
+    {
+      "time": "19:07:19.734",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.3899,
+      "bytes_tx": 1061284,
+      "bytes_rx": 12865238
+    },
+    {
+      "time": "19:07:20.850",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1576,
+      "bytes_tx": 1061612,
+      "bytes_rx": 12865566
+    },
+    {
+      "time": "19:07:21.971",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.3852,
+      "bytes_tx": 1062320,
+      "bytes_rx": 12866274
+    },
+    {
+      "time": "19:07:23.101",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1655,
+      "bytes_tx": 1062700,
+      "bytes_rx": 12866654
+    },
+    {
+      "time": "19:07:24.218",
+      "connections": 82,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1626,
+      "bytes_tx": 1063356,
+      "bytes_rx": 12867310
+    },
+    {
+      "time": "19:07:25.338",
+      "connections": 83,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.3781,
+      "bytes_tx": 1064042,
+      "bytes_rx": 12867996
+    },
+    {
+      "time": "19:07:26.508",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1748,
+      "bytes_tx": 1064944,
+      "bytes_rx": 12868764
+    },
+    {
+      "time": "19:07:27.626",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1926,
+      "bytes_tx": 1065416,
+      "bytes_rx": 12869236
+    },
+    {
+      "time": "19:07:28.744",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1647,
+      "bytes_tx": 1068973,
+      "bytes_rx": 12870442
+    },
+    {
+      "time": "19:07:29.861",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2218,
+      "bytes_tx": 1069739,
+      "bytes_rx": 12870968
+    },
+    {
+      "time": "19:07:30.982",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1956,
+      "bytes_tx": 1070559,
+      "bytes_rx": 12871900
+    },
+    {
+      "time": "19:07:32.149",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.3122,
+      "bytes_tx": 1070887,
+      "bytes_rx": 12872228
+    },
+    {
+      "time": "19:07:33.300",
+      "connections": 81,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.185,
+      "bytes_tx": 1071739,
+      "bytes_rx": 12873080
+    },
+    {
+      "time": "19:07:34.436",
+      "connections": 75,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1558,
+      "bytes_tx": 1072211,
+      "bytes_rx": 12873552
+    },
+    {
+      "time": "19:07:35.551",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.2531,
+      "bytes_tx": 1072971,
+      "bytes_rx": 12874312
+    },
+    {
+      "time": "19:07:36.688",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.413,
+      "bytes_tx": 1073299,
+      "bytes_rx": 12874640
+    },
+    {
+      "time": "19:07:37.810",
+      "connections": 80,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1839,
+      "bytes_tx": 1074015,
+      "bytes_rx": 12875356
+    },
+    {
+      "time": "19:07:38.926",
+      "connections": 75,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1719,
+      "bytes_tx": 1074395,
+      "bytes_rx": 12875736
+    },
+    {
+      "time": "19:07:40.043",
+      "connections": 77,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1559,
+      "bytes_tx": 1078061,
+      "bytes_rx": 12876991
+    },
+    {
+      "time": "19:07:41.174",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.3246,
+      "bytes_tx": 1078821,
+      "bytes_rx": 12877751
+    },
+    {
+      "time": "19:07:42.293",
+      "connections": 76,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.3989,
+      "bytes_tx": 1079149,
+      "bytes_rx": 12878079
+    },
+    {
+      "time": "19:07:43.540",
+      "connections": 78,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.1547,
+      "bytes_tx": 1079857,
+      "bytes_rx": 12878787
+    },
+    {
+      "time": "19:07:44.661",
+      "connections": 79,
+      "cpu_pct": 0.0,
+      "mem_mb": 8.82,
+      "latency_ms": 0.3668,
+      "bytes_tx": 1080237,
+      "bytes_rx": 12879167
+    }
+  ]
+}

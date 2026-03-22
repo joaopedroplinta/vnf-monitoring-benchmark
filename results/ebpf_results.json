@@ -1,0 +1,315 @@
+{
+  "collector": "ebpf",
+  "timestamp": "2026-03-22T19:07:47.551766",
+  "duration_s": 900.17,
+  "connections": 1207,
+  "bytes_tx": 96,
+  "bytes_rx": 0,
+  "latency_avg_ms": 0,
+  "latency_max_ms": 0,
+  "latency_min_ms": 0,
+  "cpu_avg_pct": 0.0,
+  "mem_avg_mb": 8.81,
+  "samples": [
+    {
+      "time": "19:06:55.100",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1138
+    },
+    {
+      "time": "19:06:56.154",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1140
+    },
+    {
+      "time": "19:06:57.254",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1141
+    },
+    {
+      "time": "19:06:58.302",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1143
+    },
+    {
+      "time": "19:06:59.364",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1144
+    },
+    {
+      "time": "19:07:00.428",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1146
+    },
+    {
+      "time": "19:07:01.476",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1147
+    },
+    {
+      "time": "19:07:02.525",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1149
+    },
+    {
+      "time": "19:07:03.606",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1149
+    },
+    {
+      "time": "19:07:04.692",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1151
+    },
+    {
+      "time": "19:07:05.748",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1152
+    },
+    {
+      "time": "19:07:06.807",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1154
+    },
+    {
+      "time": "19:07:07.855",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1155
+    },
+    {
+      "time": "19:07:08.904",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1157
+    },
+    {
+      "time": "19:07:09.951",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1158
+    },
+    {
+      "time": "19:07:11.003",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1160
+    },
+    {
+      "time": "19:07:12.059",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1161
+    },
+    {
+      "time": "19:07:13.108",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1162
+    },
+    {
+      "time": "19:07:14.158",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1164
+    },
+    {
+      "time": "19:07:15.210",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1165
+    },
+    {
+      "time": "19:07:16.270",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1167
+    },
+    {
+      "time": "19:07:17.542",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1167
+    },
+    {
+      "time": "19:07:18.589",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1169
+    },
+    {
+      "time": "19:07:19.689",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1170
+    },
+    {
+      "time": "19:07:20.900",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1172
+    },
+    {
+      "time": "19:07:22.012",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1174
+    },
+    {
+      "time": "19:07:23.083",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1175
+    },
+    {
+      "time": "19:07:24.171",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1176
+    },
+    {
+      "time": "19:07:25.232",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1178
+    },
+    {
+      "time": "19:07:26.286",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1179
+    },
+    {
+      "time": "19:07:27.332",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1181
+    },
+    {
+      "time": "19:07:28.408",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1182
+    },
+    {
+      "time": "19:07:29.455",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1184
+    },
+    {
+      "time": "19:07:30.507",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1185
+    },
+    {
+      "time": "19:07:31.605",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1187
+    },
+    {
+      "time": "19:07:32.655",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1188
+    },
+    {
+      "time": "19:07:33.750",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1190
+    },
+    {
+      "time": "19:07:34.805",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1191
+    },
+    {
+      "time": "19:07:35.890",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1193
+    },
+    {
+      "time": "19:07:36.938",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1194
+    },
+    {
+      "time": "19:07:37.985",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1196
+    },
+    {
+      "time": "19:07:39.045",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1197
+    },
+    {
+      "time": "19:07:40.105",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1198
+    },
+    {
+      "time": "19:07:41.166",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1199
+    },
+    {
+      "time": "19:07:42.222",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1201
+    },
+    {
+      "time": "19:07:43.283",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1202
+    },
+    {
+      "time": "19:07:44.343",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1204
+    },
+    {
+      "time": "19:07:45.390",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1205
+    },
+    {
+      "time": "19:07:46.445",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1207
+    },
+    {
+      "time": "19:07:47.547",
+      "bytes_tx": 96,
+      "bytes_rx": 0,
+      "connections": 1207
+    }
+  ]
+}

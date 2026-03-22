@@ -1,14 +1,8 @@
 #!/usr/bin/python3
 """
-Coletor eBPF — TCC Gerenciamento de Rede
-Métricas: CPU (%), Memória RSS, Latência, Bytes TX/RX, Conexões
-Porta monitorada: 9999
-
-Correções v2:
-- CPU calculado via /proc/<pid>/stat (userspace) em vez de task_struct
-- Memória via /proc/<pid>/status (userspace) em vez de mm_struct
-- Latência filtrada por PID do processo servidor na porta 9999
-- Bytes capturados pelo retorno das syscalls (valor real transferido)
+Coletor eBPF v3 — TCC Gerenciamento de Rede
+Usa BPF_HASH (polling) em vez de BPF_PERF_OUTPUT (incompatível com este kernel)
+Métricas: CPU, Memória, Latência, Bytes TX/RX, Conexões — porta 9999
 """
 
 from bcc import BPF
@@ -16,33 +10,22 @@ import ctypes as ct
 import time, os, json, psutil
 from datetime import datetime
 
-# ─── Programa eBPF ────────────────────────────────────────────────────────────
-# Foca apenas em rastrear conexões TCP e latência send→recv na porta 9999
-# CPU e memória são lidos via psutil no userspace (mais confiável)
+# ─── Programa eBPF — usa apenas BPF_HASH ─────────────────────────────────────
 bpf_program = """
 #include <uapi/linux/ptrace.h>
 #include <net/sock.h>
 #include <net/inet_sock.h>
-#include <bcc/proto.h>
 
 #define TARGET_PORT 9999
 
-struct event_t {
-    u32  pid;
-    u64  timestamp_ns;
-    u64  latency_ns;
-    u64  bytes_count;
-    u16  dport;
-    u16  sport;
-    u8   event_type;   // 1=connect 2=send 3=recv
-    char comm[16];
-};
+// Mapas de métricas — lidos por polling do Python
+BPF_HASH(conn_count,   u32, u64);  // key=0 → total conexões
+BPF_HASH(bytes_tx_map, u32, u64);  // key=pid → bytes enviados
+BPF_HASH(bytes_rx_map, u32, u64);  // key=pid → bytes recebidos
+BPF_HASH(send_ts,      u32, u64);  // key=pid → timestamp do send
+BPF_HASH(latency_map,  u32, u64);  // key=pid → última latência (ns)
+BPF_HASH(pid_filter,   u32, u8);   // PIDs conectados à porta 9999
 
-BPF_HASH(send_ts,    u32, u64);   // pid → timestamp do send
-BPF_HASH(pid_filter, u32, u8);    // PIDs que se conectaram à porta 9999
-BPF_PERF_OUTPUT(events);
-
-// Rastreia novas conexões TCP à porta 9999
 int trace_connect(struct pt_regs *ctx, struct sock *sk) {
     u16 dport = 0;
     bpf_probe_read_kernel(&dport, sizeof(dport),
@@ -51,89 +34,61 @@ int trace_connect(struct pt_regs *ctx, struct sock *sk) {
 
     u32 pid = bpf_get_current_pid_tgid() >> 32;
     u8  one = 1;
-    pid_filter.update(&pid, &one);   // marca PID como relevante
+    pid_filter.update(&pid, &one);
 
-    struct event_t e = {};
-    e.pid          = pid;
-    e.timestamp_ns = bpf_ktime_get_ns();
-    e.event_type   = 1;
-    e.dport        = TARGET_PORT;
+    u32 key  = 0;
+    u64 zero = 0, *cnt;
+    cnt = conn_count.lookup_or_try_init(&key, &zero);
+    if (cnt) (*cnt)++;
 
-    struct inet_sock *inet = (struct inet_sock *)sk;
-    bpf_probe_read_kernel(&e.sport, sizeof(e.sport), &inet->inet_sport);
-    e.sport = ntohs(e.sport);
-
-    bpf_get_current_comm(&e.comm, sizeof(e.comm));
-    events.perf_submit(ctx, &e, sizeof(e));
     return 0;
 }
 
-// Rastreia send — marca timestamp para medir latência
 int trace_send(struct pt_regs *ctx) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
-
-    // Só rastreia PIDs que já fizeram conexão à porta 9999
-    u8 *ok = pid_filter.lookup(&pid);
+    u8 *ok  = pid_filter.lookup(&pid);
     if (!ok) return 0;
 
-    u64 ts = bpf_ktime_get_ns();
+    u64 ts   = bpf_ktime_get_ns();
+    u64 size = (u64)PT_REGS_PARM3(ctx);
+    u64 zero = 0, *acc;
+
     send_ts.update(&pid, &ts);
 
-    // Bytes enviados: arg3 do sendto é o tamanho do buffer
-    u64 size = (u64)PT_REGS_PARM3(ctx);
+    acc = bytes_tx_map.lookup_or_try_init(&pid, &zero);
+    if (acc) (*acc) += size;
 
-    struct event_t e = {};
-    e.pid          = pid;
-    e.timestamp_ns = ts;
-    e.event_type   = 2;
-    e.dport        = TARGET_PORT;
-    e.bytes_count  = size;
-    bpf_get_current_comm(&e.comm, sizeof(e.comm));
-    events.perf_submit(ctx, &e, sizeof(e));
     return 0;
 }
 
-// Rastreia recvfrom — calcula latência desde o último send
 int trace_recv(struct pt_regs *ctx) {
-    u32 pid = bpf_get_current_pid_tgid() >> 32;
-
-    u8 *ok = pid_filter.lookup(&pid);
+    u32 pid    = bpf_get_current_pid_tgid() >> 32;
+    u8 *ok     = pid_filter.lookup(&pid);
     if (!ok) return 0;
 
-    u64 now   = bpf_ktime_get_ns();
-    u64 *start = send_ts.lookup(&pid);
-    u64 size  = (u64)PT_REGS_PARM3(ctx);
+    u64 now    = bpf_ktime_get_ns();
+    u64 size   = (u64)PT_REGS_PARM3(ctx);
+    u64 zero   = 0, *acc, *start;
 
-    struct event_t e = {};
-    e.pid          = pid;
-    e.timestamp_ns = now;
-    e.event_type   = 3;
-    e.dport        = TARGET_PORT;
-    e.bytes_count  = size;
+    acc = bytes_rx_map.lookup_or_try_init(&pid, &zero);
+    if (acc) (*acc) += size;
 
-    if (start) {
-        e.latency_ns = now - *start;
+    start = send_ts.lookup(&pid);
+    if (start && now > *start) {
+        u64 lat = now - *start;
+        latency_map.update(&pid, &lat);
         send_ts.delete(&pid);
     }
 
-    bpf_get_current_comm(&e.comm, sizeof(e.comm));
-    events.perf_submit(ctx, &e, sizeof(e));
     return 0;
 }
 """
 
-# ─── Estrutura Python ─────────────────────────────────────────────────────────
-class Event(ct.Structure):
-    _fields_ = [
-        ("pid",          ct.c_uint32),
-        ("timestamp_ns", ct.c_uint64),
-        ("latency_ns",   ct.c_uint64),
-        ("bytes_count",  ct.c_uint64),
-        ("dport",        ct.c_uint16),
-        ("sport",        ct.c_uint16),
-        ("event_type",   ct.c_uint8),
-        ("comm",         ct.c_char * 16),
-    ]
+# ─── Constantes ───────────────────────────────────────────────────────────────
+SAVE_INTERVAL = 10
+POLL_INTERVAL = 1
+RESULTS_PATH  = "/app/results/ebpf_results.json"
+os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
 
 # ─── Acumuladores ─────────────────────────────────────────────────────────────
 data = {
@@ -145,16 +100,11 @@ data = {
     "mem_mb":       [],
     "samples":      [],
 }
-tracked_pids  = set()   # PIDs que conectaram à porta 9999
-start_time    = time.time()
-last_save     = time.time()
-SAVE_INTERVAL = 10
-RESULTS_PATH  = "/app/results/ebpf_results.json"
-os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
+start_time   = time.time()
+last_save    = time.time()
+tracked_pids = set()
 
-# ─── Coleta CPU e memória via psutil (userspace, confiável) ───────────────────
 def collect_proc_metrics():
-    """Lê CPU% e RSS dos PIDs rastreados via psutil."""
     cpu_list, mem_list = [], []
     for pid in list(tracked_pids):
         try:
@@ -165,14 +115,11 @@ def collect_proc_metrics():
             tracked_pids.discard(pid)
     return cpu_list, mem_list
 
-# ─── Salva resultados ─────────────────────────────────────────────────────────
 def save_results():
     global last_save
-
-    # Coleta métricas de processo no momento do save
-    cpu_list, mem_list = collect_proc_metrics()
-    if cpu_list: data["cpu_pct"].extend(cpu_list)
-    if mem_list: data["mem_mb"].extend(mem_list)
+    cpu_l, mem_l = collect_proc_metrics()
+    if cpu_l: data["cpu_pct"].extend(cpu_l)
+    if mem_l: data["mem_mb"].extend(mem_l)
 
     lats = data["latencies_ms"]
     cpus = data["cpu_pct"]
@@ -195,62 +142,59 @@ def save_results():
     with open(RESULTS_PATH, "w") as f:
         json.dump(snapshot, f, indent=2)
     last_save = time.time()
-    print(f"\n💾 Resultado salvo: {RESULTS_PATH}")
-    print(f"   Conexões:{snapshot['connections']} | "
+    print(f"\n💾 {RESULTS_PATH}")
+    print(f"   conns:{snapshot['connections']} | "
           f"TX:{snapshot['bytes_tx']}B | RX:{snapshot['bytes_rx']}B | "
-          f"Lat:{snapshot['latency_avg_ms']}ms | "
-          f"CPU:{snapshot['cpu_avg_pct']}% | Mem:{snapshot['mem_avg_mb']}MB\n")
+          f"lat:{snapshot['latency_avg_ms']}ms | "
+          f"cpu:{snapshot['cpu_avg_pct']}% | mem:{snapshot['mem_avg_mb']}MB\n")
 
-# ─── Callback de eventos eBPF ─────────────────────────────────────────────────
-def handle_event(cpu, raw, size):
-    global last_save
-    e    = ct.cast(raw, ct.POINTER(Event)).contents
-    proc = e.comm.decode("utf-8", errors="replace").strip("\x00")
-    now  = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+def poll_maps(b):
+    """Lê os mapas BPF por polling em vez de perf buffer."""
+    now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
-    if e.event_type == 1:
-        data["connections"] += 1
-        tracked_pids.add(e.pid)
-        # Inicializa cpu_percent para o PID (primeira leitura é sempre 0)
+    # Conexões
+    try:
+        cnt = b["conn_count"][ct.c_uint32(0)].value
+        if cnt != data["connections"]:
+            diff = cnt - data["connections"]
+            data["connections"] = cnt
+            print(f"[{now}] CONNECT  +{diff} conexões (total={cnt})")
+    except KeyError:
+        pass
+
+    # Bytes TX/RX por PID
+    total_tx, total_rx = 0, 0
+    for k, v in b["bytes_tx_map"].items():
+        total_tx += v.value
+        tracked_pids.add(k.value)
         try:
-            psutil.Process(e.pid).cpu_percent(interval=None)
+            psutil.Process(k.value).cpu_percent(interval=None)
         except Exception:
             pass
-        label = "CONNECT"
+    for k, v in b["bytes_rx_map"].items():
+        total_rx += v.value
+        tracked_pids.add(k.value)
 
-    elif e.event_type == 2:
-        data["bytes_tx"] += e.bytes_count
-        tracked_pids.add(e.pid)
-        label = "SEND"
+    if total_tx != data["bytes_tx"] or total_rx != data["bytes_rx"]:
+        data["bytes_tx"] = total_tx
+        data["bytes_rx"] = total_rx
+        print(f"[{now}] BYTES    TX={total_tx}B RX={total_rx}B")
 
-    elif e.event_type == 3:
-        data["bytes_rx"] += e.bytes_count
-        if e.latency_ns > 0:
-            lat_ms = round(e.latency_ns / 1e6, 4)
-            # Filtra latências absurdas (> 5000ms provavelmente são ruído)
-            if lat_ms < 5000:
-                data["latencies_ms"].append(lat_ms)
-        label = "RECV"
-    else:
-        return
-
-    lat_str = f"lat={round(e.latency_ns/1e6,2)}ms " if e.latency_ns > 0 else ""
-    print(f"[{now}] {label:<8} PID:{e.pid:<6} {proc:<14} "
-          f"bytes={e.bytes_count} {lat_str}")
+    # Latências
+    for k, v in b["latency_map"].items():
+        lat_ms = round(v.value / 1e6, 4)
+        if 0 < lat_ms < 5000:
+            data["latencies_ms"].append(lat_ms)
+            print(f"[{now}] LATENCY  pid={k.value} lat={lat_ms}ms")
+    b["latency_map"].clear()
 
     data["samples"].append({
-        "time":       now,
-        "event":      label,
-        "pid":        e.pid,
-        "proc":       proc,
-        "latency_ms": round(e.latency_ns / 1e6, 4) if e.latency_ns > 0 else 0,
-        "bytes":      e.bytes_count,
+        "time":    now,
+        "bytes_tx": total_tx,
+        "bytes_rx": total_rx,
+        "connections": data["connections"],
     })
 
-    if time.time() - last_save >= SAVE_INTERVAL:
-        save_results()
-
-# ─── Attach probes com fallback por versão de kernel ─────────────────────────
 def attach_probes(b):
     b.attach_kprobe(event="tcp_v4_connect", fn_name="trace_connect")
     print("✅ kprobe: tcp_v4_connect")
@@ -275,10 +219,9 @@ def attach_probes(b):
     else:
         print("⚠️  Não foi possível anexar probe em sys_recvfrom")
 
-# ─── Main ─────────────────────────────────────────────────────────────────────
 def main():
     print("=" * 60)
-    print("  🔍 Coletor eBPF v2 — porta 9999")
+    print("  🔍 Coletor eBPF v3 — porta 9999 (BPF_HASH polling)")
     print("  Métricas: CPU · Memória · Latência · Bytes · Conexões")
     print("=" * 60)
 
@@ -286,10 +229,12 @@ def main():
     attach_probes(b)
     print()
 
-    b["events"].open_perf_buffer(handle_event)
     try:
         while True:
-            b.perf_buffer_poll(timeout=100)
+            time.sleep(POLL_INTERVAL)
+            poll_maps(b)
+            if time.time() - last_save >= SAVE_INTERVAL:
+                save_results()
     except KeyboardInterrupt:
         print("\n[!] Encerrando coletor eBPF...")
         save_results()

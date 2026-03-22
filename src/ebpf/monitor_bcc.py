@@ -53,16 +53,15 @@ TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
     return 0;
 }
 
-// TX exit — captura bytes via sendto filtrando por PID OU TID
+// TX exit — captura bytes via sendto filtrando por TID (threads do servidor)
 TRACEPOINT_PROBE(syscalls, sys_exit_sendto) {
     if (args->ret <= 0) return 0;
-    u32 pid = bpf_get_current_pid_tgid() >> 32;
-    u32 tid = bpf_get_current_pid_tgid() & 0xFFFFFFFF;
-    // Aceita se PID ou TID estiver no filtro
-    u8 *ok_pid = pid_filter.lookup(&pid);
-    u8 *ok_tid = pid_filter.lookup(&tid);
-    if (!ok_pid && !ok_tid) return 0;
+    // Usa TID para pegar threads filhas do servidor
+    u32 tid = (u32)(bpf_get_current_pid_tgid() & 0xFFFFFFFF);
+    u8 *ok = pid_filter.lookup(&tid);
+    if (!ok) return 0;
     u64 size = (u64)args->ret;
+    u32 pid = (u32)(bpf_get_current_pid_tgid() >> 32);
     u64 zero = 0, *acc;
     acc = bytes_tx_map.lookup_or_try_init(&pid, &zero);
     if (acc) (*acc) += size;

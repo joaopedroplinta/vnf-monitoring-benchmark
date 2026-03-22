@@ -14,6 +14,8 @@ RUN apt update && apt install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+RUN pip3 install --no-cache-dir psutil prometheus_client
+
 WORKDIR /app
 
 CMD ["/bin/bash"]

@@ -227,16 +227,43 @@ def handle_event(cpu, raw, size):
     if time.time() - last_save >= SAVE_INTERVAL:
         save_results()
 
+def attach_probes(b):
+    """Tenta anexar probes com fallback para diferentes versões de kernel."""
+
+    # tcp_v4_connect — estável em todos os kernels
+    b.attach_kprobe(event="tcp_v4_connect", fn_name="trace_connect")
+    print("✅ kprobe: tcp_v4_connect")
+
+    # sys_sendto — nome varia por kernel/arquitetura
+    for name in ["__x64_sys_sendto", "__se_sys_sendto", "sys_sendto"]:
+        try:
+            b.attach_kprobe(event=name, fn_name="trace_send")
+            print(f"✅ kprobe: {name}")
+            break
+        except Exception:
+            continue
+    else:
+        print("⚠️  Não foi possível anexar probe em sys_sendto")
+
+    # sys_recvfrom — nome varia por kernel/arquitetura
+    for name in ["__x64_sys_recvfrom", "__se_sys_recvfrom", "sys_recvfrom"]:
+        try:
+            b.attach_kprobe(event=name, fn_name="trace_recv")
+            print(f"✅ kprobe: {name}")
+            break
+        except Exception:
+            continue
+    else:
+        print("⚠️  Não foi possível anexar probe em sys_recvfrom")
+
 def main():
     print("=" * 60)
     print("  🔍 Coletor eBPF — porta 9999")
     print("  Métricas: CPU · Memória · Latência · Bytes · Conexões")
     print("=" * 60)
     b = BPF(text=bpf_program)
-    b.attach_kprobe(event="tcp_v4_connect",     fn_name="trace_connect")
-    b.attach_kprobe(event="__x64_sys_sendto",   fn_name="trace_send")
-    b.attach_kprobe(event="__x64_sys_recvfrom", fn_name="trace_recv")
-    print("✅ Probes: tcp_v4_connect | sys_sendto | sys_recvfrom\n")
+    attach_probes(b)
+    print()
     b["events"].open_perf_buffer(handle_event)
     try:
         while True:

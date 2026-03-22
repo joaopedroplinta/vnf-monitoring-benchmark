@@ -80,7 +80,7 @@ services:
     depends_on:
       - server
 
-  # ── Comparador (roda ao final) ───────────────────────────────────────────────
+  # ── Comparador (roda automaticamente após o client terminar) ────────────────
   comparator:
     build:
       context: .
@@ -89,13 +89,17 @@ services:
     volumes:
       - ./src:/app/src
       - results_vol:/app/results
-    command: python3 /app/src/compare.py
+    command: >
+      sh -c "
+        echo '⏳ Aguardando coletores acumularem dados (~3 min de tráfego)...' &&
+        sleep 180 &&
+        echo '📊 Gerando relatório de comparação...' &&
+        python3 /app/src/compare.py
+      "
     depends_on:
       - ebpf-collector
       - sysstat-collector
       - prometheus-collector
-    profiles:
-      - compare   # só roda quando chamado explicitamente
 
 volumes:
   results_vol:   # volume compartilhado entre todos os coletores

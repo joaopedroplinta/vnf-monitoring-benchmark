@@ -57,11 +57,25 @@ class SocketClient:
             print("Cliente encerrado")
 
 if __name__ == "__main__":
+    import time
     client = SocketClient()
+
+    # Aguarda o servidor estar pronto (até 30 segundos)
+    for attempt in range(30):
+        try:
+            client.connect()
+            print(f"✅ Conectado ao servidor após {attempt + 1} tentativa(s).")
+            break
+        except Exception:
+            print(f"⏳ Aguardando servidor... tentativa {attempt + 1}/30")
+            time.sleep(1)
+    else:
+        print("❌ Servidor não respondeu após 30 tentativas. Encerrando.")
+        exit(1)
+
     try:
-        client.connect()
-        # Envia 20 mensagens com intervalo de 0.5 segundos
-        client.simulate_traffic(num_messages=20, delay=0.5)
+        # 200 mensagens com 1s de intervalo (~3 min de tráfego)
+        client.simulate_traffic(num_messages=200, delay=1)
     except KeyboardInterrupt:
         client.close()
-        print("\n Cliente interrompido")
+        print("\n⚠️  Cliente interrompido pelo usuário")

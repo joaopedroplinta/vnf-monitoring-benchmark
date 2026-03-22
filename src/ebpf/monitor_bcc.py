@@ -43,23 +43,8 @@ TRACEPOINT_PROBE(sock, inet_sock_set_state) {
 }
 
 // Bytes TX
+// TX enter — marca timestamp para latência
 TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
-    u32 pid = bpf_get_current_pid_tgid() >> 32;
-    u8 *ok  = pid_filter.lookup(&pid);
-    if (!ok) return 0;
-
-    u64 ts   = bpf_ktime_get_ns();
-    u64 size = (u64)args->len;
-    u64 zero = 0, *acc;
-
-    send_ts.update(&pid, &ts);
-    acc = bytes_tx_map.lookup_or_try_init(&pid, &zero);
-    if (acc) (*acc) += size;
-    return 0;
-}
-
-// Bytes TX via sendmsg enter — marca timestamp
-TRACEPOINT_PROBE(syscalls, sys_enter_sendmsg) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
     u8 *ok  = pid_filter.lookup(&pid);
     if (!ok) return 0;
@@ -68,8 +53,8 @@ TRACEPOINT_PROBE(syscalls, sys_enter_sendmsg) {
     return 0;
 }
 
-// Bytes TX via sendmsg exit — captura bytes realmente enviados (retorno da syscall)
-TRACEPOINT_PROBE(syscalls, sys_exit_sendmsg) {
+// TX exit — captura bytes reais enviados via sendto
+TRACEPOINT_PROBE(syscalls, sys_exit_sendto) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
     u8 *ok  = pid_filter.lookup(&pid);
     if (!ok) return 0;
@@ -123,22 +108,27 @@ last_save    = time.time()
 tracked_pids = set()
 
 def inject_server_pids(b):
-    """Injeta PIDs do servidor (porta 9999) no mapa pid_filter."""
+    """Injeta PIDs e TIDs do servidor (porta 9999) no mapa pid_filter."""
+    server_pids = set()
+    # Pega PIDs ouvindo na porta 9999 (LISTEN) e conexões estabelecidas
     for conn in psutil.net_connections(kind="tcp"):
         if conn.laddr and conn.laddr.port == TARGET_PORT and conn.pid:
-            pid = conn.pid
-            try:
-                b["pid_filter"][ct.c_uint32(pid)] = ct.c_uint8(1)
-                tracked_pids.add(pid)
-                # inicializa cpu_percent
-                psutil.Process(pid).cpu_percent(interval=None)
-                # injeta também threads do processo
-                p = psutil.Process(pid)
-                for t in p.threads():
-                    b["pid_filter"][ct.c_uint32(t.id)] = ct.c_uint8(1)
-                    tracked_pids.add(t.id)
-            except Exception:
-                pass
+            server_pids.add(conn.pid)
+
+    for pid in server_pids:
+        try:
+            p = psutil.Process(pid)
+            # Injeta o processo principal
+            b["pid_filter"][ct.c_uint32(pid)] = ct.c_uint8(1)
+            tracked_pids.add(pid)
+            psutil.Process(pid).cpu_percent(interval=None)
+            # Injeta TODOS os TIDs das threads (handle_client roda em threads)
+            for t in p.threads():
+                tid = t.id
+                b["pid_filter"][ct.c_uint32(tid)] = ct.c_uint8(1)
+                tracked_pids.add(tid)
+        except Exception:
+            pass
 
 def collect_proc_metrics():
     cpu_list, mem_list = [], []

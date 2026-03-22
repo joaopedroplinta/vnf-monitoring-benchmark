@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 """
-Coletor eBPF v4 — TCC Gerenciamento de Rede
-Usa tracepoints sock/inet_sock_set_state para capturar conexões TCP
-e tracepoints syscalls para bytes/latência — mais confiável que kprobes
-para capturar dport corretamente.
+Coletor eBPF v5 — TCC Gerenciamento de Rede
+Usa tracepoints para tudo: inet_sock_set_state (conexões),
+sys_enter_sendto (TX), sys_enter_recvfrom (RX/latência)
 Porta monitorada: 9999
 """
 
@@ -12,69 +11,58 @@ import ctypes as ct
 import time, os, json, psutil
 from datetime import datetime
 
-# ─── Programa eBPF ────────────────────────────────────────────────────────────
 bpf_program = """
-#include <uapi/linux/ptrace.h>
-#include <net/sock.h>
 #include <linux/tcp.h>
 
 #define TARGET_PORT 9999
 
-// Mapas de métricas
-BPF_HASH(conn_count,   u32, u64);  // key=0 → total conexões
-BPF_HASH(bytes_tx_map, u32, u64);  // key=pid → bytes enviados
-BPF_HASH(bytes_rx_map, u32, u64);  // key=pid → bytes recebidos
-BPF_HASH(send_ts,      u32, u64);  // key=pid → timestamp do send
-BPF_HASH(latency_map,  u32, u64);  // key=pid → última latência (ns)
-BPF_HASH(pid_filter,   u32, u8);   // PIDs conectados à porta 9999
+BPF_HASH(conn_count,   u32, u64);
+BPF_HASH(bytes_tx_map, u32, u64);
+BPF_HASH(bytes_rx_map, u32, u64);
+BPF_HASH(send_ts,      u32, u64);
+BPF_HASH(latency_map,  u32, u64);
+BPF_HASH(pid_filter,   u32, u8);
 
-// Tracepoint: inet_sock_set_state — captura transições de estado TCP
-// Inclui dport corretamente após o connect() ter resolvido o endereço
+// Conexões TCP na porta 9999
 TRACEPOINT_PROBE(sock, inet_sock_set_state) {
-    // args->newstate == TCP_SYN_SENT significa nova conexão saindo
     if (args->protocol != IPPROTO_TCP) return 0;
     if (args->newstate != TCP_SYN_SENT) return 0;
+    if (args->dport != TARGET_PORT) return 0;
 
-    u16 dport = args->dport;
-    if (dport != TARGET_PORT) return 0;
-
-    u32 pid  = bpf_get_current_pid_tgid() >> 32;
-    u8  one  = 1;
+    u32 pid = bpf_get_current_pid_tgid() >> 32;
+    u8  one = 1;
     pid_filter.update(&pid, &one);
 
-    u32 key  = 0;
-    u64 zero = 0, *cnt;
+    u32 key = 0; u64 zero = 0, *cnt;
     cnt = conn_count.lookup_or_try_init(&key, &zero);
     if (cnt) (*cnt)++;
-
     return 0;
 }
 
-// kprobe: sys_sendto — registra timestamp e bytes TX
-int trace_send(struct pt_regs *ctx) {
+// Bytes TX via tracepoint (mais confiável que kprobe)
+TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
     u8 *ok  = pid_filter.lookup(&pid);
     if (!ok) return 0;
 
     u64 ts   = bpf_ktime_get_ns();
-    u64 size = (u64)PT_REGS_PARM3(ctx);
+    u64 size = (u64)args->len;
     u64 zero = 0, *acc;
 
     send_ts.update(&pid, &ts);
     acc = bytes_tx_map.lookup_or_try_init(&pid, &zero);
     if (acc) (*acc) += size;
-
     return 0;
 }
 
-// kprobe: sys_recvfrom — registra bytes RX e calcula latência
-int trace_recv(struct pt_regs *ctx) {
+// Bytes RX + latência via tracepoint
+TRACEPOINT_PROBE(syscalls, sys_enter_recvfrom) {
     u32 pid    = bpf_get_current_pid_tgid() >> 32;
     u8 *ok     = pid_filter.lookup(&pid);
     if (!ok) return 0;
 
     u64 now   = bpf_ktime_get_ns();
-    u64 size  = (u64)PT_REGS_PARM3(ctx);
+    u64 size  = (u64)args->size;
     u64 zero  = 0, *acc, *start;
 
     acc = bytes_rx_map.lookup_or_try_init(&pid, &zero);
@@ -86,18 +74,15 @@ int trace_recv(struct pt_regs *ctx) {
         latency_map.update(&pid, &lat);
         send_ts.delete(&pid);
     }
-
     return 0;
 }
 """
 
-# ─── Constantes ───────────────────────────────────────────────────────────────
 SAVE_INTERVAL = 10
 POLL_INTERVAL = 1
 RESULTS_PATH  = "/app/results/ebpf_results.json"
 os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
 
-# ─── Acumuladores ─────────────────────────────────────────────────────────────
 data = {
     "connections":  0,
     "bytes_tx":     0,
@@ -156,19 +141,19 @@ def save_results():
           f"cpu:{snapshot['cpu_avg_pct']}% | mem:{snapshot['mem_avg_mb']}MB\n")
 
 def poll_maps(b):
+    import sys
     now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
-    # Conexões
     try:
         cnt = b["conn_count"][ct.c_uint32(0)].value
         if cnt != data["connections"]:
             diff = cnt - data["connections"]
             data["connections"] = cnt
             print(f"[{now}] CONNECT  +{diff} (total={cnt})")
+            sys.stdout.flush()
     except KeyError:
         pass
 
-    # Bytes TX/RX
     total_tx, total_rx = 0, 0
     for k, v in b["bytes_tx_map"].items():
         total_tx += v.value
@@ -183,13 +168,14 @@ def poll_maps(b):
         data["bytes_tx"] = total_tx
         data["bytes_rx"] = total_rx
         print(f"[{now}] BYTES    TX={total_tx}B RX={total_rx}B")
+        sys.stdout.flush()
 
-    # Latências
     for k, v in b["latency_map"].items():
         lat_ms = round(v.value / 1e6, 4)
         if 0 < lat_ms < 5000:
             data["latencies_ms"].append(lat_ms)
             print(f"[{now}] LATENCY  pid={k.value} lat={lat_ms}ms")
+            sys.stdout.flush()
     b["latency_map"].clear()
 
     data["samples"].append({
@@ -200,38 +186,16 @@ def poll_maps(b):
     })
 
 def main():
+    import sys
     print("=" * 60)
-    print("  🔍 Coletor eBPF v4 — porta 9999 (tracepoints)")
+    print("  🔍 Coletor eBPF v5 — porta 9999 (tracepoints)")
     print("  Métricas: CPU · Memória · Latência · Bytes · Conexões")
     print("=" * 60)
+    sys.stdout.flush()
 
     b = BPF(text=bpf_program)
-
-    # Tracepoint para conexões (captura dport corretamente)
-    print("✅ tracepoint: sock/inet_sock_set_state")
-
-    # kprobes para send/recv
-    for name in ["__x64_sys_sendto", "__se_sys_sendto", "sys_sendto"]:
-        try:
-            b.attach_kprobe(event=name, fn_name="trace_send")
-            print(f"✅ kprobe: {name}")
-            break
-        except Exception:
-            continue
-    else:
-        print("⚠️  Não foi possível anexar probe em sys_sendto")
-
-    for name in ["__x64_sys_recvfrom", "__se_sys_recvfrom", "sys_recvfrom"]:
-        try:
-            b.attach_kprobe(event=name, fn_name="trace_recv")
-            print(f"✅ kprobe: {name}")
-            break
-        except Exception:
-            continue
-    else:
-        print("⚠️  Não foi possível anexar probe em sys_recvfrom")
-
-    print()
+    print("✅ tracepoints: inet_sock_set_state | sys_sendto | sys_recvfrom")
+    sys.stdout.flush()
 
     try:
         while True:

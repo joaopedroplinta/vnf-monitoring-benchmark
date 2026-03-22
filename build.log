@@ -3,7 +3,7 @@ DEPRECATED: The legacy builder is deprecated and will be removed in a future rel
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
 
-Sending build context to Docker daemon    235kB
+Sending build context to Docker daemon  268.8kB
 Step 1/5 : FROM python:3.9-slim
  ---> 085da638e1b8
 Step 2/5 : WORKDIR /app
@@ -25,97 +25,153 @@ DEPRECATED: The legacy builder is deprecated and will be removed in a future rel
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
 
-Sending build context to Docker daemon  235.5kB
+Sending build context to Docker daemon  269.3kB
 Step 1/4 : FROM python:3.9-slim
  ---> 085da638e1b8
 Step 2/4 : WORKDIR /app
  ---> Using cache
  ---> eae766f66823
 Step 3/4 : COPY src/socket/client.py .
- ---> Using cache
- ---> b90be7213282
+ ---> ed74fabc0a5c
 Step 4/4 : CMD ["python", "client.py"]
- ---> Using cache
- ---> 63a64de65b49
-Successfully built 63a64de65b49
+ ---> Running in 81bf12b6a428
+ ---> Removed intermediate container 81bf12b6a428
+ ---> 93d568f0ced5
+Successfully built 93d568f0ced5
 Successfully tagged tcc_gerenciamento_rede_client:latest
 Building ebpf-collector
 DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
 
-Sending build context to Docker daemon  236.5kB
-Step 1/5 : FROM ubuntu:22.04
+Sending build context to Docker daemon  270.3kB
+Step 1/6 : FROM ubuntu:22.04
  ---> 8ea4cbcf3a26
-Step 2/5 : ENV DEBIAN_FRONTEND=noninteractive
+Step 2/6 : ENV DEBIAN_FRONTEND=noninteractive
  ---> Using cache
  ---> f1e2776e3eff
-Step 3/5 : RUN apt update && apt install -y     python3     python3-pip     bpfcc-tools     python3-bpfcc     linux-headers-generic     libpython3.10-dev     iproute2     net-tools     curl     && rm -rf /var/lib/apt/lists/*
+Step 3/6 : RUN apt update && apt install -y     python3     python3-pip     bpfcc-tools     python3-bpfcc     linux-headers-generic     libpython3.10-dev     iproute2     net-tools     curl     && rm -rf /var/lib/apt/lists/*
  ---> Using cache
  ---> a74b54fa76f7
-Step 4/5 : WORKDIR /app
- ---> Using cache
- ---> 387c3c7df80f
-Step 5/5 : CMD ["/bin/bash"]
- ---> Using cache
- ---> 2aff5c31ea5e
-Successfully built 2aff5c31ea5e
+Step 4/6 : RUN pip3 install --no-cache-dir psutil prometheus_client
+ ---> Running in 99499baacab0
+Collecting psutil
+  Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (155 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 155.6/155.6 KB 7.6 MB/s eta 0:00:00
+Collecting prometheus_client
+  Downloading prometheus_client-0.24.1-py3-none-any.whl (64 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.1/64.1 KB 297.4 MB/s eta 0:00:00
+Installing collected packages: psutil, prometheus_client
+Successfully installed prometheus_client-0.24.1 psutil-7.2.2
+[91mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[0m ---> Removed intermediate container 99499baacab0
+ ---> add5a33d21e8
+Step 5/6 : WORKDIR /app
+ ---> Running in fa7693ac56c0
+ ---> Removed intermediate container fa7693ac56c0
+ ---> 4a647476eddf
+Step 6/6 : CMD ["/bin/bash"]
+ ---> Running in b25333fbf168
+ ---> Removed intermediate container b25333fbf168
+ ---> 39153128af1b
+Successfully built 39153128af1b
 Successfully tagged tcc_gerenciamento_rede_ebpf-collector:latest
 Building sysstat-collector
 DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
 
-Sending build context to Docker daemon  237.1kB
-Step 1/5 : FROM ubuntu:22.04
+Sending build context to Docker daemon  272.4kB
+Step 1/6 : FROM ubuntu:22.04
  ---> 8ea4cbcf3a26
-Step 2/5 : ENV DEBIAN_FRONTEND=noninteractive
+Step 2/6 : ENV DEBIAN_FRONTEND=noninteractive
  ---> Using cache
  ---> f1e2776e3eff
-Step 3/5 : RUN apt update && apt install -y     python3     python3-pip     bpfcc-tools     python3-bpfcc     linux-headers-generic     libpython3.10-dev     iproute2     net-tools     curl     && rm -rf /var/lib/apt/lists/*
+Step 3/6 : RUN apt update && apt install -y     python3     python3-pip     bpfcc-tools     python3-bpfcc     linux-headers-generic     libpython3.10-dev     iproute2     net-tools     curl     && rm -rf /var/lib/apt/lists/*
  ---> Using cache
  ---> a74b54fa76f7
-Step 4/5 : WORKDIR /app
+Step 4/6 : RUN pip3 install --no-cache-dir psutil prometheus_client
  ---> Using cache
- ---> 387c3c7df80f
-Step 5/5 : CMD ["/bin/bash"]
+ ---> add5a33d21e8
+Step 5/6 : WORKDIR /app
  ---> Using cache
- ---> 2aff5c31ea5e
-Successfully built 2aff5c31ea5e
+ ---> 4a647476eddf
+Step 6/6 : CMD ["/bin/bash"]
+ ---> Using cache
+ ---> 39153128af1b
+Successfully built 39153128af1b
 Successfully tagged tcc_gerenciamento_rede_sysstat-collector:latest
 Building prometheus-collector
 DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
 
-Sending build context to Docker daemon  238.1kB
-Step 1/5 : FROM ubuntu:22.04
+Sending build context to Docker daemon  273.4kB
+Step 1/6 : FROM ubuntu:22.04
  ---> 8ea4cbcf3a26
-Step 2/5 : ENV DEBIAN_FRONTEND=noninteractive
+Step 2/6 : ENV DEBIAN_FRONTEND=noninteractive
  ---> Using cache
  ---> f1e2776e3eff
-Step 3/5 : RUN apt update && apt install -y     python3     python3-pip     bpfcc-tools     python3-bpfcc     linux-headers-generic     libpython3.10-dev     iproute2     net-tools     curl     && rm -rf /var/lib/apt/lists/*
+Step 3/6 : RUN apt update && apt install -y     python3     python3-pip     bpfcc-tools     python3-bpfcc     linux-headers-generic     libpython3.10-dev     iproute2     net-tools     curl     && rm -rf /var/lib/apt/lists/*
  ---> Using cache
  ---> a74b54fa76f7
-Step 4/5 : WORKDIR /app
+Step 4/6 : RUN pip3 install --no-cache-dir psutil prometheus_client
  ---> Using cache
- ---> 387c3c7df80f
-Step 5/5 : CMD ["/bin/bash"]
+ ---> add5a33d21e8
+Step 5/6 : WORKDIR /app
  ---> Using cache
- ---> 2aff5c31ea5e
-Successfully built 2aff5c31ea5e
+ ---> 4a647476eddf
+Step 6/6 : CMD ["/bin/bash"]
+ ---> Using cache
+ ---> 39153128af1b
+Successfully built 39153128af1b
 Successfully tagged tcc_gerenciamento_rede_prometheus-collector:latest
+Building comparator
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  274.4kB
+Step 1/6 : FROM ubuntu:22.04
+ ---> 8ea4cbcf3a26
+Step 2/6 : ENV DEBIAN_FRONTEND=noninteractive
+ ---> Using cache
+ ---> f1e2776e3eff
+Step 3/6 : RUN apt update && apt install -y     python3     python3-pip     bpfcc-tools     python3-bpfcc     linux-headers-generic     libpython3.10-dev     iproute2     net-tools     curl     && rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> a74b54fa76f7
+Step 4/6 : RUN pip3 install --no-cache-dir psutil prometheus_client
+ ---> Using cache
+ ---> add5a33d21e8
+Step 5/6 : WORKDIR /app
+ ---> Using cache
+ ---> 4a647476eddf
+Step 6/6 : CMD ["/bin/bash"]
+ ---> Using cache
+ ---> 39153128af1b
+Successfully built 39153128af1b
+Successfully tagged tcc_gerenciamento_rede_comparator:latest
 socket-server is up-to-date
-ebpf-collector is up-to-date
-Starting socket-client ... 
-Starting sysstat-collector ... 
-Creating prometheus-collector ... 
+Recreating socket-client ... 
+Recreating ebpf-collector ... 
+Recreating prometheus-collector ... 
+Recreating sysstat-collector    ... 
 
-ERROR: for prometheus-collector  "host" network_mode is incompatible with port_bindings
-Starting sysstat-collector    ... done
-Starting socket-client        ... done
+ERROR: for prometheus-collector  'ContainerConfig'
 
-ERROR: for prometheus-collector  "host" network_mode is incompatible with port_bindings
+ERROR: for socket-client  'ContainerConfig'
+
+ERROR: for sysstat-collector  'ContainerConfig'
+
+ERROR: for ebpf-collector  'ContainerConfig'
+
+ERROR: for prometheus-collector  'ContainerConfig'
+
+ERROR: for client  'ContainerConfig'
+
+ERROR: for sysstat-collector  'ContainerConfig'
+
+ERROR: for ebpf-collector  'ContainerConfig'
 Traceback (most recent call last):
   File "/usr/bin/docker-compose", line 33, in <module>
     sys.exit(load_entry_point('docker-compose==1.29.2', 'console_scripts', 'docker-compose')())
@@ -144,10 +200,10 @@ Traceback (most recent call last):
   File "/usr/lib/python3/dist-packages/compose/project.py", line 679, in do
     return service.execute_convergence_plan(
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 559, in execute_convergence_plan
-    return self._execute_convergence_create(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 473, in _execute_convergence_create
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 579, in execute_convergence_plan
+    return self._execute_convergence_recreate(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 499, in _execute_convergence_recreate
     containers, errors = parallel_execute(
                          ^^^^^^^^^^^^^^^^^
   File "/usr/lib/python3/dist-packages/compose/parallel.py", line 108, in parallel_execute
@@ -155,24 +211,25 @@ Traceback (most recent call last):
   File "/usr/lib/python3/dist-packages/compose/parallel.py", line 206, in producer
     result = func(obj)
              ^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 478, in <lambda>
-    lambda service_name: create_and_start(self, service_name.number),
-                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 457, in create_and_start
-    container = service.create_container(number=n, quiet=True)
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 494, in recreate
+    return self.recreate_container(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 612, in recreate_container
+    new_container = self.create_container(
+                    ^^^^^^^^^^^^^^^^^^^^^^
   File "/usr/lib/python3/dist-packages/compose/service.py", line 330, in create_container
     container_options = self._get_container_create_options(
                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 939, in _get_container_create_options
-    container_options['host_config'] = self._get_container_host_config(
-                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/compose/service.py", line 1014, in _get_container_host_config
-    return self.client.create_host_config(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/docker/api/container.py", line 596, in create_host_config
-    return HostConfig(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/docker/types/containers.py", line 336, in __init__
-    raise host_config_incompatible_error(
-docker.errors.InvalidArgument: "host" network_mode is incompatible with port_bindings
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 921, in _get_container_create_options
+    container_options, override_options = self._build_container_volume_options(
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 960, in _build_container_volume_options
+    binds, affinity = merge_volume_bindings(
+                      ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 1548, in merge_volume_bindings
+    old_volumes, old_mounts = get_container_data_volumes(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/compose/service.py", line 1579, in get_container_data_volumes
+    container.image_config['ContainerConfig'].get('Volumes') or {}
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+KeyError: 'ContainerConfig'

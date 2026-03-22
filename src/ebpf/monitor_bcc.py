@@ -58,15 +58,24 @@ TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
     return 0;
 }
 
-// Bytes TX via send (servidor usa send())
-TRACEPOINT_PROBE(syscalls, sys_enter_send) {
+// Bytes TX via sendmsg enter — marca timestamp
+TRACEPOINT_PROBE(syscalls, sys_enter_sendmsg) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
     u8 *ok  = pid_filter.lookup(&pid);
     if (!ok) return 0;
-    u64 ts   = bpf_ktime_get_ns();
-    u64 size = (u64)args->len;
-    u64 zero = 0, *acc;
+    u64 ts = bpf_ktime_get_ns();
     send_ts.update(&pid, &ts);
+    return 0;
+}
+
+// Bytes TX via sendmsg exit — captura bytes realmente enviados (retorno da syscall)
+TRACEPOINT_PROBE(syscalls, sys_exit_sendmsg) {
+    u32 pid = bpf_get_current_pid_tgid() >> 32;
+    u8 *ok  = pid_filter.lookup(&pid);
+    if (!ok) return 0;
+    if (args->ret <= 0) return 0;
+    u64 size = (u64)args->ret;
+    u64 zero = 0, *acc;
     acc = bytes_tx_map.lookup_or_try_init(&pid, &zero);
     if (acc) (*acc) += size;
     return 0;

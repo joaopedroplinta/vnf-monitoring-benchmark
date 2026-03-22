@@ -1,71 +1,106 @@
 version: '3.8'
 
 services:
-  # Servidor socket
+
+  # ── Servidor socket ──────────────────────────────────────────────────────────
   server:
     build:
       context: .
-      dockerfile: Dockerfile.server
+      dockerfile: configs/Dockerfile.server
     container_name: socket-server
     ports:
       - "9999:9999"
     networks:
       - socket-net
-    privileged: true
     volumes:
-      - ./server:/app
+      - ./src/socket:/app
     command: python server.py
 
-  # Cliente socket
+  # ── Cliente socket ───────────────────────────────────────────────────────────
   client:
     build:
       context: .
-      dockerfile: Dockerfile.client
+      dockerfile: configs/Dockerfile.client
     container_name: socket-client
     networks:
       - socket-net
     depends_on:
       - server
     volumes:
-      - ./client:/app
+      - ./src/socket:/app
     command: python client.py
 
-  # Monitor eBPF
-  ebpf-monitor:
-    image: alpine:latest
-    container_name: ebpf-monitor
+  # ── Coletor eBPF ─────────────────────────────────────────────────────────────
+  ebpf-collector:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: ebpf-collector
     pid: "host"
     privileged: true
     network_mode: "host"
     volumes:
-      - /sys/kernel/debug:/sys/kernel/debug:ro
-      - ./ebpf:/ebpf
-    command: |
-      sh -c "
-      apk add --no-cache bpftool curl && 
-      echo '📊 Monitorando eventos eBPF...' &&
-      while true; do
-        echo '=== Conexões detectadas ===' &&
-        bpftool prog list 2>/dev/null | grep -A2 tracepoint ||
-        echo 'Aguardando programas eBPF...' &&
-        sleep 5
-      done
-      "
+      - /sys/kernel/debug:/sys/kernel/debug:rw
+      - /sys/fs/bpf:/sys/fs/bpf:rw
+      - /lib/modules:/lib/modules:ro
+      - /usr/src:/usr/src:ro
+      - ./src/ebpf:/app/ebpf
+      - results_vol:/app/results
+    command: python3 /app/ebpf/monitor_bcc.py
+    depends_on:
+      - server
 
-  # Visualizador de logs
-  viewer:
-    image: alpine:latest
-    container_name: log-viewer
+  # ── Coletor sysstat ──────────────────────────────────────────────────────────
+  sysstat-collector:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: sysstat-collector
+    network_mode: "host"
     pid: "host"
-    privileged: true
     volumes:
-      - /sys/kernel/debug:/sys/kernel/debug:ro
-    command: |
-      sh -c "
-      apk add --no-cache bpftool &&
-      echo '📝 Acompanhando trace_pipe (pressione Ctrl+C para sair)...' &&
-      cat /sys/kernel/debug/tracing/trace_pipe
-      "
+      - ./src/sysstat:/app/sysstat
+      - results_vol:/app/results
+    command: python3 /app/sysstat/collector.py
+    depends_on:
+      - server
+
+  # ── Coletor Prometheus ───────────────────────────────────────────────────────
+  prometheus-collector:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: prometheus-collector
+    network_mode: "host"
+    pid: "host"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src/prometheus:/app/prometheus
+      - results_vol:/app/results
+    command: python3 /app/prometheus/exporter.py
+    depends_on:
+      - server
+
+  # ── Comparador (roda ao final) ───────────────────────────────────────────────
+  comparator:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: comparator
+    volumes:
+      - ./src:/app/src
+      - results_vol:/app/results
+    command: python3 /app/src/compare.py
+    depends_on:
+      - ebpf-collector
+      - sysstat-collector
+      - prometheus-collector
+    profiles:
+      - compare   # só roda quando chamado explicitamente
+
+volumes:
+  results_vol:   # volume compartilhado entre todos os coletores
 
 networks:
   socket-net:

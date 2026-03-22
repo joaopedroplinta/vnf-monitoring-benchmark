@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 """
-Coletor eBPF v5 — TCC Gerenciamento de Rede
-Usa tracepoints para tudo: inet_sock_set_state (conexões),
-sys_enter_sendto (TX), sys_enter_recvfrom (RX/latência)
+Coletor eBPF v6 — TCC Gerenciamento de Rede
+- Conexões: tracepoint inet_sock_set_state (porta 9999)
+- Bytes/Latência: tracepoint sys_enter_sendto/recvfrom filtrado
+  por PID do CLIENT (quem faz connect) E do SERVER (quem faz accept)
 Porta monitorada: 9999
 """
 
@@ -21,9 +22,10 @@ BPF_HASH(bytes_tx_map, u32, u64);
 BPF_HASH(bytes_rx_map, u32, u64);
 BPF_HASH(send_ts,      u32, u64);
 BPF_HASH(latency_map,  u32, u64);
-BPF_HASH(pid_filter,   u32, u8);
+BPF_HASH(pid_filter,   u32, u8);   // PIDs do CLIENT (faz connect)
+BPF_HASH(srv_filter,   u32, u8);   // PIDs do SERVER (faz accept)
 
-// Conexões TCP na porta 9999
+// Captura PIDs que conectam à porta 9999 (cliente)
 TRACEPOINT_PROBE(sock, inet_sock_set_state) {
     if (args->protocol != IPPROTO_TCP) return 0;
     if (args->newstate != TCP_SYN_SENT) return 0;
@@ -39,11 +41,16 @@ TRACEPOINT_PROBE(sock, inet_sock_set_state) {
     return 0;
 }
 
-// Bytes TX via tracepoint (mais confiável que kprobe)
+// Captura PIDs que aceitam conexões na porta 9999 (servidor)
+// TCP_ESTABLISHED = conexão aceita pelo servidor
+TRACEPOINT_PROBE(sock, inet_sock_set_state) __attribute__((alias("tracepoint__sock__inet_sock_set_state")));
+
+// Bytes TX — filtra PIDs do cliente E do servidor
 TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
-    u8 *ok  = pid_filter.lookup(&pid);
-    if (!ok) return 0;
+    u8 *ok1 = pid_filter.lookup(&pid);
+    u8 *ok2 = srv_filter.lookup(&pid);
+    if (!ok1 && !ok2) return 0;
 
     u64 ts   = bpf_ktime_get_ns();
     u64 size = (u64)args->len;
@@ -55,15 +62,16 @@ TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
     return 0;
 }
 
-// Bytes RX + latência via tracepoint
+// Bytes RX + latência
 TRACEPOINT_PROBE(syscalls, sys_enter_recvfrom) {
-    u32 pid    = bpf_get_current_pid_tgid() >> 32;
-    u8 *ok     = pid_filter.lookup(&pid);
-    if (!ok) return 0;
+    u32 pid = bpf_get_current_pid_tgid() >> 32;
+    u8 *ok1 = pid_filter.lookup(&pid);
+    u8 *ok2 = srv_filter.lookup(&pid);
+    if (!ok1 && !ok2) return 0;
 
-    u64 now   = bpf_ktime_get_ns();
-    u64 size  = (u64)args->size;
-    u64 zero  = 0, *acc, *start;
+    u64 now  = bpf_ktime_get_ns();
+    u64 size = (u64)args->size;
+    u64 zero = 0, *acc, *start;
 
     acc = bytes_rx_map.lookup_or_try_init(&pid, &zero);
     if (acc) (*acc) += size;
@@ -95,6 +103,23 @@ data = {
 start_time   = time.time()
 last_save    = time.time()
 tracked_pids = set()
+
+def find_server_pids():
+    """Encontra PIDs do processo server.py ouvindo na porta 9999."""
+    pids = set()
+    for conn in psutil.net_connections(kind="tcp"):
+        if conn.laddr and conn.laddr.port == TARGET_PORT and conn.pid:
+            pids.add(conn.pid)
+            # Também inclui threads filho (accept threads)
+            try:
+                p = psutil.Process(conn.pid)
+                for t in p.threads():
+                    pids.add(t.id)
+            except Exception:
+                pass
+    return pids
+
+TARGET_PORT = 9999
 
 def collect_proc_metrics():
     cpu_list, mem_list = [], []
@@ -138,7 +163,18 @@ def save_results():
     print(f"   conns:{snapshot['connections']} | "
           f"TX:{snapshot['bytes_tx']}B | RX:{snapshot['bytes_rx']}B | "
           f"lat:{snapshot['latency_avg_ms']}ms | "
-          f"cpu:{snapshot['cpu_avg_pct']}% | mem:{snapshot['mem_avg_mb']}MB\n")
+          f"cpu:{snapshot['cpu_avg_pct']}% | mem:{snapshot['mem_avg_mb']}MB\n",
+          flush=True)
+
+def update_server_pids(b):
+    """Atualiza o mapa srv_filter com PIDs do servidor."""
+    srv_pids = find_server_pids()
+    for pid in srv_pids:
+        tracked_pids.add(pid)
+        try:
+            b["srv_filter"][ct.c_uint32(pid)] = ct.c_uint8(1)
+        except Exception:
+            pass
 
 def poll_maps(b):
     import sys
@@ -149,8 +185,7 @@ def poll_maps(b):
         if cnt != data["connections"]:
             diff = cnt - data["connections"]
             data["connections"] = cnt
-            print(f"[{now}] CONNECT  +{diff} (total={cnt})")
-            sys.stdout.flush()
+            print(f"[{now}] CONNECT  +{diff} (total={cnt})", flush=True)
     except KeyError:
         pass
 
@@ -167,15 +202,13 @@ def poll_maps(b):
     if total_tx != data["bytes_tx"] or total_rx != data["bytes_rx"]:
         data["bytes_tx"] = total_tx
         data["bytes_rx"] = total_rx
-        print(f"[{now}] BYTES    TX={total_tx}B RX={total_rx}B")
-        sys.stdout.flush()
+        print(f"[{now}] BYTES    TX={total_tx}B RX={total_rx}B", flush=True)
 
     for k, v in b["latency_map"].items():
         lat_ms = round(v.value / 1e6, 4)
         if 0 < lat_ms < 5000:
             data["latencies_ms"].append(lat_ms)
-            print(f"[{now}] LATENCY  pid={k.value} lat={lat_ms}ms")
-            sys.stdout.flush()
+            print(f"[{now}] LATENCY  pid={k.value} lat={lat_ms}ms", flush=True)
     b["latency_map"].clear()
 
     data["samples"].append({
@@ -186,20 +219,23 @@ def poll_maps(b):
     })
 
 def main():
-    import sys
     print("=" * 60)
-    print("  🔍 Coletor eBPF v5 — porta 9999 (tracepoints)")
+    print("  🔍 Coletor eBPF v6 — porta 9999 (tracepoints)")
     print("  Métricas: CPU · Memória · Latência · Bytes · Conexões")
-    print("=" * 60)
-    sys.stdout.flush()
+    print("=" * 60, flush=True)
 
     b = BPF(text=bpf_program)
-    print("✅ tracepoints: inet_sock_set_state | sys_sendto | sys_recvfrom")
-    sys.stdout.flush()
+    print("✅ tracepoints: inet_sock_set_state | sys_sendto | sys_recvfrom",
+          flush=True)
 
+    srv_update_counter = 0
     try:
         while True:
             time.sleep(POLL_INTERVAL)
+            # Atualiza PIDs do servidor a cada 5s
+            srv_update_counter += 1
+            if srv_update_counter % 5 == 0:
+                update_server_pids(b)
             poll_maps(b)
             if time.time() - last_save >= SAVE_INTERVAL:
                 save_results()

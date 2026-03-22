@@ -1,12 +1,9 @@
 #!/usr/bin/python3
 """
-Coletor eBPF v8 — TCC Gerenciamento de Rede
-- Duração: 15 minutos (900s) e para automaticamente
-- Conexões: tracepoint inet_sock_set_state (porta 9999)
-- TX: sys_exit_sendto filtrado por TID das threads do servidor
-- RX: sys_enter_recvfrom filtrado por PID do cliente
-- Latência: medida do lado do cliente (send→recv)
-Porta monitorada: 9999
+Coletor eBPF v9 — TCC Gerenciamento de Rede
+Estratégia: captura TUDO sem filtro no kernel,
+filtra no userspace pelos TIDs reais do servidor.
+Porta monitorada: 9999 | Duração: 15 minutos
 """
 
 from bcc import BPF
@@ -17,36 +14,43 @@ from datetime import datetime
 TARGET_PORT = 9999
 DURATION    = 900  # 15 minutos
 
+# Programa eBPF sem filtro — captura todos os sendto/recvfrom
 bpf_program = """
 #include <linux/tcp.h>
-
 #define TARGET_PORT 9999
 
-BPF_HASH(conn_count,    u32, u64);
-BPF_HASH(bytes_tx_map,  u32, u64);
-BPF_HASH(bytes_rx_map,  u32, u64);
-BPF_HASH(cli_send_ts,   u32, u64);  // timestamp send do cliente
-BPF_HASH(latency_map,   u32, u64);
-BPF_HASH(cli_filter,    u32, u8);   // PIDs do cliente (faz connect)
-BPF_HASH(srv_filter,    u32, u8);   // TIDs do servidor (threads de accept)
+BPF_HASH(conn_count,  u32, u64);
+BPF_HASH(tx_by_tid,   u32, u64);  // tid → bytes enviados
+BPF_HASH(rx_by_pid,   u32, u64);  // pid → bytes recebidos
+BPF_HASH(cli_send_ts, u32, u64);  // pid → timestamp send cliente
+BPF_HASH(latency_map, u32, u64);  // pid → latência
+BPF_HASH(cli_filter,  u32, u8);   // PIDs do cliente
 
-// Conexões do cliente para porta 9999
+// Conexões para porta 9999
 TRACEPOINT_PROBE(sock, inet_sock_set_state) {
     if (args->protocol != IPPROTO_TCP) return 0;
     if (args->newstate != TCP_SYN_SENT) return 0;
     if (args->dport != TARGET_PORT) return 0;
-
     u32 pid = bpf_get_current_pid_tgid() >> 32;
     u8  one = 1;
     cli_filter.update(&pid, &one);
-
     u32 key = 0; u64 zero = 0, *cnt;
     cnt = conn_count.lookup_or_try_init(&key, &zero);
     if (cnt) (*cnt)++;
     return 0;
 }
 
-// TX do cliente — marca timestamp para latência
+// Captura TODOS os sendto sem filtro (filtra no userspace)
+TRACEPOINT_PROBE(syscalls, sys_exit_sendto) {
+    if (args->ret <= 0) return 0;
+    u32 tid  = (u32)(bpf_get_current_pid_tgid() & 0xFFFFFFFF);
+    u64 zero = 0, *acc;
+    acc = tx_by_tid.lookup_or_try_init(&tid, &zero);
+    if (acc) (*acc) += (u64)args->ret;
+    return 0;
+}
+
+// Marca timestamp do send do cliente
 TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
     u8 *ok  = cli_filter.lookup(&pid);
@@ -56,32 +60,16 @@ TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
     return 0;
 }
 
-// TX do servidor — captura bytes reais via TID das threads
-TRACEPOINT_PROBE(syscalls, sys_exit_sendto) {
-    if (args->ret <= 0) return 0;
-    u32 tid = (u32)(bpf_get_current_pid_tgid() & 0xFFFFFFFF);
-    u8 *ok  = srv_filter.lookup(&tid);
-    if (!ok) return 0;
-    u64 size = (u64)args->ret;
-    u64 zero = 0, *acc;
-    acc = bytes_tx_map.lookup_or_try_init(&tid, &zero);
-    if (acc) (*acc) += size;
-    return 0;
-}
-
 // RX do cliente + latência
 TRACEPOINT_PROBE(syscalls, sys_enter_recvfrom) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
     u8 *ok  = cli_filter.lookup(&pid);
     if (!ok) return 0;
-
     u64 now  = bpf_ktime_get_ns();
     u64 size = (u64)args->size;
     u64 zero = 0, *acc, *start;
-
-    acc = bytes_rx_map.lookup_or_try_init(&pid, &zero);
+    acc = rx_by_pid.lookup_or_try_init(&pid, &zero);
     if (acc) (*acc) += size;
-
     start = cli_send_ts.lookup(&pid);
     if (start && now > *start) {
         u64 lat = now - *start;
@@ -108,23 +96,39 @@ data = {
 }
 start_time   = time.time()
 last_save    = time.time()
+server_tids  = set()   # TIDs do servidor detectados via psutil
 tracked_pids = set()
 
-def inject_server_tids(b):
-    """Injeta TIDs das threads do servidor no mapa srv_filter."""
-    for conn in psutil.net_connections(kind="tcp"):
-        if conn.laddr and conn.laddr.port == TARGET_PORT and conn.pid:
-            try:
-                p = psutil.Process(conn.pid)
-                for t in p.threads():
-                    b["srv_filter"][ct.c_uint32(t.id)] = ct.c_uint8(1)
-                    tracked_pids.add(conn.pid)
-                for child in p.children(recursive=True):
-                    for t in child.threads():
-                        b["srv_filter"][ct.c_uint32(t.id)] = ct.c_uint8(1)
+def update_server_tids():
+    """Detecta TIDs do servidor via /proc — funciona cross-namespace."""
+    new_tids = set()
+    try:
+        for conn in psutil.net_connections(kind="tcp"):
+            if conn.laddr and conn.laddr.port == TARGET_PORT and conn.pid:
+                pid = conn.pid
+                tracked_pids.add(pid)
+                # Lê TIDs diretamente de /proc/<pid>/task/
+                task_dir = f"/proc/{pid}/task"
+                if os.path.exists(task_dir):
+                    for tid_str in os.listdir(task_dir):
+                        try:
+                            new_tids.add(int(tid_str))
+                        except ValueError:
+                            pass
+                # Threads filhas via psutil
+                try:
+                    p = psutil.Process(pid)
+                    for t in p.threads():
+                        new_tids.add(t.id)
+                    for child in p.children(recursive=True):
                         tracked_pids.add(child.pid)
-            except Exception:
-                pass
+                        for t in child.threads():
+                            new_tids.add(t.id)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    server_tids.update(new_tids)
 
 def collect_proc_metrics():
     cpu_list, mem_list = [], []
@@ -165,42 +169,48 @@ def save_results():
         json.dump(snapshot, f, indent=2)
     last_save = time.time()
     elapsed = round(time.time() - start_time, 0)
-    print(f"\n💾 [{elapsed}s/{DURATION}s] {RESULTS_PATH}")
+    print(f"\n💾 [{elapsed}s/{DURATION}s]")
     print(f"   conns:{snapshot['connections']} | "
           f"TX:{snapshot['bytes_tx']}B | RX:{snapshot['bytes_rx']}B | "
           f"lat:{snapshot['latency_avg_ms']}ms | "
-          f"cpu:{snapshot['cpu_avg_pct']}% | mem:{snapshot['mem_avg_mb']}MB\n",
+          f"cpu:{snapshot['cpu_avg_pct']}% | mem:{snapshot['mem_avg_mb']}MB",
           flush=True)
 
 def poll_maps(b):
     now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
+    # Conexões
     try:
         cnt = b["conn_count"][ct.c_uint32(0)].value
         if cnt != data["connections"]:
-            diff = cnt - data["connections"]
             data["connections"] = cnt
-            print(f"[{now}] CONNECT  +{diff} (total={cnt})", flush=True)
+            print(f"[{now}] CONNECT total={cnt}", flush=True)
     except KeyError:
         pass
 
-    total_tx, total_rx = 0, 0
-    for k, v in b["bytes_tx_map"].items():
-        total_tx += v.value
-    for k, v in b["bytes_rx_map"].items():
+    # TX — soma apenas TIDs do servidor
+    total_tx = 0
+    for k, v in b["tx_by_tid"].items():
+        if k.value in server_tids:
+            total_tx += v.value
+
+    # RX — soma todos os PIDs do cliente
+    total_rx = 0
+    for k, v in b["rx_by_pid"].items():
         total_rx += v.value
         tracked_pids.add(k.value)
 
     if total_tx != data["bytes_tx"] or total_rx != data["bytes_rx"]:
         data["bytes_tx"] = total_tx
         data["bytes_rx"] = total_rx
-        print(f"[{now}] BYTES    TX={total_tx}B RX={total_rx}B", flush=True)
+        print(f"[{now}] BYTES TX={total_tx}B RX={total_rx}B "
+              f"(srv_tids={len(server_tids)})", flush=True)
 
+    # Latência
     for k, v in b["latency_map"].items():
         lat_ms = round(v.value / 1e6, 4)
         if 0 < lat_ms < 5000:
             data["latencies_ms"].append(lat_ms)
-            print(f"[{now}] LATENCY  {lat_ms}ms", flush=True)
     b["latency_map"].clear()
 
     data["samples"].append({
@@ -212,29 +222,32 @@ def poll_maps(b):
 
 def main():
     print("=" * 60)
-    print(f"  🔍 Coletor eBPF v8 — porta {TARGET_PORT}")
-    print(f"  Duração: {DURATION//60} minutos | Para automaticamente")
-    print("  Métricas: CPU · Memória · Latência · Bytes · Conexões")
+    print(f"  🔍 Coletor eBPF v9 — porta {TARGET_PORT}")
+    print(f"  Duração: {DURATION//60} minutos")
     print("=" * 60, flush=True)
 
     b = BPF(text=bpf_program)
-    print("✅ tracepoints carregados", flush=True)
+    print("✅ BPF carregado", flush=True)
 
-    counter = 0
+    # Inicializa cpu_percent
+    update_server_tids()
+    for pid in list(tracked_pids):
+        try: psutil.Process(pid).cpu_percent(interval=None)
+        except: pass
+
     try:
         while time.time() - start_time < DURATION:
             time.sleep(POLL_INTERVAL)
-            counter += 1
-            inject_server_tids(b)
+            update_server_tids()
             poll_maps(b)
             if time.time() - last_save >= SAVE_INTERVAL:
                 save_results()
     except KeyboardInterrupt:
-        print("\n[!] Interrompido pelo usuário")
+        print("\n[!] Interrompido")
     finally:
-        print(f"\n[✓] {DURATION//60} minutos concluídos. Salvando resultado final...")
+        print("\n[✓] Salvando resultado final...")
         save_results()
-        print("[✓] Coletor eBPF encerrado.", flush=True)
+        print("[✓] Encerrado.", flush=True)
 
 if __name__ == "__main__":
     main()

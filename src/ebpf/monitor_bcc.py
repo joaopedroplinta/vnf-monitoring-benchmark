@@ -1,32 +1,36 @@
 #!/usr/bin/python3
 """
-Coletor eBPF v7 — TCC Gerenciamento de Rede
+Coletor eBPF v8 — TCC Gerenciamento de Rede
+- Duração: 15 minutos (900s) e para automaticamente
 - Conexões: tracepoint inet_sock_set_state (porta 9999)
-- Bytes/Latência: tracepoint sys_enter_sendto/recvfrom
-  PIDs do servidor detectados via psutil e injetados no mapa
+- TX: sys_exit_sendto filtrado por TID das threads do servidor
+- RX: sys_enter_recvfrom filtrado por PID do cliente
+- Latência: medida do lado do cliente (send→recv)
 Porta monitorada: 9999
 """
 
 from bcc import BPF
 import ctypes as ct
-import time, os, json, psutil
+import time, os, json, psutil, sys
 from datetime import datetime
 
 TARGET_PORT = 9999
+DURATION    = 900  # 15 minutos
 
 bpf_program = """
 #include <linux/tcp.h>
 
 #define TARGET_PORT 9999
 
-BPF_HASH(conn_count,   u32, u64);
-BPF_HASH(bytes_tx_map, u32, u64);
-BPF_HASH(bytes_rx_map, u32, u64);
-BPF_HASH(send_ts,      u32, u64);
-BPF_HASH(latency_map,  u32, u64);
-BPF_HASH(pid_filter,   u32, u8);
+BPF_HASH(conn_count,    u32, u64);
+BPF_HASH(bytes_tx_map,  u32, u64);
+BPF_HASH(bytes_rx_map,  u32, u64);
+BPF_HASH(cli_send_ts,   u32, u64);  // timestamp send do cliente
+BPF_HASH(latency_map,   u32, u64);
+BPF_HASH(cli_filter,    u32, u8);   // PIDs do cliente (faz connect)
+BPF_HASH(srv_filter,    u32, u8);   // TIDs do servidor (threads de accept)
 
-// Conexões TCP saindo para porta 9999
+// Conexões do cliente para porta 9999
 TRACEPOINT_PROBE(sock, inet_sock_set_state) {
     if (args->protocol != IPPROTO_TCP) return 0;
     if (args->newstate != TCP_SYN_SENT) return 0;
@@ -34,7 +38,7 @@ TRACEPOINT_PROBE(sock, inet_sock_set_state) {
 
     u32 pid = bpf_get_current_pid_tgid() >> 32;
     u8  one = 1;
-    pid_filter.update(&pid, &one);
+    cli_filter.update(&pid, &one);
 
     u32 key = 0; u64 zero = 0, *cnt;
     cnt = conn_count.lookup_or_try_init(&key, &zero);
@@ -42,36 +46,33 @@ TRACEPOINT_PROBE(sock, inet_sock_set_state) {
     return 0;
 }
 
-// Bytes TX
-// TX enter — marca timestamp para latência
+// TX do cliente — marca timestamp para latência
 TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
-    u8 *ok  = pid_filter.lookup(&pid);
+    u8 *ok  = cli_filter.lookup(&pid);
     if (!ok) return 0;
     u64 ts = bpf_ktime_get_ns();
-    send_ts.update(&pid, &ts);
+    cli_send_ts.update(&pid, &ts);
     return 0;
 }
 
-// TX exit — captura bytes via sendto filtrando por TID (threads do servidor)
+// TX do servidor — captura bytes reais via TID das threads
 TRACEPOINT_PROBE(syscalls, sys_exit_sendto) {
     if (args->ret <= 0) return 0;
-    // Usa TID para pegar threads filhas do servidor
     u32 tid = (u32)(bpf_get_current_pid_tgid() & 0xFFFFFFFF);
-    u8 *ok = pid_filter.lookup(&tid);
+    u8 *ok  = srv_filter.lookup(&tid);
     if (!ok) return 0;
     u64 size = (u64)args->ret;
-    u32 pid = (u32)(bpf_get_current_pid_tgid() >> 32);
     u64 zero = 0, *acc;
-    acc = bytes_tx_map.lookup_or_try_init(&pid, &zero);
+    acc = bytes_tx_map.lookup_or_try_init(&tid, &zero);
     if (acc) (*acc) += size;
     return 0;
 }
 
-// Bytes RX + latência
+// RX do cliente + latência
 TRACEPOINT_PROBE(syscalls, sys_enter_recvfrom) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
-    u8 *ok  = pid_filter.lookup(&pid);
+    u8 *ok  = cli_filter.lookup(&pid);
     if (!ok) return 0;
 
     u64 now  = bpf_ktime_get_ns();
@@ -81,11 +82,11 @@ TRACEPOINT_PROBE(syscalls, sys_enter_recvfrom) {
     acc = bytes_rx_map.lookup_or_try_init(&pid, &zero);
     if (acc) (*acc) += size;
 
-    start = send_ts.lookup(&pid);
+    start = cli_send_ts.lookup(&pid);
     if (start && now > *start) {
         u64 lat = now - *start;
         latency_map.update(&pid, &lat);
-        send_ts.delete(&pid);
+        cli_send_ts.delete(&pid);
     }
     return 0;
 }
@@ -109,32 +110,21 @@ start_time   = time.time()
 last_save    = time.time()
 tracked_pids = set()
 
-def inject_server_pids(b):
-    """Injeta PID principal e todos TIDs filhos do servidor (porta 9999)."""
-    server_pids = set()
+def inject_server_tids(b):
+    """Injeta TIDs das threads do servidor no mapa srv_filter."""
     for conn in psutil.net_connections(kind="tcp"):
         if conn.laddr and conn.laddr.port == TARGET_PORT and conn.pid:
-            server_pids.add(conn.pid)
-
-    for pid in server_pids:
-        try:
-            p = psutil.Process(pid)
-            b["pid_filter"][ct.c_uint32(pid)] = ct.c_uint8(1)
-            tracked_pids.add(pid)
-            psutil.Process(pid).cpu_percent(interval=None)
-            # Injeta TIDs das threads filhas (cada conexão aceita cria uma thread)
-            for t in p.threads():
-                b["pid_filter"][ct.c_uint32(t.id)] = ct.c_uint8(1)
-                tracked_pids.add(t.id)
-            # Injeta também processos filhos (caso use multiprocessing)
-            for child in p.children(recursive=True):
-                b["pid_filter"][ct.c_uint32(child.pid)] = ct.c_uint8(1)
-                tracked_pids.add(child.pid)
-                for t in child.threads():
-                    b["pid_filter"][ct.c_uint32(t.id)] = ct.c_uint8(1)
-                    tracked_pids.add(t.id)
-        except Exception:
-            pass
+            try:
+                p = psutil.Process(conn.pid)
+                for t in p.threads():
+                    b["srv_filter"][ct.c_uint32(t.id)] = ct.c_uint8(1)
+                    tracked_pids.add(conn.pid)
+                for child in p.children(recursive=True):
+                    for t in child.threads():
+                        b["srv_filter"][ct.c_uint32(t.id)] = ct.c_uint8(1)
+                        tracked_pids.add(child.pid)
+            except Exception:
+                pass
 
 def collect_proc_metrics():
     cpu_list, mem_list = [], []
@@ -174,7 +164,8 @@ def save_results():
     with open(RESULTS_PATH, "w") as f:
         json.dump(snapshot, f, indent=2)
     last_save = time.time()
-    print(f"\n💾 {RESULTS_PATH}")
+    elapsed = round(time.time() - start_time, 0)
+    print(f"\n💾 [{elapsed}s/{DURATION}s] {RESULTS_PATH}")
     print(f"   conns:{snapshot['connections']} | "
           f"TX:{snapshot['bytes_tx']}B | RX:{snapshot['bytes_rx']}B | "
           f"lat:{snapshot['latency_avg_ms']}ms | "
@@ -196,9 +187,6 @@ def poll_maps(b):
     total_tx, total_rx = 0, 0
     for k, v in b["bytes_tx_map"].items():
         total_tx += v.value
-        tracked_pids.add(k.value)
-        try: psutil.Process(k.value).cpu_percent(interval=None)
-        except: pass
     for k, v in b["bytes_rx_map"].items():
         total_rx += v.value
         tracked_pids.add(k.value)
@@ -212,7 +200,7 @@ def poll_maps(b):
         lat_ms = round(v.value / 1e6, 4)
         if 0 < lat_ms < 5000:
             data["latencies_ms"].append(lat_ms)
-            print(f"[{now}] LATENCY  pid={k.value} lat={lat_ms}ms", flush=True)
+            print(f"[{now}] LATENCY  {lat_ms}ms", flush=True)
     b["latency_map"].clear()
 
     data["samples"].append({
@@ -224,28 +212,29 @@ def poll_maps(b):
 
 def main():
     print("=" * 60)
-    print("  🔍 Coletor eBPF v7 — porta 9999 (tracepoints)")
+    print(f"  🔍 Coletor eBPF v8 — porta {TARGET_PORT}")
+    print(f"  Duração: {DURATION//60} minutos | Para automaticamente")
     print("  Métricas: CPU · Memória · Latência · Bytes · Conexões")
     print("=" * 60, flush=True)
 
     b = BPF(text=bpf_program)
-    print("✅ tracepoints: inet_sock_set_state | sys_sendto | sys_recvfrom",
-          flush=True)
+    print("✅ tracepoints carregados", flush=True)
 
     counter = 0
     try:
-        while True:
+        while time.time() - start_time < DURATION:
             time.sleep(POLL_INTERVAL)
             counter += 1
-            # Injeta PIDs do servidor a cada 3s
-            if counter % 1 == 0:  # injeta a cada segundo para pegar threads novas
-                inject_server_pids(b)
+            inject_server_tids(b)
             poll_maps(b)
             if time.time() - last_save >= SAVE_INTERVAL:
                 save_results()
     except KeyboardInterrupt:
-        print("\n[!] Encerrando coletor eBPF...")
+        print("\n[!] Interrompido pelo usuário")
+    finally:
+        print(f"\n[✓] {DURATION//60} minutos concluídos. Salvando resultado final...")
         save_results()
+        print("[✓] Coletor eBPF encerrado.", flush=True)
 
 if __name__ == "__main__":
     main()

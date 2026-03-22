@@ -11,6 +11,7 @@ import psutil
 
 TARGET_PORT   = 9999
 SAVE_INTERVAL = 10
+DURATION      = 900  # 15 minutos
 RESULTS_PATH  = "/app/results/sysstat_results.json"
 os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
 
@@ -87,7 +88,7 @@ def collect():
     print("=" * 60)
 
     try:
-        while True:
+        while time.time() - start_time < DURATION:
             now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
             # Conexões ativas

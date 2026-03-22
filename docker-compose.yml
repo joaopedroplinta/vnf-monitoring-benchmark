@@ -89,7 +89,7 @@ services:
     command: >
       sh -c "
         echo '⏳ Aguardando coletores acumularem dados (~3 min de tráfego)...' &&
-        sleep 180 &&
+        sleep 900 &&
         echo '📊 Gerando relatório de comparação...' &&
         python3 /app/src/compare.py
       "

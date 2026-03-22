@@ -16,7 +16,8 @@ import psutil
 TARGET_PORT   = 9999
 RESULTS_PATH  = "/app/results/prometheus_results.json"
 SCRAPE_INTERVAL = 2   # segundos entre coletas
-SAVE_INTERVAL   = 10  # segundos entre snapshots
+SAVE_INTERVAL   = 10
+DURATION        = 900  # 15 minutos  # segundos entre snapshots
 os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
 
 # ─── Definição das métricas Prometheus ───────────────────────────────────────
@@ -91,7 +92,7 @@ def collect_loop():
     print("  Métricas expostas em http://localhost:8000/metrics")
     print("=" * 60)
 
-    while True:
+    while time.time() - start_time < DURATION:
         now   = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         conns = get_connections()
 

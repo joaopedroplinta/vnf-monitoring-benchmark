@@ -1,315 +1,315 @@
 {
   "collector": "ebpf",
-  "timestamp": "2026-03-22T19:07:47.551766",
-  "duration_s": 900.17,
-  "connections": 1207,
-  "bytes_tx": 96,
-  "bytes_rx": 0,
-  "latency_avg_ms": 0,
-  "latency_max_ms": 0,
-  "latency_min_ms": 0,
+  "timestamp": "2026-03-22T21:37:42.814161",
+  "duration_s": 900.16,
+  "connections": 1396,
+  "bytes_tx": 122467,
+  "bytes_rx": 15896,
+  "latency_avg_ms": 0.9825,
+  "latency_max_ms": 10.3094,
+  "latency_min_ms": 0.072,
   "cpu_avg_pct": 0.0,
-  "mem_avg_mb": 8.81,
+  "mem_avg_mb": 8.76,
   "samples": [
     {
-      "time": "19:06:55.100",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1138
+      "time": "21:36:51.415",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1328
     },
     {
-      "time": "19:06:56.154",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1140
+      "time": "21:36:52.464",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1329
     },
     {
-      "time": "19:06:57.254",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1141
+      "time": "21:36:53.507",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1331
     },
     {
-      "time": "19:06:58.302",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1143
+      "time": "21:36:54.555",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1332
     },
     {
-      "time": "19:06:59.364",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1144
+      "time": "21:36:55.596",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1334
     },
     {
-      "time": "19:07:00.428",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1146
+      "time": "21:36:56.638",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1335
     },
     {
-      "time": "19:07:01.476",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1147
+      "time": "21:36:57.685",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1337
     },
     {
-      "time": "19:07:02.525",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1149
+      "time": "21:36:58.760",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1338
     },
     {
-      "time": "19:07:03.606",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1149
+      "time": "21:36:59.806",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1340
     },
     {
-      "time": "19:07:04.692",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1151
+      "time": "21:37:00.852",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1341
     },
     {
-      "time": "19:07:05.748",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1152
+      "time": "21:37:01.898",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1341
     },
     {
-      "time": "19:07:06.807",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1154
+      "time": "21:37:02.947",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1343
     },
     {
-      "time": "19:07:07.855",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1155
+      "time": "21:37:03.991",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1344
     },
     {
-      "time": "19:07:08.904",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1157
+      "time": "21:37:05.033",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1346
     },
     {
-      "time": "19:07:09.951",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1158
+      "time": "21:37:06.087",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1347
     },
     {
-      "time": "19:07:11.003",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1160
+      "time": "21:37:07.154",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1349
     },
     {
-      "time": "19:07:12.059",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1161
+      "time": "21:37:08.201",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1350
     },
     {
-      "time": "19:07:13.108",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1162
+      "time": "21:37:09.255",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1352
     },
     {
-      "time": "19:07:14.158",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1164
+      "time": "21:37:10.293",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1353
     },
     {
-      "time": "19:07:15.210",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1165
+      "time": "21:37:11.339",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1355
     },
     {
-      "time": "19:07:16.270",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1167
+      "time": "21:37:12.385",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1356
     },
     {
-      "time": "19:07:17.542",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1167
+      "time": "21:37:13.433",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1358
     },
     {
-      "time": "19:07:18.589",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1169
+      "time": "21:37:14.476",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1358
     },
     {
-      "time": "19:07:19.689",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1170
+      "time": "21:37:15.519",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1360
     },
     {
-      "time": "19:07:20.900",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1172
+      "time": "21:37:16.562",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1361
     },
     {
-      "time": "19:07:22.012",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1174
+      "time": "21:37:17.607",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1363
     },
     {
-      "time": "19:07:23.083",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1175
+      "time": "21:37:18.651",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1364
     },
     {
-      "time": "19:07:24.171",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1176
+      "time": "21:37:19.694",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1366
     },
     {
-      "time": "19:07:25.232",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1178
+      "time": "21:37:20.741",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1367
     },
     {
-      "time": "19:07:26.286",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1179
+      "time": "21:37:21.781",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1369
     },
     {
-      "time": "19:07:27.332",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1181
+      "time": "21:37:22.834",
+      "bytes_tx": 114305,
+      "bytes_rx": 15896,
+      "connections": 1370
     },
     {
-      "time": "19:07:28.408",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1182
+      "time": "21:37:23.881",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1372
     },
     {
-      "time": "19:07:29.455",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1184
+      "time": "21:37:24.925",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1373
     },
     {
-      "time": "19:07:30.507",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1185
+      "time": "21:37:25.970",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1374
     },
     {
-      "time": "19:07:31.605",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1187
+      "time": "21:37:27.008",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1375
     },
     {
-      "time": "19:07:32.655",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1188
+      "time": "21:37:28.075",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1377
     },
     {
-      "time": "19:07:33.750",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1190
+      "time": "21:37:29.137",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1378
     },
     {
-      "time": "19:07:34.805",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1191
+      "time": "21:37:30.204",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1380
     },
     {
-      "time": "19:07:35.890",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1193
+      "time": "21:37:31.248",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1381
     },
     {
-      "time": "19:07:36.938",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1194
+      "time": "21:37:32.290",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1383
     },
     {
-      "time": "19:07:37.985",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1196
+      "time": "21:37:33.346",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1384
     },
     {
-      "time": "19:07:39.045",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1197
+      "time": "21:37:34.390",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1386
     },
     {
-      "time": "19:07:40.105",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1198
+      "time": "21:37:35.477",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1387
     },
     {
-      "time": "19:07:41.166",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1199
+      "time": "21:37:36.542",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1389
     },
     {
-      "time": "19:07:42.222",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1201
+      "time": "21:37:37.597",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1390
     },
     {
-      "time": "19:07:43.283",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1202
+      "time": "21:37:38.639",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1392
     },
     {
-      "time": "19:07:44.343",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1204
+      "time": "21:37:39.698",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1393
     },
     {
-      "time": "19:07:45.390",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1205
+      "time": "21:37:40.736",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1395
     },
     {
-      "time": "19:07:46.445",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1207
+      "time": "21:37:41.776",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1396
     },
     {
-      "time": "19:07:47.547",
-      "bytes_tx": 96,
-      "bytes_rx": 0,
-      "connections": 1207
+      "time": "21:37:42.813",
+      "bytes_tx": 122467,
+      "bytes_rx": 15896,
+      "connections": 1396
     }
   ]
 }

@@ -53,12 +53,15 @@ TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
     return 0;
 }
 
-// TX exit — captura bytes reais enviados via sendto
+// TX exit — captura bytes via sendto filtrando por PID OU TID
 TRACEPOINT_PROBE(syscalls, sys_exit_sendto) {
-    u32 pid = bpf_get_current_pid_tgid() >> 32;
-    u8 *ok  = pid_filter.lookup(&pid);
-    if (!ok) return 0;
     if (args->ret <= 0) return 0;
+    u32 pid = bpf_get_current_pid_tgid() >> 32;
+    u32 tid = bpf_get_current_pid_tgid() & 0xFFFFFFFF;
+    // Aceita se PID ou TID estiver no filtro
+    u8 *ok_pid = pid_filter.lookup(&pid);
+    u8 *ok_tid = pid_filter.lookup(&tid);
+    if (!ok_pid && !ok_tid) return 0;
     u64 size = (u64)args->ret;
     u64 zero = 0, *acc;
     acc = bytes_tx_map.lookup_or_try_init(&pid, &zero);
@@ -108,9 +111,8 @@ last_save    = time.time()
 tracked_pids = set()
 
 def inject_server_pids(b):
-    """Injeta PIDs e TIDs do servidor (porta 9999) no mapa pid_filter."""
+    """Injeta PID principal e todos TIDs filhos do servidor (porta 9999)."""
     server_pids = set()
-    # Pega PIDs ouvindo na porta 9999 (LISTEN) e conexões estabelecidas
     for conn in psutil.net_connections(kind="tcp"):
         if conn.laddr and conn.laddr.port == TARGET_PORT and conn.pid:
             server_pids.add(conn.pid)
@@ -118,15 +120,20 @@ def inject_server_pids(b):
     for pid in server_pids:
         try:
             p = psutil.Process(pid)
-            # Injeta o processo principal
             b["pid_filter"][ct.c_uint32(pid)] = ct.c_uint8(1)
             tracked_pids.add(pid)
             psutil.Process(pid).cpu_percent(interval=None)
-            # Injeta TODOS os TIDs das threads (handle_client roda em threads)
+            # Injeta TIDs das threads filhas (cada conexão aceita cria uma thread)
             for t in p.threads():
-                tid = t.id
-                b["pid_filter"][ct.c_uint32(tid)] = ct.c_uint8(1)
-                tracked_pids.add(tid)
+                b["pid_filter"][ct.c_uint32(t.id)] = ct.c_uint8(1)
+                tracked_pids.add(t.id)
+            # Injeta também processos filhos (caso use multiprocessing)
+            for child in p.children(recursive=True):
+                b["pid_filter"][ct.c_uint32(child.pid)] = ct.c_uint8(1)
+                tracked_pids.add(child.pid)
+                for t in child.threads():
+                    b["pid_filter"][ct.c_uint32(t.id)] = ct.c_uint8(1)
+                    tracked_pids.add(t.id)
         except Exception:
             pass
 
@@ -232,7 +239,7 @@ def main():
             time.sleep(POLL_INTERVAL)
             counter += 1
             # Injeta PIDs do servidor a cada 3s
-            if counter % 3 == 0:
+            if counter % 1 == 0:  # injeta a cada segundo para pegar threads novas
                 inject_server_pids(b)
             poll_maps(b)
             if time.time() - last_save >= SAVE_INTERVAL:

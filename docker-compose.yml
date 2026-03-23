@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+
+  # ── Servidor socket ──────────────────────────────────────────────────────────
+  server:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile.server
+    container_name: socket-server
+    network_mode: "host"   # mesma rede do eBPF para capturar conexões
+    volumes:
+      - ./src/socket:/app
+    command: python server.py
+
+  # ── Cliente socket ───────────────────────────────────────────────────────────
+  client:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile.client
+    container_name: socket-client
+    network_mode: "host"   # conecta ao server via localhost
+    depends_on:
+      - server
+    volumes:
+      - ./src/socket:/app
+    command: python client.py
+
+  # ── Coletor eBPF ─────────────────────────────────────────────────────────────
+  ebpf-collector:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: ebpf-collector
+    pid: "host"
+    privileged: true
+    network_mode: "host"
+    volumes:
+      - /sys/kernel/debug:/sys/kernel/debug:rw
+      - /sys/fs/bpf:/sys/fs/bpf:rw
+      - /lib/modules:/lib/modules:ro
+      - /usr/src:/usr/src:ro
+      - ./src/ebpf:/app/ebpf
+      - results_vol:/app/results
+    command: python3 /app/ebpf/monitor_bcc.py
+    depends_on:
+      - server
+
+  # ── Coletor sysstat ──────────────────────────────────────────────────────────
+  sysstat-collector:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: sysstat-collector
+    network_mode: "host"
+    pid: "host"
+    volumes:
+      - ./src/sysstat:/app/sysstat
+      - results_vol:/app/results
+    command: python3 /app/sysstat/collector.py
+    depends_on:
+      - server
+
+  # ── Coletor Prometheus ───────────────────────────────────────────────────────
+  prometheus-collector:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: prometheus-collector
+    network_mode: "host"
+    pid: "host"
+    volumes:
+      - ./src/prometheus:/app/prometheus
+      - results_vol:/app/results
+    command: python3 /app/prometheus/exporter.py
+    depends_on:
+      - server
+
+  # ── Comparador (roda automaticamente após o client terminar) ────────────────
+  comparator:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: comparator
+    network_mode: "host"
+    volumes:
+      - ./src:/app/src
+      - results_vol:/app/results
+    command: >
+      sh -c "
+        echo '⏳ Aguardando coletores acumularem dados (~3 min de tráfego)...' &&
+        sleep 900 &&
+        echo '📊 Gerando relatório de comparação...' &&
+        python3 /app/src/compare.py
+      "
+    depends_on:
+      - ebpf-collector
+      - sysstat-collector
+      - prometheus-collector
+
+volumes:
+  results_vol:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/results
+

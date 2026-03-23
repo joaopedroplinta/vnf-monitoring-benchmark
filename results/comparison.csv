@@ -1,0 +1,10 @@
+metrica,ebpf,sysstat,prometheus
+connections,1396,1,1
+bytes_tx,122467,941168,940634
+bytes_rx,15896,1004501,1003903
+latency_avg_ms,0.9825,0.2213,0.2332
+latency_max_ms,10.3094,2.3898,1.4277
+latency_min_ms,0.072,0.0793,0.0468
+cpu_avg_pct,0.0,9.9,9.9
+mem_avg_mb,8.76,8.76,8.76
+duration_s,900.16,889.32,889.61

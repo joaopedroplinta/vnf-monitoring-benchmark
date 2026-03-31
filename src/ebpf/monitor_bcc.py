@@ -9,6 +9,7 @@ Correções aplicadas:
   - Connections: expõe dois contadores separados:
       connections_total  → SYN_SENT cumulativo (semântica eBPF)
       connections_active → snapshot instantâneo (mesma semântica do sysstat/Prometheus)
+  - FIX COMPILAÇÃO: struct bpf_wq vazia para bypass do erro de sizeof em kernels 6.10+
 
 Porta monitorada: 9999 | Duração: 8 minutos
 """
@@ -22,6 +23,11 @@ TARGET_PORT = 9999
 DURATION    = 480  # 8 minutos
 
 bpf_program = """
+// WORKAROUND PARA KERNELS RECENTES (6.10+) vs BCC
+// Engana o compilador definindo a struct bpf_wq com um tamanho mínimo
+// para evitar o erro "invalid application of 'sizeof' to an incomplete type"
+struct bpf_wq { int _pad; };
+
 #include <linux/tcp.h>
 
 #define TARGET_PORT 9999
@@ -81,7 +87,7 @@ TRACEPOINT_PROBE(syscalls, sys_exit_sendto) {
 
 // ── Latência: timestamp quando cliente envia ─────────────────────────────────
 // FIX #2: usa TGID como chave para que threads filhos do mesmo processo
-// compartilhem o mesmo timestamp de envio.
+// compartilharem o mesmo timestamp de envio.
 TRACEPOINT_PROBE(syscalls, sys_enter_sendto) {
     u32 tgid = bpf_get_current_pid_tgid() >> 32;
     u8 *ok = cli_tgid_filter.lookup(&tgid);
@@ -216,15 +222,11 @@ def collect_proc_metrics():
     FIX #3: cpu_percent(interval=None) retorna SEMPRE 0.0 na primeira chamada
     porque o psutil ainda não tem uma amostra anterior para comparar.
     Solução: usar interval=0.5 para forçar uma medição real a cada coleta.
-
-    O sysstat/Prometheus usam interval=0.1 — usamos 0.5 para menor overhead,
-    mas ainda assim valores coerentes (não zero).
     """
     cpu_list, mem_list = [], []
     for pid in list(tracked_pids):
         try:
             p = psutil.Process(pid)
-            # FIX #3: interval > 0 garante valor real (não 0.0)
             cpu_list.append(p.cpu_percent(interval=0.5))
             mem_list.append(p.memory_info().rss / (1024 * 1024))
         except (psutil.NoSuchProcess, psutil.AccessDenied):
@@ -246,10 +248,9 @@ def save_results():
         "collector":           "ebpf",
         "timestamp":           datetime.utcnow().isoformat(),
         "duration_s":          round(time.time() - start_time, 2),
-        # FIX #4: expõe as duas semânticas separadamente para facilitar comparação
-        "connections":         data["connections_active"],  # compatível com sysstat
-        "connections_total":   data["connections_total"],   # semântica eBPF (SYN_SENT)
-        "connections_active":  data["connections_active"],  # snapshot instantâneo
+        "connections":         data["connections_active"],  
+        "connections_total":   data["connections_total"],   
+        "connections_active":  data["connections_active"],  
         "bytes_tx":            data["bytes_tx"],
         "bytes_rx":            data["bytes_rx"],
         "latency_avg_ms":      round(sum(lats)/len(lats), 4) if lats else 0,
@@ -275,7 +276,6 @@ def save_results():
 def poll_maps(b):
     now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
-    # FIX #4: atualiza connections_active com snapshot psutil (mesma semântica sysstat)
     data["connections_active"] = count_active_connections()
 
     try:
@@ -330,7 +330,7 @@ def main():
     print("=" * 60, flush=True)
 
     b = BPF(text=bpf_program)
-    print("✅ BPF carregado", flush=True)
+    print("✅ BPF carregado com sucesso!", flush=True)
 
     print(f"⏳ Aguardando servidor na porta {TARGET_PORT}...", flush=True)
     server_tgids = set()
@@ -345,9 +345,6 @@ def main():
     else:
         inject_server_tgids(b, server_tgids)
 
-    # Aquece o psutil para a primeira chamada de cpu_percent não retornar 0
-    # (isso era feito antes, mas com interval=0.5 no collect_proc_metrics
-    # esse aquecimento não é mais estritamente necessário — mantemos por segurança)
     for pid in list(tracked_pids):
         try:
             psutil.Process(pid).cpu_percent(interval=None)

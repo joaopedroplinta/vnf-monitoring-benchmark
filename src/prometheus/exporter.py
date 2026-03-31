@@ -15,9 +15,9 @@ import psutil
 
 TARGET_PORT   = 9999
 RESULTS_PATH  = "/app/results/prometheus_results.json"
-SCRAPE_INTERVAL = 2   # segundos entre coletas
+SCRAPE_INTERVAL = 2
 SAVE_INTERVAL   = 10
-DURATION        = 900  # 15 minutos  # segundos entre snapshots
+DURATION        = 480  # 8 minutos
 os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
 
 # ─── Definição das métricas Prometheus ───────────────────────────────────────
@@ -112,7 +112,6 @@ def collect_loop():
         bytes_tx = net_tx - net_start_tx
         bytes_rx = net_rx - net_start_rx
 
-        # Atualiza gauges Prometheus
         cpu_gauge.set(avg_cpu)
         mem_gauge.set(avg_mem)
         conn_gauge.set(len(conns))
@@ -141,7 +140,6 @@ def collect_loop():
               f"mem={avg_mem}MB lat={lat or '?'}ms "
               f"TX={bytes_tx}B RX={bytes_rx}B")
 
-        # Salva snapshot JSON periodicamente
         if time.time() - last_save >= SAVE_INTERVAL:
             _save(start_time, conn_set, cpu_samples, mem_samples,
                   lat_samples, bytes_tx, bytes_rx, samples)

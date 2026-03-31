@@ -21,10 +21,10 @@ echo ""
 echo "📊 Containers rodando! Acompanhe os logs com:"
 echo "   docker-compose logs -f"
 echo ""
-echo "⏳ Duração: 15 minutos. O relatório será gerado automaticamente em ./results/"
+echo "⏳ Duração: 8 minutos. O relatório será gerado automaticamente em ./results/"
 echo ""
-echo "⏰ Aguardando 16 minutos para parar os containers..."
-sleep 960
+echo "⏰ Aguardando 9 minutos para parar os containers..."
+sleep 540
 
 echo ""
 echo "🛑 Parando todos os containers..."

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
 
   # ── Servidor socket ──────────────────────────────────────────────────────────
@@ -8,7 +6,9 @@ services:
       context: .
       dockerfile: configs/Dockerfile.server
     container_name: socket-server
-    network_mode: "host"   # mesma rede do eBPF para capturar conexões
+    network_mode: "host"
+    environment:
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./src/socket:/app
     command: python server.py
@@ -19,7 +19,9 @@ services:
       context: .
       dockerfile: configs/Dockerfile.client
     container_name: socket-client
-    network_mode: "host"   # conecta ao server via localhost
+    network_mode: "host"
+    environment:
+      - PYTHONUNBUFFERED=1
     depends_on:
       - server
     volumes:
@@ -35,6 +37,8 @@ services:
     pid: "host"
     privileged: true
     network_mode: "host"
+    environment:
+      - PYTHONUNBUFFERED=1
     volumes:
       - /sys/kernel/debug:/sys/kernel/debug:rw
       - /sys/fs/bpf:/sys/fs/bpf:rw
@@ -54,6 +58,8 @@ services:
     container_name: sysstat-collector
     network_mode: "host"
     pid: "host"
+    environment:
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./src/sysstat:/app/sysstat
       - results_vol:/app/results
@@ -69,6 +75,8 @@ services:
     container_name: prometheus-collector
     network_mode: "host"
     pid: "host"
+    environment:
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./src/prometheus:/app/prometheus
       - results_vol:/app/results
@@ -76,20 +84,22 @@ services:
     depends_on:
       - server
 
-  # ── Comparador (roda automaticamente após o client terminar) ────────────────
+  # ── Comparador ───────────────────────────────────────────────────────────────
   comparator:
     build:
       context: .
       dockerfile: configs/Dockerfile
     container_name: comparator
     network_mode: "host"
+    environment:
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./src:/app/src
       - results_vol:/app/results
     command: >
       sh -c "
-        echo '⏳ Aguardando coletores acumularem dados (~3 min de tráfego)...' &&
-        sleep 900 &&
+        echo '⏳ Aguardando coletores acumularem dados...' &&
+        sleep 485 && 
         echo '📊 Gerando relatório de comparação...' &&
         python3 /app/src/compare.py
       "
@@ -105,4 +115,3 @@ volumes:
       type: none
       o: bind
       device: ${PWD}/results
-

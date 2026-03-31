@@ -11,7 +11,7 @@ import psutil
 
 TARGET_PORT   = 9999
 SAVE_INTERVAL = 10
-DURATION      = 900  # 15 minutos
+DURATION      = 480  # 8 minutos
 RESULTS_PATH  = "/app/results/sysstat_results.json"
 os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
 
@@ -91,13 +91,11 @@ def collect():
         while time.time() - start_time < DURATION:
             now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
-            # Conexões ativas
             conns = get_connections_on_port()
             for c in conns:
                 if c.pid:
                     conn_set.add(c.pid)
 
-            # Métricas dos processos conectados
             cpu_total, mem_total, proc_count = 0.0, 0.0, 0
             for c in conns:
                 if c.pid:
@@ -112,12 +110,10 @@ def collect():
             if avg_cpu > 0: cpu_samples.append(avg_cpu)
             if avg_mem > 0: mem_samples.append(avg_mem)
 
-            # Latência
             lat = measure_latency()
             if lat is not None:
                 lat_samples.append(lat)
 
-            # Bytes acumulados
             net_tx, net_rx = get_net_io()
             bytes_tx = net_tx - net_start_tx
             bytes_rx = net_rx - net_start_rx
@@ -137,7 +133,6 @@ def collect():
                   f"mem={avg_mem}MB lat={lat or '?'}ms "
                   f"TX={bytes_tx}B RX={bytes_rx}B")
 
-            # Salva periodicamente
             if len(data["samples"]) % (SAVE_INTERVAL) == 0:
                 _flush(data, start_time, conn_set,
                        cpu_samples, mem_samples, lat_samples,

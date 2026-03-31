@@ -38,14 +38,20 @@ tcc_gerenciamento_rede/
 ```bash
 chmod +x scripts/start.sh
 ./scripts/start.sh
-# Para automaticamente após 9 minutos
 ```
 
-O script executa em sequência:
+O script abrirá um **Menu Interativo** com as seguintes opções:
+
+1.  **Rodar TODOS simultaneamente:** Executa os 3 coletores ao mesmo tempo (comportamento padrão). Útil para comparar o overhead sob as mesmas condições de tempo.
+2.  **Rodar Individualmente (eBPF, sysstat ou Prometheus):** Executa apenas o coletor selecionado junto com o servidor e cliente por 8 minutos.
+3.  **Rodar Sequencialmente:** Executa um coletor por vez, automaticamente, limpando o ambiente entre as rodadas. Evita interferência de CPU/Memória entre os coletores.
+4.  **Apenas gerar relatório:** Processa os arquivos JSON existentes na pasta `results/` e regera o CSV de comparação.
+
+### Fluxo de execução (Opção 1)
 1. `docker-compose down --volumes` (limpa estado anterior)
-2. `docker-compose build`
-3. `docker-compose up` (sobe os 6 serviços)
-4. Aguarda 9 minutos e para tudo
+2. `docker-compose up` (sobe os serviços necessários)
+3. Aguarda o tempo de coleta (8 min) e gera o relatório final.
+4. Para os containers.
 
 ### Ver os resultados
 

@@ -1,0 +1,17 @@
+
+Para subir tudo 
+
+    sudo docker-compose up -d
+
+Para subir separado
+
+    sudo docker-compose up -d client
+    sudo docker-compose up -d server
+
+Para ver o server
+
+    sudo docker logs -f socket-server
+    
+Para comunicar
+
+    nc localhost 9999

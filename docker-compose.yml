@@ -1,50 +1,35 @@
+version: '3.8'
+
 services:
-
-  # ── VNF: WAF TCP :8080 ───────────────────────────────────────────────────────
-  waf:
+  server:
     build:
       context: .
-      dockerfile: configs/Dockerfile
-    container_name: waf-server
-    network_mode: "host"
+      dockerfile: Dockerfile.server
+    container_name: socket-server
+    ports:
+      - "9999:9999"
+    networks:
+      - socket-net
     volumes:
-      - ./src/vnf:/app/vnf
-      - results_vol:/app/results
-    command: python3 /app/vnf/waf.py
+      - ./server:/app
 
-  # ── VNF: Monitor UDP :9999 ───────────────────────────────────────────────────
-  monitor-server:
-    build:
-      context: .
-      dockerfile: configs/Dockerfile
-    container_name: monitor-server
-    network_mode: "host"
-    volumes:
-      - ./src/vnf:/app/vnf
-      - results_vol:/app/results
-    command: python3 /app/vnf/monitor_server.py
-    depends_on:
-      - waf
-
-  # ── Cliente TCP → bombardeia o WAF ──────────────────────────────────────────
   client:
     build:
       context: .
-      dockerfile: configs/Dockerfile.client
+      dockerfile: Dockerfile.client
     container_name: socket-client
-    network_mode: "host"
-    volumes:
-      - ./src/client:/app
-    command: python3 /app/client.py
+    networks:
+      - socket-net
     depends_on:
-      - waf
+      - server
+    volumes:
+      - ./client:/app
 
-  # ── Coletor eBPF ─────────────────────────────────────────────────────────────
-  ebpf-collector:
+  ebpf-monitor:
     build:
       context: .
-      dockerfile: configs/Dockerfile
-    container_name: ebpf-collector
+      dockerfile: Dockerfile.ebpf
+    container_name: ebpf-monitor
     pid: "host"
     privileged: true
     network_mode: "host"
@@ -53,66 +38,8 @@ services:
       - /sys/fs/bpf:/sys/fs/bpf:rw
       - /lib/modules:/lib/modules:ro
       - /usr/src:/usr/src:ro
-      - ./src/ebpf:/app/ebpf
-      - results_vol:/app/results
-    command: python3 /app/ebpf/monitor_bcc.py
-    depends_on:
-      - monitor-server
+    command: python3 /ebpf/monitor_bcc.py
 
-  # ── Coletor sysstat ──────────────────────────────────────────────────────────
-  sysstat-collector:
-    build:
-      context: .
-      dockerfile: configs/Dockerfile
-    container_name: sysstat-collector
-    network_mode: "host"
-    volumes:
-      - ./src/sysstat:/app/sysstat
-      - results_vol:/app/results
-    command: python3 /app/sysstat/collector.py
-    depends_on:
-      - monitor-server
-
-  # ── Coletor Prometheus ───────────────────────────────────────────────────────
-  prometheus-collector:
-    build:
-      context: .
-      dockerfile: configs/Dockerfile
-    container_name: prometheus-collector
-    network_mode: "host"
-    volumes:
-      - ./src/prometheus:/app/prometheus
-      - results_vol:/app/results
-    command: python3 /app/prometheus/exporter.py
-    depends_on:
-      - monitor-server
-
-  # ── Comparador ───────────────────────────────────────────────────────────────
-  comparator:
-    build:
-      context: .
-      dockerfile: configs/Dockerfile
-    container_name: comparator
-    network_mode: "host"
-    volumes:
-      - ./src:/app/src
-      - results_vol:/app/results
-    command: >
-      sh -c "
-        echo '⏳ Aguardando coletores...' &&
-        sleep 480 &&
-        echo '📊 Gerando relatório...' &&
-        python3 /app/src/compare.py
-      "
-    depends_on:
-      - ebpf-collector
-      - sysstat-collector
-      - prometheus-collector
-
-volumes:
-  results_vol:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/results
+networks:
+  socket-net:
+    driver: bridge

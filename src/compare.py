@@ -1,116 +1,80 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """
-Comparador de Coletores — TCC Gerenciamento de Rede
-Lê os resultados dos 3 coletores e gera comparison.csv
+Comparador v2 — TCC Gerenciamento de Rede
+Gera comparison.csv e comparison.json comparando as 3 ferramentas
+com foco na métrica principal: tempo de monitoramento (média + desvio padrão).
 """
+import json, csv, os
 
-import os, json, csv
-from datetime import datetime
+# Detectar se estamos rodando dentro do container ou no host
+RESULTS_DIR = "/app/results" if os.path.exists("/app/results") else os.path.join(os.getcwd(), "results")
+OUTPUT_CSV   = os.path.join(RESULTS_DIR, "comparison.csv")
+OUTPUT_JSON  = os.path.join(RESULTS_DIR, "comparison.json")
 
-RESULTS = {
-    "ebpf":       "/app/results/ebpf_results.json",
-    "sysstat":    "/app/results/sysstat_results.json",
-    "prometheus": "/app/results/prometheus_results.json",
+FILES = {
+    "ebpf":       os.path.join(RESULTS_DIR, "ebpf_results.json"),
+    "sysstat":    os.path.join(RESULTS_DIR, "sysstat_results.json"),
+    "prometheus": os.path.join(RESULTS_DIR, "prometheus_results.json"),
 }
-CSV_PATH  = "/app/results/comparison.csv"
-JSON_PATH = "/app/results/comparison.json"
 
 METRICS = [
-    "connections",
-    "bytes_tx",
-    "bytes_rx",
-    "latency_avg_ms",
-    "latency_max_ms",
-    "latency_min_ms",
-    "cpu_avg_pct",
-    "mem_avg_mb",
-    "duration_s",
+    ("monitor_latency_avg_ms",    "Latência média monitoramento (ms)"),
+    ("monitor_latency_stddev_ms", "Desvio padrão monitoramento (ms)"),
+    ("monitor_latency_max_ms",    "Latência máx monitoramento (ms)"),
+    ("monitor_latency_min_ms",    "Latência mín monitoramento (ms)"),
+    ("monitor_samples",           "Amostras coletadas"),
+    ("connections",               "Conexões ao WAF"),
+    ("bytes_rx",                  "Bytes RX WAF"),
+    ("bytes_tx",                  "Bytes TX WAF"),
+    ("cpu_avg_pct",               "CPU média WAF (%)"),
+    ("mem_avg_mb",                "Memória média WAF (MB)"),
+    ("waf_blocked",               "Requisições bloqueadas"),
+    ("waf_allowed",               "Requisições permitidas"),
+    ("duration_s",                "Duração (s)"),
 ]
 
 def load(path):
-    if not os.path.exists(path):
-        print(f"  ⚠️  Arquivo não encontrado: {path}")
-        return None
-    with open(path) as f:
-        return json.load(f)
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"⚠️  Não foi possível ler {path}: {e}")
+        return {}
 
-def compare():
-    print("=" * 65)
-    print("  📊 Comparação dos Coletores — eBPF · sysstat · Prometheus")
-    print("=" * 65)
+def main():
+    data = {k: load(v) for k, v in FILES.items()}
 
-    results = {}
-    for name, path in RESULTS.items():
-        data = load(path)
-        if data:
-            results[name] = data
-            print(f"  ✅ {name:<12} carregado ({data.get('timestamp','')})")
-        else:
-            results[name] = {}
+    rows = []
+    for key, label in METRICS:
+        row = {"metrica": key, "descricao": label}
+        for tool in ["ebpf", "sysstat", "prometheus"]:
+            row[tool] = data[tool].get(key, "")
+        rows.append(row)
 
-    if not results:
-        print("  ❌ Nenhum resultado encontrado. Rode os coletores primeiro.")
-        return
+    # CSV
+    with open(OUTPUT_CSV, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["metrica", "ebpf", "sysstat", "prometheus"])
+        w.writeheader()
+        for row in rows:
+            w.writerow({k: row[k] for k in ["metrica", "ebpf", "sysstat", "prometheus"]})
 
-    # ── Tabela no terminal ────────────────────────────────────────────────────
-    col_w = 18
-    print("\n" + "-" * 65)
-    header = f"  {'Métrica':<22}" + "".join(f"{k:>{col_w}}" for k in results)
-    print(header)
-    print("-" * 65)
-
-    for metric in METRICS:
-        row = f"  {metric:<22}"
-        for name in results:
-            val = results[name].get(metric, "N/A")
-            row += f"{str(val):>{col_w}}"
-        print(row)
-
-    print("-" * 65)
-
-    # ── Diferenças relativas entre coletores ─────────────────────────────────
-    collectors = list(results.keys())
-    if len(collectors) >= 2:
-        print("\n  📐 Diferença relativa entre coletores:")
-        for metric in ["latency_avg_ms", "cpu_avg_pct", "mem_avg_mb"]:
-            vals = {c: results[c].get(metric) for c in collectors
-                    if results[c].get(metric) not in (None, 0, "N/A")}
-            if len(vals) >= 2:
-                items = list(vals.items())
-                for i in range(len(items)):
-                    for j in range(i+1, len(items)):
-                        ca, va = items[i]
-                        cb, vb = items[j]
-                        try:
-                            diff = abs(va - vb) / ((va + vb) / 2) * 100
-                            print(f"    {metric:<22} {ca} vs {cb}: {diff:.1f}% de diferença")
-                        except ZeroDivisionError:
-                            pass
-
-    # ── Salva CSV ─────────────────────────────────────────────────────────────
-    os.makedirs(os.path.dirname(CSV_PATH), exist_ok=True)
-    with open(CSV_PATH, "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["metrica"] + list(results.keys()))
-        for metric in METRICS:
-            row = [metric] + [results[c].get(metric, "") for c in results]
-            writer.writerow(row)
-
-    # ── Salva JSON ────────────────────────────────────────────────────────────
+    # JSON
     comparison = {
-        "generated_at": datetime.utcnow().isoformat(),
-        "collectors":   results,
-        "summary": {
-            metric: {c: results[c].get(metric) for c in results}
-            for metric in METRICS
-        }
+        "tools": ["ebpf", "sysstat", "prometheus"],
+        "metrics": rows,
+        "raw": data,
     }
-    with open(JSON_PATH, "w") as f:
+    with open(OUTPUT_JSON, "w") as f:
         json.dump(comparison, f, indent=2)
 
-    print(f"\n  💾 CSV  salvo: {CSV_PATH}")
-    print(f"  💾 JSON salvo: {JSON_PATH}")
-    print("=" * 65)
+    print("\n📊 Comparação gerada:\n")
+    header = f"{'métrica':<35} {'eBPF':>12} {'sysstat':>12} {'prometheus':>12}"
+    print(header)
+    print("-" * len(header))
+    for row in rows:
+        print(f"{row['metrica']:<35} {str(row.get('ebpf','')):>12} "
+              f"{str(row.get('sysstat','')):>12} {str(row.get('prometheus','')):>12}")
+    print(f"\n✅ Salvo em {OUTPUT_CSV} e {OUTPUT_JSON}")
 
 if __name__ == "__main__":
-    compare()
+    main()

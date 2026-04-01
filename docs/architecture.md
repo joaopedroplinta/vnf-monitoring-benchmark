@@ -1,44 +1,35 @@
-# Arquitetura do Sistema
+# Arquitetura do Sistema de Monitoramento Comparativo
 
 ## Visão Geral
 
-Os 3 coletores rodam **simultaneamente**, cada um monitorando o socket TCP na porta 9999 de forma independente. Ao final, o `compare.py` consolida os resultados para análise comparativa.
+O sistema avalia o desempenho de funções de rede virtuais (VNF) através de três metodologias de monitoramento simultâneas. O cenário de teste utiliza um **Web Application Firewall (WAF)** como alvo do monitoramento.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        VM Ubuntu                            │
+│                        Ambiente (WSL2/Linux)                │
 │                                                             │
-│   ┌────────────┐   TCP/9999   ┌────────────┐               │
-│   │  client.py │ ────────────▶│  server.py │               │
-│   └────────────┘              └────────────┘               │
-│                                     │                       │
-│          ┌──────────────────────────┤                       │
-│          │     monitoram porta 9999 │                       │
-│          ▼                          ▼                       │
-│  ┌───────────────┐       ┌─────────────────┐               │
-│  │  eBPF         │       │  sysstat        │               │
-│  │  monitor_bcc  │       │  collector.py   │               │
-│  │               │       │                 │               │
-│  │ · kernel hooks│       │ · psutil        │               │
-│  │ · tcp_connect │       │ · net_io        │               │
-│  │ · sys_sendto  │       │ · proc metrics  │               │
-│  │ · sys_recvfrom│       │ · socket probe  │               │
-│  └──────┬────────┘       └───────┬─────────┘               │
-│         │                        │                          │
-│         │              ┌─────────────────┐                  │
-│         │              │  Prometheus     │                  │
-│         │              │  exporter.py    │                  │
-│         │              │                 │                  │
-│         │              │ · psutil        │                  │
-│         │              │ · gauges/hist   │                  │
-│         │              │ · :8000/metrics │                  │
-│         │              └───────┬─────────┘                  │
-│         │                      │                            │
-│         ▼                      ▼                            │
-│  ebpf_results.json   sysstat_results.json                   │
-│  prometheus_results.json                                    │
-│         │                                                   │
-│         └──────────────┬────────────────                    │
+│   ┌────────────┐   HTTP/TCP   ┌──────────────┐              │
+│   │  Gerador   │ ────────────▶│     WAF      │              │
+│   │ de Tráfego │              │ (Porta 8080) │              │
+│   └────────────┘              └──────┬───────┘              │
+│                                      │                      │
+│          ┌───────────────────────────┤                      │
+│          │ exporta métricas (UDP 9999)│                      │
+│          ▼                           ▼                      │
+│  ┌───────────────┐        ┌─────────────────┐               │
+│  │  eBPF (BCC)   │        │  Monitor Trad.  │               │
+│  │  v19          │        │  (Sysstat/Prom) │               │
+│  │               │        │                 │               │
+│  │ · sock_hooks  │        │ · psutil        │               │
+│  │ · kprobes     │        │ · polling       │               │
+│  │ · PID Filter  │        │ · UDP probes    │               │
+│  └──────┬────────┘        └───────┬─────────┘               │
+│         │                         │                         │
+│         ▼                         ▼                         │
+│  ebpf_results.json        sysstat_results.json              │
+│                           prometheus_results.json           │
+│         │                         │                         │
+│         └──────────────┬──────────┘                         │
 │                        ▼                                    │
 │                  compare.py                                 │
 │                        │                                    │
@@ -50,39 +41,36 @@ Os 3 coletores rodam **simultaneamente**, cada um monitorando o socket TCP na po
 
 ---
 
-## Fluxo de dados
+## Componentes
 
-1. `client.py` abre conexões TCP com `server.py` na porta 9999 e simula tráfego contínuo
-2. Os 3 coletores sobem simultaneamente via `docker-compose up`:
-   - **eBPF** — intercepta eventos diretamente no kernel via `kprobe`/`perf_buffer`
-   - **sysstat** — consulta `psutil` e sonda a porta a cada segundo
-   - **Prometheus** — igual ao sysstat, mas também expõe as métricas em `:8000/metrics`
-3. Cada coletor salva seu `*_results.json` no volume compartilhado `results_vol` a cada 10 segundos
-4. Ao rodar `compare.py`, os 3 JSONs são lidos e consolidados em `comparison.csv` e `comparison.json`
+### 1. VNF Alvo (WAF)
+Localizado em `src/vnf/waf.py`. Inspeciona payloads TCP em busca de padrões SQLi, XSS, etc. Inclui uma pequena carga computacional artificial para tornar o uso de CPU mensurável.
 
----
+### 2. Servidor de Telemetria
+Localizado em `src/vnf/monitor_server.py`. Recebe requisições UDP na porta 9999 e responde com um JSON contendo as métricas internas do WAF (bytes processados, conexões, CPU).
 
-## Comparação das abordagens
-
-| Critério              | eBPF                        | sysstat (psutil)          | Prometheus                  |
-|-----------------------|-----------------------------|---------------------------|-----------------------------|
-| **Nível de coleta**   | Kernel (ring 0)             | Userspace                 | Userspace                   |
-| **Granularidade**     | Por syscall / evento        | Por segundo (polling)     | Por scrape (2s)             |
-| **Latência**          | Medida real (ns)            | Estimada via probe TCP    | Estimada via probe TCP      |
-| **CPU**               | Delta `utime+stime` do task | `cpu_percent()` do psutil | `cpu_percent()` do psutil   |
-| **Memória**           | RSS via `mm_struct`         | `memory_info().rss`       | `memory_info().rss`         |
-| **Overhead**          | Muito baixo                 | Baixo                     | Baixo                       |
-| **Privilégio**        | Root + `privileged`         | Root                      | Root                        |
-| **Saída adicional**   | JSON                        | JSON                      | JSON + `/metrics` HTTP      |
+### 3. Coletores
+- **eBPF**: Intercepta as funções `sock_sendmsg` e `sock_recvmsg` no kernel para medir a latência exata do processo de monitoramento sem depender de relógios de userspace.
+- **Sysstat/Prometheus**: Utilizam a biblioteca `psutil` para ler dados do `/proc` e realizam probes UDP manuais para medir latência (RTT).
 
 ---
 
-## Arquivos de resultado
+## Comparação Técnica
 
-| Arquivo                      | Gerado por            |
-|------------------------------|-----------------------|
-| `results/ebpf_results.json`       | `src/ebpf/monitor_bcc.py`      |
-| `results/sysstat_results.json`    | `src/sysstat/collector.py`     |
-| `results/prometheus_results.json` | `src/prometheus/exporter.py`   |
-| `results/comparison.csv`          | `src/compare.py`               |
-| `results/comparison.json`         | `src/compare.py`               |
+| Recurso | eBPF (BCC) | Sysstat (psutil) | Prometheus |
+|---------|------------|------------------|------------|
+| **Ponto de Coleta** | Kernel (Ring 0) | Userspace (Ring 3) | Userspace (Ring 3) |
+| **Mecanismo** | Kprobes dinâmicos | Polling /proc | Polling / Scrape |
+| **Latência** | Medição via hooks | RTT de rede (UDP) | RTT de rede (UDP) |
+| **Overhead** | Mínimo (Event-driven) | Médio (Polling) | Médio (Polling + HTTP) |
+| **Requisito** | Privilégios/Headers | Padrão | Runtime Prometheus |
+
+---
+
+## Fluxo de Coleta
+
+1. O **Gerador de Tráfego** inicia o envio de ataques simulados ao WAF.
+2. Cada **Coletor** sonda o Servidor de Telemetria a cada 1 segundo.
+3. O eBPF registra os timestamps no kernel no momento exato em que o pacote de monitoramento cruza a camada de socket.
+4. Os dados são acumulados por 240 segundos.
+5. O `compare.py` consolida as médias e desvios padrão para gerar a comparação final.

@@ -1,32 +1,43 @@
 services:
 
-  # ── Servidor socket ──────────────────────────────────────────────────────────
-  server:
+  # ── VNF: WAF TCP :8080 ───────────────────────────────────────────────────────
+  waf:
     build:
       context: .
-      dockerfile: configs/Dockerfile.server
-    container_name: socket-server
+      dockerfile: configs/Dockerfile
+    container_name: waf-server
     network_mode: "host"
-    environment:
-      - PYTHONUNBUFFERED=1
     volumes:
-      - ./src/socket:/app
-    command: python server.py
+      - ./src/vnf:/app/vnf
+      - results_vol:/app/results
+    command: python3 /app/vnf/waf.py
 
-  # ── Cliente socket ───────────────────────────────────────────────────────────
+  # ── VNF: Monitor UDP :9999 ───────────────────────────────────────────────────
+  monitor-server:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: monitor-server
+    network_mode: "host"
+    volumes:
+      - ./src/vnf:/app/vnf
+      - results_vol:/app/results
+    command: python3 /app/vnf/monitor_server.py
+    depends_on:
+      - waf
+
+  # ── Cliente TCP → bombardeia o WAF ──────────────────────────────────────────
   client:
     build:
       context: .
       dockerfile: configs/Dockerfile.client
     container_name: socket-client
     network_mode: "host"
-    environment:
-      - PYTHONUNBUFFERED=1
-    depends_on:
-      - server
     volumes:
-      - ./src/socket:/app
-    command: python client.py
+      - ./src/client:/app
+    command: python3 /app/client.py
+    depends_on:
+      - waf
 
   # ── Coletor eBPF ─────────────────────────────────────────────────────────────
   ebpf-collector:
@@ -37,8 +48,6 @@ services:
     pid: "host"
     privileged: true
     network_mode: "host"
-    environment:
-      - PYTHONUNBUFFERED=1
     volumes:
       - /sys/kernel/debug:/sys/kernel/debug:rw
       - /sys/fs/bpf:/sys/fs/bpf:rw
@@ -48,7 +57,7 @@ services:
       - results_vol:/app/results
     command: python3 /app/ebpf/monitor_bcc.py
     depends_on:
-      - server
+      - monitor-server
 
   # ── Coletor sysstat ──────────────────────────────────────────────────────────
   sysstat-collector:
@@ -57,15 +66,12 @@ services:
       dockerfile: configs/Dockerfile
     container_name: sysstat-collector
     network_mode: "host"
-    pid: "host"
-    environment:
-      - PYTHONUNBUFFERED=1
     volumes:
       - ./src/sysstat:/app/sysstat
       - results_vol:/app/results
     command: python3 /app/sysstat/collector.py
     depends_on:
-      - server
+      - monitor-server
 
   # ── Coletor Prometheus ───────────────────────────────────────────────────────
   prometheus-collector:
@@ -74,15 +80,12 @@ services:
       dockerfile: configs/Dockerfile
     container_name: prometheus-collector
     network_mode: "host"
-    pid: "host"
-    environment:
-      - PYTHONUNBUFFERED=1
     volumes:
       - ./src/prometheus:/app/prometheus
       - results_vol:/app/results
     command: python3 /app/prometheus/exporter.py
     depends_on:
-      - server
+      - monitor-server
 
   # ── Comparador ───────────────────────────────────────────────────────────────
   comparator:
@@ -91,16 +94,14 @@ services:
       dockerfile: configs/Dockerfile
     container_name: comparator
     network_mode: "host"
-    environment:
-      - PYTHONUNBUFFERED=1
     volumes:
       - ./src:/app/src
       - results_vol:/app/results
     command: >
       sh -c "
-        echo '⏳ Aguardando coletores acumularem dados...' &&
-        sleep 485 && 
-        echo '📊 Gerando relatório de comparação...' &&
+        echo '⏳ Aguardando coletores...' &&
+        sleep 480 &&
+        echo '📊 Gerando relatório...' &&
         python3 /app/src/compare.py
       "
     depends_on:

@@ -1,0 +1,66 @@
+services:
+
+  waf:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: waf-server
+    network_mode: "host"
+    volumes:
+      - ./src/vnf:/app/vnf
+      - results_vol:/app/results
+    command: python3 /app/vnf/waf.py
+
+  monitor-server:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: monitor-server
+    network_mode: "host"
+    volumes:
+      - ./src/vnf:/app/vnf
+      - results_vol:/app/results
+    command: python3 /app/vnf/monitor_server.py
+    depends_on:
+      - waf
+
+  client:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile.client
+    container_name: socket-client
+    network_mode: "host"
+    volumes:
+      - ./src/client:/app
+    command: python3 /app/client.py
+    depends_on:
+      - waf
+
+  ebpf-collector:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: ebpf-collector
+    pid: "host"
+    privileged: true
+    network_mode: "host"
+    environment:
+      - BCC_KERNEL_SOURCE=/usr/src/linux-headers-6.6.87.2-microsoft-standard-WSL2
+    volumes:
+      - /sys/kernel/debug:/sys/kernel/debug:rw
+      - /sys/fs/bpf:/sys/fs/bpf:rw
+      - /lib/modules:/lib/modules:ro
+      - /usr/src:/usr/src:ro
+      - ./src/ebpf:/app/ebpf
+      - results_vol:/app/results
+    command: python3 /app/ebpf/monitor_bcc.py
+    depends_on:
+      - monitor-server
+
+volumes:
+  results_vol:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/results

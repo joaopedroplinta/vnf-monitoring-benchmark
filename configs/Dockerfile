@@ -11,6 +11,7 @@ RUN apt update && apt install -y \
     iproute2 \
     net-tools \
     curl \
+    kmod \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --no-cache-dir --break-system-packages psutil prometheus_client

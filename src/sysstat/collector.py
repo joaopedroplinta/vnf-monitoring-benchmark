@@ -1,172 +1,108 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """
-Coletor sysstat — TCC Gerenciamento de Rede
-Métricas: CPU (%), Memória RSS, Latência, Bytes TX/RX, Conexões
-Usa: psutil + ss (socket statistics) para monitorar a porta 9999
+Coletor sysstat — TCC Gerenciamento de Rede (v2)
+Acumula TODAS as amostras e latências brutas.
+Recalcula média e desvio padrão com todos os dados ao final.
 """
-
-import time, os, json, subprocess
+import socket, time, json, os, statistics
 from datetime import datetime
-import psutil
 
-TARGET_PORT   = 9999
+MONITOR_HOST  = 'localhost'
+MONITOR_PORT  = 9999
+DURATION      = 240
+INTERVAL      = 1
 SAVE_INTERVAL = 10
-DURATION      = 480  # 8 minutos
 RESULTS_PATH  = "/app/results/sysstat_results.json"
 os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
 
-# ─── Helpers ──────────────────────────────────────────────────────────────────
-
-def get_connections_on_port():
-    """Retorna lista de conexões ativas na porta 9999 via psutil."""
-    conns = []
-    for c in psutil.net_connections(kind="tcp"):
-        if c.laddr and c.laddr.port == TARGET_PORT:
-            conns.append(c)
-        elif c.raddr and c.raddr.port == TARGET_PORT:
-            conns.append(c)
-    return conns
-
-def get_process_metrics(pid):
-    """Retorna CPU % e memória RSS de um processo pelo PID."""
+def query_monitor() -> tuple[float, dict]:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(2)
     try:
-        p = psutil.Process(pid)
-        cpu = p.cpu_percent(interval=0.1)
-        mem = p.memory_info().rss / (1024 * 1024)  # MB
-        return cpu, mem
-    except (psutil.NoSuchProcess, psutil.AccessDenied):
-        return 0.0, 0.0
-
-def get_net_io():
-    """Retorna bytes TX e RX acumulados da interface de rede principal."""
-    net = psutil.net_io_counters()
-    return net.bytes_sent, net.bytes_recv
-
-def measure_latency():
-    """Mede latência de conexão à porta 9999 via socket Python."""
-    import socket
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(2)
         t0 = time.time_ns()
-        s.connect(("127.0.0.1", TARGET_PORT))
-        lat_ms = (time.time_ns() - t0) / 1e6
-        s.close()
-        return round(lat_ms, 4)
-    except Exception:
-        return None
-
-# ─── Coletor principal ────────────────────────────────────────────────────────
+        sock.sendto(b"GET", (MONITOR_HOST, MONITOR_PORT))
+        data, _ = sock.recvfrom(65536)
+        latency_ms = (time.time_ns() - t0) / 1e6
+        return round(latency_ms, 4), json.loads(data.decode("utf-8"))
+    finally:
+        sock.close()
 
 def collect():
-    data = {
-        "collector":      "sysstat",
-        "timestamp":      datetime.utcnow().isoformat(),
-        "duration_s":     0,
-        "connections":    0,
-        "bytes_tx":       0,
-        "bytes_rx":       0,
-        "latency_avg_ms": 0,
-        "latency_max_ms": 0,
-        "latency_min_ms": 0,
-        "cpu_avg_pct":    0,
-        "mem_avg_mb":     0,
-        "samples":        [],
-    }
+    print("=" * 55)
+    print("  📡 Coletor sysstat — Monitor UDP porta 9999")
+    print("  Acumulando todas as amostras e latências brutas")
+    print("=" * 55)
 
     start_time   = time.time()
-    net_start_tx, net_start_rx = get_net_io()
+    last_save    = time.time()
+    latencies    = []   # TODAS as latências brutas acumuladas
+    samples      = []   # TODOS os snapshots acumulados
+    last_metrics = {}
 
-    cpu_samples  = []
-    mem_samples  = []
-    lat_samples  = []
-    conn_set     = set()
-
-    print("=" * 60)
-    print("  📡 Coletor sysstat — porta 9999")
-    print("  Métricas: CPU · Memória · Latência · Bytes · Conexões")
-    print("=" * 60)
-
-    try:
-        while time.time() - start_time < DURATION:
-            now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-
-            conns = get_connections_on_port()
-            for c in conns:
-                if c.pid:
-                    conn_set.add(c.pid)
-
-            cpu_total, mem_total, proc_count = 0.0, 0.0, 0
-            for c in conns:
-                if c.pid:
-                    cpu, mem = get_process_metrics(c.pid)
-                    cpu_total += cpu
-                    mem_total += mem
-                    proc_count += 1
-
-            avg_cpu = round(cpu_total / proc_count, 2) if proc_count else 0.0
-            avg_mem = round(mem_total / proc_count, 2) if proc_count else 0.0
-
-            if avg_cpu > 0: cpu_samples.append(avg_cpu)
-            if avg_mem > 0: mem_samples.append(avg_mem)
-
-            lat = measure_latency()
-            if lat is not None:
-                lat_samples.append(lat)
-
-            net_tx, net_rx = get_net_io()
-            bytes_tx = net_tx - net_start_tx
-            bytes_rx = net_rx - net_start_rx
+    while time.time() - start_time < DURATION:
+        now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        try:
+            lat_ms, metrics = query_monitor()
+            latencies.append(lat_ms)
+            last_metrics = metrics
 
             sample = {
-                "time":       now,
-                "connections": len(conns),
-                "cpu_pct":    avg_cpu,
-                "mem_mb":     avg_mem,
-                "latency_ms": lat or 0,
-                "bytes_tx":   bytes_tx,
-                "bytes_rx":   bytes_rx,
+                "time":        now,
+                "latency_ms":  lat_ms,
+                "connections": metrics.get("connections", 0),
+                "bytes_rx":    metrics.get("bytes_rx", 0),
+                "bytes_tx":    metrics.get("bytes_tx", 0),
+                "cpu_pct":     metrics.get("cpu_pct", 0),
+                "mem_mb":      metrics.get("mem_mb", 0),
+                "blocked":     metrics.get("blocked", 0),
+                "allowed":     metrics.get("allowed", 0),
             }
-            data["samples"].append(sample)
+            samples.append(sample)  # acumula todos, sem limite
 
-            print(f"[{now}] conns={len(conns)} cpu={avg_cpu}% "
-                  f"mem={avg_mem}MB lat={lat or '?'}ms "
-                  f"TX={bytes_tx}B RX={bytes_rx}B")
+            print(f"[{now}] lat={lat_ms}ms | "
+                  f"conns={metrics.get('connections',0)} | "
+                  f"cpu={metrics.get('cpu_pct',0)}% | "
+                  f"block={metrics.get('blocked',0)}")
+        except Exception as e:
+            print(f"[{now}] ERRO UDP: {e}")
 
-            if len(data["samples"]) % (SAVE_INTERVAL) == 0:
-                _flush(data, start_time, conn_set,
-                       cpu_samples, mem_samples, lat_samples,
-                       bytes_tx, bytes_rx)
+        if time.time() - last_save >= SAVE_INTERVAL:
+            _flush(start_time, latencies, samples, last_metrics)
+            last_save = time.time()
 
-            time.sleep(1)
+        time.sleep(INTERVAL)
 
-    except KeyboardInterrupt:
-        net_tx, net_rx = get_net_io()
-        _flush(data, start_time, conn_set,
-               cpu_samples, mem_samples, lat_samples,
-               net_tx - net_start_tx, net_rx - net_start_rx)
-        print("\n[!] Coletor sysstat encerrado.")
+    _flush(start_time, latencies, samples, last_metrics)
+    print("\n✅ Coleta sysstat encerrada.")
 
-def _flush(data, start_time, conn_set, cpu_s, mem_s, lat_s, tx, rx):
-    data.update({
-        "timestamp":      datetime.utcnow().isoformat(),
-        "duration_s":     round(time.time() - start_time, 2),
-        "connections":    len(conn_set),
-        "bytes_tx":       tx,
-        "bytes_rx":       rx,
-        "latency_avg_ms": round(sum(lat_s)/len(lat_s), 4) if lat_s else 0,
-        "latency_max_ms": round(max(lat_s), 4)            if lat_s else 0,
-        "latency_min_ms": round(min(lat_s), 4)            if lat_s else 0,
-        "cpu_avg_pct":    round(sum(cpu_s)/len(cpu_s), 2) if cpu_s else 0,
-        "mem_avg_mb":     round(sum(mem_s)/len(mem_s), 2) if mem_s else 0,
-    })
+def _flush(start_time, latencies, samples, last_metrics):
+    result = {
+        "collector":                 "sysstat",
+        "timestamp":                 datetime.utcnow().isoformat(),
+        "duration_s":                round(time.time() - start_time, 2),
+        # Calculado com TODAS as latências acumuladas
+        "monitor_latency_avg_ms":    round(statistics.mean(latencies), 4)   if latencies else 0,
+        "monitor_latency_stddev_ms": round(statistics.stdev(latencies), 4)  if len(latencies) > 1 else 0,
+        "monitor_latency_max_ms":    round(max(latencies), 4)               if latencies else 0,
+        "monitor_latency_min_ms":    round(min(latencies), 4)               if latencies else 0,
+        "monitor_samples":           len(latencies),
+        "latencies_raw":             latencies,  # todas as latências brutas
+        # Métricas do WAF
+        "connections":               last_metrics.get("connections", 0),
+        "bytes_rx":                  last_metrics.get("bytes_rx", 0),
+        "bytes_tx":                  last_metrics.get("bytes_tx", 0),
+        "cpu_avg_pct":               last_metrics.get("cpu_pct", 0),
+        "mem_avg_mb":                last_metrics.get("mem_mb", 0),
+        "waf_blocked":               last_metrics.get("blocked", 0),
+        "waf_allowed":               last_metrics.get("allowed", 0),
+        "samples":                   samples,  # todos os snapshots acumulados
+    }
     with open(RESULTS_PATH, "w") as f:
-        json.dump(data, f, indent=2)
-    print(f"\n💾 Resultado salvo: {RESULTS_PATH}")
-    print(f"   Conexões:{data['connections']} | "
-          f"TX:{data['bytes_tx']}B | RX:{data['bytes_rx']}B | "
-          f"Lat:{data['latency_avg_ms']}ms | "
-          f"CPU:{data['cpu_avg_pct']}% | Mem:{data['mem_avg_mb']}MB\n")
+        json.dump(result, f, indent=2)
+    print(f"\n💾 sysstat salvo | "
+          f"lat_avg={result['monitor_latency_avg_ms']}ms | "
+          f"stddev={result['monitor_latency_stddev_ms']}ms | "
+          f"n={result['monitor_samples']}\n")
 
 if __name__ == "__main__":
     collect()

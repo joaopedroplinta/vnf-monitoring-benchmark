@@ -6,7 +6,8 @@ com foco na métrica principal: tempo de monitoramento (média + desvio padrão)
 """
 import json, csv, os
 
-RESULTS_DIR  = "/app/results"
+# Detectar se estamos rodando dentro do container ou no host
+RESULTS_DIR = "/app/results" if os.path.exists("/app/results") else os.path.join(os.getcwd(), "results")
 OUTPUT_CSV   = os.path.join(RESULTS_DIR, "comparison.csv")
 OUTPUT_JSON  = os.path.join(RESULTS_DIR, "comparison.json")
 

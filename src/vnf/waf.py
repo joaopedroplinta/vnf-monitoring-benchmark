@@ -42,6 +42,12 @@ start_time = time.time()
 
 def inspect(payload: bytes) -> tuple[bool, str]:
     """Retorna (bloqueado, motivo). False = permitido."""
+    # Simula carga de CPU para o monitoramento detectar
+    # Um pequeno loop de cálculo matemático
+    x = 0
+    for i in range(1000):
+        x += i * i
+        
     try:
         text = payload.decode("utf-8", errors="replace")
     except Exception:
@@ -55,8 +61,9 @@ def save_metrics():
     import psutil
     try:
         proc = psutil.Process(os.getpid())
-        cpu  = proc.cpu_percent(interval=0.1)
-        mem  = proc.memory_info().rss / (1024 * 1024)
+        # Chamamos uma vez para inicializar se necessário
+        cpu = proc.cpu_percent(interval=0.1)
+        mem = proc.memory_info().rss / (1024 * 1024)
     except Exception:
         cpu, mem = 0.0, 0.0
 

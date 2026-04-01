@@ -44,6 +44,8 @@ services:
     pid: "host"
     privileged: true
     network_mode: "host"
+    environment:
+      - BCC_KERNEL_SOURCE=/usr/src/linux-headers-6.6.87.2-microsoft-standard-WSL2
     volumes:
       - /sys/kernel/debug:/sys/kernel/debug:rw
       - /sys/fs/bpf:/sys/fs/bpf:rw

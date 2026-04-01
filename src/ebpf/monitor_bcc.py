@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Coletor eBPF v17 — TCC Gerenciamento de Rede
-Monitora latência via Kprobes filtrando por porta UDP 9999.
-Resolve erro de underflow no bytes_tx.
+Coletor eBPF v19 — TCC Gerenciamento de Rede
+Usa ganchos em nível de socket (sock_sendmsg/recvmsg) para máxima compatibilidade no WSL2.
+Filtra por PID e gera telemetria de latência.
 """
 from bcc import BPF
 import ctypes as ct
 import socket, time, json, os, statistics
 from datetime import datetime
 
-MONITOR_HOST = 'localhost'
+MONITOR_HOST = '127.0.0.1'
 MONITOR_PORT = 9999
 DURATION     = 240
 INTERVAL     = 1
@@ -17,45 +17,39 @@ SAVE_INTERVAL= 10
 RESULTS_PATH = "/app/results/ebpf_results.json"
 os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
 
-# Programa eBPF focado em medir o tempo entre sendto e recvfrom do coletor
+# Programa eBPF usando sock_sendmsg e sock_recvmsg (mais estável que syscalls no WSL2)
 bpf_program = """
 #include <uapi/linux/ptrace.h>
 #include <linux/sched.h>
+#include <net/sock.h>
 
 BPF_HASH(start_ns, u32, u64);
 BPF_HASH(latency_map, u32, u64);
-BPF_HASH(tx_bytes_map, u32, u64);
-BPF_HASH(rx_bytes_map, u32, u64);
+BPF_HASH(collector_pid, u32, u8);
 
-int kprobe__sys_sendto(struct pt_regs *ctx) {
+// Disparado quando qualquer dado sai por um socket
+int kprobe__sock_sendmsg(struct pt_regs *ctx) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
+    
+    // Só registra se for o PID do nosso coletor
+    u8 *is_collector = collector_pid.lookup(&pid);
+    if (!is_collector) return 0;
+
     u64 ts = bpf_ktime_get_ns();
     start_ns.update(&pid, &ts);
-    
-    u32 key = 0;
-    u64 *acc, zero = 0;
-    acc = tx_bytes_map.lookup_or_try_init(&key, &zero);
-    if (acc) {
-        // Incremento simbólico para mostrar atividade
-        (*acc) += 1;
-    }
     return 0;
 }
 
-int kretprobe__sys_recvfrom(struct pt_regs *ctx) {
+// Disparado quando qualquer dado chega em um socket
+int kretprobe__sock_recvmsg(struct pt_regs *ctx) {
     u32 pid = bpf_get_current_pid_tgid() >> 32;
-    u64 now = bpf_ktime_get_ns();
     u64 *start = start_ns.lookup(&pid);
     
     if (start) {
+        u64 now = bpf_ktime_get_ns();
         u64 lat = now - *start;
         latency_map.update(&pid, &lat);
         start_ns.delete(&pid);
-        
-        u32 key = 0;
-        u64 *acc, zero = 0;
-        acc = rx_bytes_map.lookup_or_try_init(&key, &zero);
-        if (acc) (*acc) += 1;
     }
     return 0;
 }
@@ -63,26 +57,26 @@ int kretprobe__sys_recvfrom(struct pt_regs *ctx) {
 
 def query_and_record(b, latencies, samples, last_metrics):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(2)
+    sock.settimeout(1.5)
     pid = os.getpid()
     pid_ct = ct.c_uint32(pid)
     now_str = datetime.now().strftime("%H:%M:%S.%f")[:-3]
     
     try:
-        # Envia probe UDP para o monitor_server
+        # Envia probe UDP
         sock.sendto(b"GET", (MONITOR_HOST, MONITOR_PORT))
         data, _ = sock.recvfrom(65536)
 
-        # Coleta latência do mapa eBPF
+        # Coleta latência do eBPF
         lat_ms = 0
         if pid_ct in b["latency_map"]:
             lat_ns = b["latency_map"][pid_ct].value
             lat_ms = round(lat_ns / 1e6, 4)
-            if 0 < lat_ms < 5000:
+            if 0 < lat_ms < 2000: # Filtro de sanidade
                 latencies.append(lat_ms)
-            del b["latency_map"][pid_ct]
+            b["latency_map"].clear()
 
-        # Coleta métricas do WAF (via monitor_server)
+        # Coleta métricas do WAF
         try:
             m = json.loads(data.decode("utf-8"))
             last_metrics.update(m)
@@ -102,19 +96,17 @@ def query_and_record(b, latencies, samples, last_metrics):
         }
         samples.append(sample)
         
-        print(f"[{now_str}] lat={lat_ms}ms | cpu={m.get('cpu_pct',0)}% | connections={m.get('connections',0)}", flush=True)
+        print(f"[{now_str}] lat={lat_ms}ms | cpu={m.get('cpu_pct',0)}% | samples={len(latencies)}", flush=True)
     except Exception as e:
-        print(f"[{now_str}] Erro: {e}", flush=True)
+        print(f"[{now_str}] Erro UDP: {e}", flush=True)
     finally:
         sock.close()
 
 def save_results(start_time, latencies, samples):
     if not samples: return
     
-    # Pegamos os dados da última amostra do WAF para o resumo global
     last = samples[-1]
-    
-    # Calculamos a média de CPU apenas das amostras que tiveram atividade (>0)
+    # Média de CPU considerando apenas quando houve atividade
     cpu_active = [s["cpu_pct"] for s in samples if s["cpu_pct"] > 0]
     cpu_avg = round(statistics.mean(cpu_active), 2) if cpu_active else 0.0
 
@@ -131,7 +123,7 @@ def save_results(start_time, latencies, samples):
         "bytes_tx":                  last.get("bytes_tx", 0),
         "connections":               last.get("connections", 0),
         "cpu_avg_pct":               cpu_avg,
-        "mem_avg_mb":                round(statistics.mean([s["mem_mb"] for s in samples]), 2) if samples else 0,
+        "mem_avg_mb":                round(statistics.mean([s["mem_mb"] for s in samples]), 2),
         "waf_blocked":               last.get("blocked", 0),
         "waf_allowed":               last.get("allowed", 0),
         "samples":                   samples
@@ -139,14 +131,24 @@ def save_results(start_time, latencies, samples):
     
     with open(RESULTS_PATH, "w") as f:
         json.dump(result, f, indent=2)
-    print(f"\n✅ Resultados salvos em {RESULTS_PATH}")
+    print(f"\n💾 eBPF salvo | lat_avg={result['monitor_latency_avg_ms']}ms | n={len(latencies)}")
 
 def main():
-    print("Iniciando Coletor eBPF...")
+    print("=" * 55)
+    print(f"  🔍 Coletor eBPF v19 — Latência via sock_sendmsg")
+    print("=" * 55)
+
     try:
+        # Carrega o programa
         b = BPF(text=bpf_program)
+        
+        # Injeta o PID do processo atual no mapa do eBPF
+        my_pid = os.getpid()
+        b["collector_pid"][ct.c_uint32(my_pid)] = ct.c_uint8(1)
+        
+        print(f"✅ BPF carregado. Monitorando latência do PID {my_pid}", flush=True)
     except Exception as e:
-        print(f"Erro ao carregar eBPF: {e}")
+        print(f"❌ Erro ao carregar eBPF: {e}")
         return
 
     start_time = time.time()

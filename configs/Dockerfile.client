@@ -1,6 +1,8 @@
 FROM python:3.9-slim
 
 WORKDIR /app
-COPY src/socket/client.py .
 
-CMD ["python", "client.py"]
+# client.py e payload.bin são montados via volume no docker-compose
+# não precisa de COPY — o volume ./src/client:/app cuida disso
+
+CMD ["python3", "client.py"]

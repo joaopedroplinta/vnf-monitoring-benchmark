@@ -7,8 +7,8 @@ monitor_samples,0,261,259
 connections,201,201,201
 bytes_rx,419430400,419430400,419430400
 bytes_tx,2611,2611,2611
-cpu_avg_pct,9.54,0.0,0.0
-mem_avg_mb,14.27,15.7,13.95
+cpu_avg_pct,9.68,0.0,0.0
+mem_avg_mb,14.85,15.7,13.95
 waf_blocked,200,200,200
 waf_allowed,1,1,1
-duration_s,240.54,240.15,240.71
+duration_s,240.08,240.15,240.71

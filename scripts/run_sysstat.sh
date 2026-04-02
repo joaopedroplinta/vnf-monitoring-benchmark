@@ -4,11 +4,11 @@
 
 TOOL="sysstat"
 COMPOSE="docker-compose.${TOOL}.yml"
-DURATION=300
+DURATION=120
 
 echo "========================================"
 echo "  TCC — Teste com ${TOOL^^}"
-echo "  Duração: 4 minutos"
+echo "  Duração: ${DURATION}s"
 echo "========================================"
 
 echo "[1/3] Limpando estado anterior..."

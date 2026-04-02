@@ -4,11 +4,11 @@
 
 TOOL="ebpf"
 COMPOSE="docker-compose.${TOOL}.yml"
-DURATION=300  # 9 min (8 coleta + 1 margem)
+DURATION=120  # 2 minutos (1 coleta + 1 margem)
 
 echo "========================================"
 echo "  TCC — Teste com ${TOOL^^}"
-echo "  Duração: 4 minutos"
+echo "  Duração: ${DURATION}s"
 echo "========================================"
 
 echo "[1/3] Limpando estado anterior..."

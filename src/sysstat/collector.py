@@ -27,7 +27,7 @@ def query_monitor() -> tuple[float, dict]:
     finally:
         sock.close()
 
-def get_system_network_bytes(interface="eth0"):
+def get_system_network_bytes(interface="lo"):
     """Lê bytes RX/TX diretamente do kernel via /proc/net/dev."""
     try:
         with open("/proc/net/dev", "r") as f:
@@ -46,7 +46,7 @@ def collect():
     print("=" * 55)
     print("  📡 Coletor sysstat — Monitor UDP porta 9999")
     print("  Acumulando todas as amostras e latências brutas")
-    print("  Monitorando rede via /proc/net/dev (eth0)")
+    print("  Monitorando rede via /proc/net/dev (lo)")
     print("=" * 55)
 
     start_time   = time.time()
@@ -66,7 +66,7 @@ def collect():
             latencies.append(lat_ms)
             last_metrics = metrics
             
-            # Pega bytes reais do sistema (eth0)
+            # Pega bytes reais do sistema (lo — tráfego WAF via loopback)
             sys_rx, sys_tx = get_system_network_bytes()
 
             sample = {
@@ -101,7 +101,10 @@ def collect():
 def _flush(start_time, latencies, samples, last_metrics):
     if not samples: return
     last_sample = samples[-1]
-    
+
+    cpu_values = [s["cpu_pct"] for s in samples if s.get("cpu_pct") is not None]
+    mem_values = [s["mem_mb"]  for s in samples if s.get("mem_mb")  is not None]
+
     result = {
         "collector":                 "sysstat",
         "timestamp":                 datetime.utcnow().isoformat(),
@@ -113,10 +116,10 @@ def _flush(start_time, latencies, samples, last_metrics):
         "monitor_samples":           len(latencies),
         "latencies_raw":             latencies,
         "connections":               last_metrics.get("connections", 0),
-        "bytes_rx":                  last_sample["bytes_rx"], # Agora vem do sistema!
+        "bytes_rx":                  last_sample["bytes_rx"],
         "bytes_tx":                  last_sample["bytes_tx"],
-        "cpu_avg_pct":               last_metrics.get("cpu_pct", 0),
-        "mem_avg_mb":                last_metrics.get("mem_mb", 0),
+        "cpu_avg_pct":               round(statistics.mean(cpu_values), 2) if cpu_values else 0,
+        "mem_avg_mb":                round(statistics.mean(mem_values), 2) if mem_values else 0,
         "waf_blocked":               last_metrics.get("blocked", 0),
         "waf_allowed":               last_metrics.get("allowed", 0),
         "samples":                   samples,

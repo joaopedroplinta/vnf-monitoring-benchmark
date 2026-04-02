@@ -9,7 +9,7 @@ from datetime import datetime
 
 MONITOR_HOST  = 'localhost'
 MONITOR_PORT  = 9999
-DURATION      = 240
+DURATION      = 60
 INTERVAL      = 1
 SAVE_INTERVAL = 10
 RESULTS_PATH  = "/app/results/sysstat_results.json"
@@ -27,10 +27,26 @@ def query_monitor() -> tuple[float, dict]:
     finally:
         sock.close()
 
+def get_system_network_bytes(interface="eth0"):
+    """Lê bytes RX/TX diretamente do kernel via /proc/net/dev."""
+    try:
+        with open("/proc/net/dev", "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                if interface in line:
+                    parts = line.split()
+                    rx = int(parts[1])
+                    tx = int(parts[9])
+                    return rx, tx
+    except Exception:
+        pass
+    return 0, 0
+
 def collect():
     print("=" * 55)
     print("  📡 Coletor sysstat — Monitor UDP porta 9999")
     print("  Acumulando todas as amostras e latências brutas")
+    print("  Monitorando rede via /proc/net/dev (eth0)")
     print("=" * 55)
 
     start_time   = time.time()
@@ -39,19 +55,26 @@ def collect():
     samples      = []   # TODOS os snapshots acumulados
     last_metrics = {}
 
+    # Ponto de partida para calcular o delta, se necessário, mas vamos manter o acumulado
+    # para ser comparável com o WAF.
+    start_rx, start_tx = get_system_network_bytes()
+
     while time.time() - start_time < DURATION:
         now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         try:
             lat_ms, metrics = query_monitor()
             latencies.append(lat_ms)
             last_metrics = metrics
+            
+            # Pega bytes reais do sistema (eth0)
+            sys_rx, sys_tx = get_system_network_bytes()
 
             sample = {
                 "time":        now,
                 "latency_ms":  lat_ms,
                 "connections": metrics.get("connections", 0),
-                "bytes_rx":    metrics.get("bytes_rx", 0),
-                "bytes_tx":    metrics.get("bytes_tx", 0),
+                "bytes_rx":    sys_rx - start_rx, # Tráfego medido DURANTE o teste
+                "bytes_tx":    sys_tx - start_tx,
                 "cpu_pct":     metrics.get("cpu_pct", 0),
                 "mem_mb":      metrics.get("mem_mb", 0),
                 "blocked":     metrics.get("blocked", 0),
@@ -61,7 +84,7 @@ def collect():
 
             print(f"[{now}] lat={lat_ms}ms | "
                   f"conns={metrics.get('connections',0)} | "
-                  f"cpu={metrics.get('cpu_pct',0)}% | "
+                  f"sys_rx={sample['bytes_rx']} | "
                   f"block={metrics.get('blocked',0)}")
         except Exception as e:
             print(f"[{now}] ERRO UDP: {e}")
@@ -76,26 +99,27 @@ def collect():
     print("\n✅ Coleta sysstat encerrada.")
 
 def _flush(start_time, latencies, samples, last_metrics):
+    if not samples: return
+    last_sample = samples[-1]
+    
     result = {
         "collector":                 "sysstat",
         "timestamp":                 datetime.utcnow().isoformat(),
         "duration_s":                round(time.time() - start_time, 2),
-        # Calculado com TODAS as latências acumuladas
         "monitor_latency_avg_ms":    round(statistics.mean(latencies), 4)   if latencies else 0,
         "monitor_latency_stddev_ms": round(statistics.stdev(latencies), 4)  if len(latencies) > 1 else 0,
         "monitor_latency_max_ms":    round(max(latencies), 4)               if latencies else 0,
         "monitor_latency_min_ms":    round(min(latencies), 4)               if latencies else 0,
         "monitor_samples":           len(latencies),
-        "latencies_raw":             latencies,  # todas as latências brutas
-        # Métricas do WAF
+        "latencies_raw":             latencies,
         "connections":               last_metrics.get("connections", 0),
-        "bytes_rx":                  last_metrics.get("bytes_rx", 0),
-        "bytes_tx":                  last_metrics.get("bytes_tx", 0),
+        "bytes_rx":                  last_sample["bytes_rx"], # Agora vem do sistema!
+        "bytes_tx":                  last_sample["bytes_tx"],
         "cpu_avg_pct":               last_metrics.get("cpu_pct", 0),
         "mem_avg_mb":                last_metrics.get("mem_mb", 0),
         "waf_blocked":               last_metrics.get("blocked", 0),
         "waf_allowed":               last_metrics.get("allowed", 0),
-        "samples":                   samples,  # todos os snapshots acumulados
+        "samples":                   samples,
     }
     with open(RESULTS_PATH, "w") as f:
         json.dump(result, f, indent=2)

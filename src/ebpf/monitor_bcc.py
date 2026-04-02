@@ -18,6 +18,12 @@ os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
 
 # Programa eBPF v21 — Filtragem por Porta (TCP e UDP)
 bpf_program = """
+/* Forward declaration para contornar erro struct bpf_wq em kernels 6.10+ */
+struct bpf_wq {
+    unsigned long long :64;
+    unsigned long long :64;
+} __attribute__((aligned(8)));
+
 #include <uapi/linux/ptrace.h>
 #include <net/sock.h>
 #include <bcc/proto.h>

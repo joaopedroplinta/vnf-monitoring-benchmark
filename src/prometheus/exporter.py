@@ -38,7 +38,7 @@ def query_monitor() -> tuple[float, dict]:
     finally:
         sock.close()
 
-def get_system_network_bytes(interface="eth0"):
+def get_system_network_bytes(interface="lo"):
     try:
         with open("/proc/net/dev", "r") as f:
             for line in f:
@@ -58,7 +58,7 @@ def collect_loop():
 
     print("=" * 55)
     print("  📈 Coletor Prometheus — Monitor UDP porta 9999")
-    print("  Monitorando rede via /proc/net/dev (eth0)")
+    print("  Monitorando rede via /proc/net/dev (lo)")
     print("=" * 55)
 
     start_rx, start_tx = get_system_network_bytes()

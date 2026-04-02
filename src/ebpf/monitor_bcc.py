@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Coletor eBPF v19 — TCC Gerenciamento de Rede
-Usa ganchos em nível de socket (sock_sendmsg/recvmsg) para máxima compatibilidade no WSL2.
-Filtra por PID e gera telemetria de latência.
+Coletor eBPF v21 — TCC Gerenciamento de Rede
+Monitoramento seletivo por portas (8080, 9999) para evitar discrepâncias.
 """
 from bcc import BPF
 import ctypes as ct
@@ -11,45 +10,87 @@ from datetime import datetime
 
 MONITOR_HOST = '127.0.0.1'
 MONITOR_PORT = 9999
-DURATION     = 240
+DURATION     = 60
 INTERVAL     = 1
 SAVE_INTERVAL= 10
 RESULTS_PATH = "/app/results/ebpf_results.json"
 os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
 
-# Programa eBPF usando sock_sendmsg e sock_recvmsg (mais estável que syscalls no WSL2)
+# Programa eBPF v21 — Filtragem por Porta (TCP e UDP)
 bpf_program = """
 #include <uapi/linux/ptrace.h>
-#include <linux/sched.h>
 #include <net/sock.h>
+#include <bcc/proto.h>
+#include <linux/tcp.h>
 
 BPF_HASH(start_ns, u32, u64);
 BPF_HASH(latency_map, u32, u64);
-BPF_HASH(collector_pid, u32, u8);
+BPF_ARRAY(net_stats, u64, 2); // 0: RX, 1: TX
 
-// Disparado quando qualquer dado sai por um socket
-int kprobe__sock_sendmsg(struct pt_regs *ctx) {
-    u32 pid = bpf_get_current_pid_tgid() >> 32;
+// Função auxiliar para verificar portas de interesse
+static inline bool is_target_port(u16 port) {
+    return port == 8080 || port == 9999;
+}
+
+// 1. TCP Send (WAF TX)
+int kprobe__tcp_sendmsg(struct pt_regs *ctx, struct sock *sk, struct msghdr *msg, size_t size) {
+    u16 dport = sk->__sk_common.skc_dport;
+    dport = ntohs(dport);
     
-    // Só registra se for o PID do nosso coletor
-    u8 *is_collector = collector_pid.lookup(&pid);
-    if (!is_collector) return 0;
-
-    u64 ts = bpf_ktime_get_ns();
-    start_ns.update(&pid, &ts);
+    if (is_target_port(dport)) {
+        u32 key = 1; // TX
+        u64 *val = net_stats.lookup(&key);
+        if (val) *val += size;
+    }
     return 0;
 }
 
-// Disparado quando qualquer dado chega em um socket
-int kretprobe__sock_recvmsg(struct pt_regs *ctx) {
-    u32 pid = bpf_get_current_pid_tgid() >> 32;
-    u64 *start = start_ns.lookup(&pid);
+// 2. TCP Receive (WAF RX)
+int kprobe__tcp_cleanup_rbuf(struct pt_regs *ctx, struct sock *sk, int copied) {
+    if (copied <= 0) return 0;
     
-    if (start) {
-        u64 now = bpf_ktime_get_ns();
-        u64 lat = now - *start;
-        latency_map.update(&pid, &lat);
-        start_ns.delete(&pid);
+    u16 sport = sk->__sk_common.skc_num;
+    if (is_target_port(sport)) {
+        u32 key = 0; // RX
+        u64 *val = net_stats.lookup(&key);
+        if (val) *val += (u64)copied;
+    }
+    return 0;
+}
+
+// 3. UDP Send (Monitor Probe TX)
+int kprobe__udp_sendmsg(struct pt_regs *ctx, struct sock *sk, struct msghdr *msg, size_t len) {
+    u16 dport = sk->__sk_common.skc_dport;
+    dport = ntohs(dport);
+    
+    if (dport == 9999) {
+        u32 key = 1; // TX
+        u64 *val = net_stats.lookup(&key);
+        if (val) *val += len;
+        
+        u32 pid = bpf_get_current_pid_tgid() >> 32;
+        u64 ts = bpf_ktime_get_ns();
+        start_ns.update(&pid, &ts);
+    }
+    return 0;
+}
+
+// 4. UDP Receive (Monitor Probe RX)
+int kprobe__udp_recvmsg(struct pt_regs *ctx, struct sock *sk, struct msghdr *msg, size_t len) {
+    u16 sport = sk->__sk_common.skc_num;
+    if (sport == 9999) {
+        u32 key = 0; // RX
+        u64 *val = net_stats.lookup(&key);
+        if (val) *val += len;
+
+        u32 pid = bpf_get_current_pid_tgid() >> 32;
+        u64 *start = start_ns.lookup(&pid);
+        if (start) {
+            u64 now = bpf_ktime_get_ns();
+            u64 lat = now - *start;
+            latency_map.update(&pid, &lat);
+            start_ns.delete(&pid);
+        }
     }
     return 0;
 }
@@ -63,20 +104,22 @@ def query_and_record(b, latencies, samples, last_metrics):
     now_str = datetime.now().strftime("%H:%M:%S.%f")[:-3]
     
     try:
-        # Envia probe UDP
         sock.sendto(b"GET", (MONITOR_HOST, MONITOR_PORT))
         data, _ = sock.recvfrom(65536)
 
-        # Coleta latência do eBPF
+        # 1. Latência do eBPF
         lat_ms = 0
         if pid_ct in b["latency_map"]:
             lat_ns = b["latency_map"][pid_ct].value
             lat_ms = round(lat_ns / 1e6, 4)
-            if 0 < lat_ms < 2000: # Filtro de sanidade
+            if 0 < lat_ms < 2000:
                 latencies.append(lat_ms)
             b["latency_map"].clear()
 
-        # Coleta métricas do WAF
+        # 2. Bytes RX/TX filtrados
+        rx_bytes = b["net_stats"][ct.c_uint32(0)].value
+        tx_bytes = b["net_stats"][ct.c_uint32(1)].value
+
         try:
             m = json.loads(data.decode("utf-8"))
             last_metrics.update(m)
@@ -87,8 +130,8 @@ def query_and_record(b, latencies, samples, last_metrics):
             "time":        now_str,
             "latency_ms":  lat_ms,
             "connections": m.get("connections", 0),
-            "bytes_rx":    m.get("bytes_rx", 0),
-            "bytes_tx":    m.get("bytes_tx", 0),
+            "bytes_rx":    rx_bytes,
+            "bytes_tx":    tx_bytes,
             "cpu_pct":     m.get("cpu_pct", 0),
             "mem_mb":      m.get("mem_mb", 0),
             "blocked":     m.get("blocked", 0),
@@ -96,7 +139,7 @@ def query_and_record(b, latencies, samples, last_metrics):
         }
         samples.append(sample)
         
-        print(f"[{now_str}] lat={lat_ms}ms | cpu={m.get('cpu_pct',0)}% | samples={len(latencies)}", flush=True)
+        print(f"[{now_str}] lat={lat_ms}ms | rx={rx_bytes} | tx={tx_bytes} | cpu={m.get('cpu_pct',0)}%", flush=True)
     except Exception as e:
         print(f"[{now_str}] Erro UDP: {e}", flush=True)
     finally:
@@ -104,11 +147,8 @@ def query_and_record(b, latencies, samples, last_metrics):
 
 def save_results(start_time, latencies, samples):
     if not samples: return
-    
     last = samples[-1]
-    # Média de CPU considerando apenas quando houve atividade
-    cpu_active = [s["cpu_pct"] for s in samples if s["cpu_pct"] > 0]
-    cpu_avg = round(statistics.mean(cpu_active), 2) if cpu_active else 0.0
+    cpu_avg = round(statistics.mean([s["cpu_pct"] for s in samples]), 2)
 
     result = {
         "collector":                 "ebpf",
@@ -131,22 +171,16 @@ def save_results(start_time, latencies, samples):
     
     with open(RESULTS_PATH, "w") as f:
         json.dump(result, f, indent=2)
-    print(f"\n💾 eBPF salvo | lat_avg={result['monitor_latency_avg_ms']}ms | n={len(latencies)}")
+    print(f"\n💾 eBPF salvo | lat_avg={result['monitor_latency_avg_ms']}ms | rx={result['bytes_rx']} | tx={result['bytes_tx']}")
 
 def main():
     print("=" * 55)
-    print(f"  🔍 Coletor eBPF v19 — Latência via sock_sendmsg")
+    print(f"  🔍 Coletor eBPF v21 — Filtro Portas 8080, 9999")
     print("=" * 55)
 
     try:
-        # Carrega o programa
         b = BPF(text=bpf_program)
-        
-        # Injeta o PID do processo atual no mapa do eBPF
-        my_pid = os.getpid()
-        b["collector_pid"][ct.c_uint32(my_pid)] = ct.c_uint8(1)
-        
-        print(f"✅ BPF carregado. Monitorando latência do PID {my_pid}", flush=True)
+        print(f"✅ BPF carregado. Monitorando tráfego do WAF e Monitor.", flush=True)
     except Exception as e:
         print(f"❌ Erro ao carregar eBPF: {e}")
         return

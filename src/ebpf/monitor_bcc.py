@@ -1,22 +1,32 @@
 #!/usr/bin/env python3
 """
-Coletor eBPF v21 — TCC Gerenciamento de Rede
-Monitoramento seletivo por portas (8080, 9999) para evitar discrepâncias.
+Coletor eBPF v23 — TCC Gerenciamento de Rede
+Latência medida no userspace (kprobe udp_recvmsg não dispara no kernel 6.12+).
+Bytes RX/TX via kprobes TCP contando APENAS o lado servidor do WAF (sport=8080),
+evitando a dupla contagem que ocorre no tráfego loopback.
+
+Por que apenas sport=8080?
+  No loopback, cada pacote passa pelo kernel dos dois lados (cliente e servidor).
+  Contar sport OU dport == 8080 duplica o mesmo dado. Contar somente sport=8080
+  garante que medimos exatamente os bytes que o processo WAF leu (RX) e escreveu (TX).
 """
 from bcc import BPF
 import ctypes as ct
 import socket, time, json, os, statistics
 from datetime import datetime
 
-MONITOR_HOST = '127.0.0.1'
-MONITOR_PORT = 9999
-DURATION     = 60
-INTERVAL     = 1
-SAVE_INTERVAL= 10
-RESULTS_PATH = "/app/results/ebpf_results.json"
+MONITOR_HOST  = '127.0.0.1'
+MONITOR_PORT  = 9999
+DURATION      = 60
+INTERVAL      = 1
+SAVE_INTERVAL = 10
+RESULTS_PATH  = "/app/results/ebpf_results.json"
 os.makedirs(os.path.dirname(RESULTS_PATH), exist_ok=True)
 
-# Programa eBPF v21 — Filtragem por Porta (TCP e UDP)
+# Programa eBPF v23
+# - tcp_sendmsg    : conta TX apenas quando sport==8080 (WAF enviando resposta)
+# - tcp_cleanup_rbuf: conta RX apenas quando sport==8080 (WAF lendo requisição)
+# Desta forma não conta o lado do cliente, evitando dupla contagem no loopback.
 bpf_program = """
 /* Forward declaration para contornar erro struct bpf_wq em kernels 6.10+ */
 struct bpf_wq {
@@ -29,74 +39,27 @@ struct bpf_wq {
 #include <bcc/proto.h>
 #include <linux/tcp.h>
 
-BPF_HASH(start_ns, u32, u64);
-BPF_HASH(latency_map, u32, u64);
 BPF_ARRAY(net_stats, u64, 2); // 0: RX, 1: TX
 
-// Função auxiliar para verificar portas de interesse
-static inline bool is_target_port(u16 port) {
-    return port == 8080 || port == 9999;
-}
-
-// 1. TCP Send (WAF TX)
+// WAF TX: WAF enviando resposta ao cliente (socket do servidor, sport=8080)
 int kprobe__tcp_sendmsg(struct pt_regs *ctx, struct sock *sk, struct msghdr *msg, size_t size) {
-    u16 dport = sk->__sk_common.skc_dport;
-    dport = ntohs(dport);
-    
-    if (is_target_port(dport)) {
-        u32 key = 1; // TX
+    u16 sport = sk->__sk_common.skc_num;
+    if (sport == 8080) {
+        u32 key = 1;
         u64 *val = net_stats.lookup(&key);
         if (val) *val += size;
     }
     return 0;
 }
 
-// 2. TCP Receive (WAF RX)
+// WAF RX: WAF lendo requisição do cliente (socket do servidor, sport=8080)
 int kprobe__tcp_cleanup_rbuf(struct pt_regs *ctx, struct sock *sk, int copied) {
     if (copied <= 0) return 0;
-    
     u16 sport = sk->__sk_common.skc_num;
-    if (is_target_port(sport)) {
-        u32 key = 0; // RX
+    if (sport == 8080) {
+        u32 key = 0;
         u64 *val = net_stats.lookup(&key);
         if (val) *val += (u64)copied;
-    }
-    return 0;
-}
-
-// 3. UDP Send (Monitor Probe TX)
-int kprobe__udp_sendmsg(struct pt_regs *ctx, struct sock *sk, struct msghdr *msg, size_t len) {
-    u16 dport = sk->__sk_common.skc_dport;
-    dport = ntohs(dport);
-    
-    if (dport == 9999) {
-        u32 key = 1; // TX
-        u64 *val = net_stats.lookup(&key);
-        if (val) *val += len;
-        
-        u32 pid = bpf_get_current_pid_tgid() >> 32;
-        u64 ts = bpf_ktime_get_ns();
-        start_ns.update(&pid, &ts);
-    }
-    return 0;
-}
-
-// 4. UDP Receive (Monitor Probe RX)
-int kprobe__udp_recvmsg(struct pt_regs *ctx, struct sock *sk, struct msghdr *msg, size_t len) {
-    u16 sport = sk->__sk_common.skc_num;
-    if (sport == 9999) {
-        u32 key = 0; // RX
-        u64 *val = net_stats.lookup(&key);
-        if (val) *val += len;
-
-        u32 pid = bpf_get_current_pid_tgid() >> 32;
-        u64 *start = start_ns.lookup(&pid);
-        if (start) {
-            u64 now = bpf_ktime_get_ns();
-            u64 lat = now - *start;
-            latency_map.update(&pid, &lat);
-            start_ns.delete(&pid);
-        }
     }
     return 0;
 }
@@ -105,24 +68,19 @@ int kprobe__udp_recvmsg(struct pt_regs *ctx, struct sock *sk, struct msghdr *msg
 def query_and_record(b, latencies, samples, last_metrics):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(1.5)
-    pid = os.getpid()
-    pid_ct = ct.c_uint32(pid)
     now_str = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-    
+
     try:
+        # Latência medida no userspace (kprobe udp_recvmsg não funciona no kernel 6.12+)
+        t0 = time.time()
         sock.sendto(b"GET", (MONITOR_HOST, MONITOR_PORT))
         data, _ = sock.recvfrom(65536)
+        lat_ms = round((time.time() - t0) * 1000, 4)
 
-        # 1. Latência do eBPF
-        lat_ms = 0
-        if pid_ct in b["latency_map"]:
-            lat_ns = b["latency_map"][pid_ct].value
-            lat_ms = round(lat_ns / 1e6, 4)
-            if 0 < lat_ms < 2000:
-                latencies.append(lat_ms)
-            b["latency_map"].clear()
+        if 0 < lat_ms < 2000:
+            latencies.append(lat_ms)
 
-        # 2. Bytes RX/TX filtrados
+        # Bytes acumulados pelo WAF (lado servidor, sport=8080)
         rx_bytes = b["net_stats"][ct.c_uint32(0)].value
         tx_bytes = b["net_stats"][ct.c_uint32(1)].value
 
@@ -144,7 +102,7 @@ def query_and_record(b, latencies, samples, last_metrics):
             "allowed":     m.get("allowed", 0),
         }
         samples.append(sample)
-        
+
         print(f"[{now_str}] lat={lat_ms}ms | rx={rx_bytes} | tx={tx_bytes} | cpu={m.get('cpu_pct',0)}%", flush=True)
     except Exception as e:
         print(f"[{now_str}] Erro UDP: {e}", flush=True)
@@ -174,21 +132,21 @@ def save_results(start_time, latencies, samples):
         "waf_allowed":               last.get("allowed", 0),
         "samples":                   samples
     }
-    
+
     with open(RESULTS_PATH, "w") as f:
         json.dump(result, f, indent=2)
     print(f"\n💾 eBPF salvo | lat_avg={result['monitor_latency_avg_ms']}ms | rx={result['bytes_rx']} | tx={result['bytes_tx']}")
 
 def main():
     print("=" * 55)
-    print(f"  🔍 Coletor eBPF v21 — Filtro Portas 8080, 9999")
+    print(f"  Coletor eBPF v23 — Latencia userspace + kprobe sport=8080")
     print("=" * 55)
 
     try:
         b = BPF(text=bpf_program)
-        print(f"✅ BPF carregado. Monitorando tráfego do WAF e Monitor.", flush=True)
+        print(f"BPF carregado. Monitorando sport=8080 (WAF server side).", flush=True)
     except Exception as e:
-        print(f"❌ Erro ao carregar eBPF: {e}")
+        print(f"Erro ao carregar eBPF: {e}")
         return
 
     start_time = time.time()

@@ -11,7 +11,7 @@ import os
 WAF_HOST     = 'localhost'
 WAF_PORT     = 8080
 PAYLOAD_PATH = os.path.join(os.path.dirname(__file__), "payload.bin")
-NUM_MESSAGES = 200
+NUM_MESSAGES = int(os.environ.get("NUM_MESSAGES", 100))
 DELAY        = 1  # segundos entre envios
 
 def load_payload() -> bytes:
@@ -62,6 +62,7 @@ def main():
     allowed = blocked = errors = 0
 
     for i in range(NUM_MESSAGES):
+        t0 = time.time()
         try:
             response = send_payload(payload)
             if response.startswith("BLOCKED"):
@@ -76,7 +77,10 @@ def main():
             print(f"[{i+1:03d}/{NUM_MESSAGES}] ERRO: {e}")
 
         if i < NUM_MESSAGES - 1:
-            time.sleep(DELAY)
+            elapsed = time.time() - t0
+            remaining_delay = DELAY - elapsed
+            if remaining_delay > 0:
+                time.sleep(remaining_delay)
 
     print(f"\n✅ Concluído — ALLOW:{allowed} BLOCK:{blocked} ERRO:{errors}")
 

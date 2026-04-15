@@ -30,6 +30,8 @@ services:
       dockerfile: configs/Dockerfile.client
     container_name: socket-client
     network_mode: "host"
+    environment:
+      - NUM_MESSAGES=${NUM_MESSAGES:-100}
     volumes:
       - ./src/client:/app
     command: python3 /app/client.py
@@ -46,6 +48,7 @@ services:
     network_mode: "host"
     environment:
       - TERM=xterm
+      - DURATION=${DURATION:-100}
     volumes:
       - /sys/kernel/debug:/sys/kernel/debug:rw
       - /sys/fs/bpf:/sys/fs/bpf:rw

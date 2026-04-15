@@ -9,7 +9,7 @@ from datetime import datetime
 
 MONITOR_HOST  = 'localhost'
 MONITOR_PORT  = 9999
-DURATION      = 60
+DURATION      = int(os.environ.get("DURATION", 60))
 INTERVAL      = 1
 SAVE_INTERVAL = 10
 RESULTS_PATH  = "/app/results/sysstat_results.json"

@@ -9,7 +9,7 @@ from prometheus_client import start_http_server, Gauge, Histogram
 
 MONITOR_HOST  = 'localhost'
 MONITOR_PORT  = 9999
-DURATION      = 60
+DURATION      = int(os.environ.get("DURATION", 60))
 INTERVAL      = 1
 SAVE_INTERVAL = 10
 RESULTS_PATH  = "/app/results/prometheus_results.json"

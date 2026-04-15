@@ -41,5 +41,6 @@ d=json.load(sys.stdin)
 print(f\"  lat_avg : {d.get('monitor_latency_avg_ms','?')} ms\")
 print(f\"  stddev  : {d.get('monitor_latency_stddev_ms','?')} ms\")
 print(f\"  amostras: {d.get('monitor_samples','?')}\")
-print(f\"  bloqueados WAF: {d.get('waf_blocked','?')}\")
+print(f\"  cpu_avg : {d.get('cpu_avg_pct','?')} %\")
+print(f\"  mem_avg : {d.get('mem_avg_mb','?')} MB\")
 " 2>/dev/null

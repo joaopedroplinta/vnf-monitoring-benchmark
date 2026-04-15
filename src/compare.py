@@ -23,13 +23,10 @@ METRICS = [
     ("monitor_latency_max_ms",    "Latência máx monitoramento (ms)"),
     ("monitor_latency_min_ms",    "Latência mín monitoramento (ms)"),
     ("monitor_samples",           "Amostras coletadas"),
-    ("connections",               "Conexões ao WAF"),
     ("bytes_rx",                  "Bytes RX WAF"),
     ("bytes_tx",                  "Bytes TX WAF"),
     ("cpu_avg_pct",               "CPU média WAF (%)"),
     ("mem_avg_mb",                "Memória média WAF (MB)"),
-    ("waf_blocked",               "Requisições bloqueadas"),
-    ("waf_allowed",               "Requisições permitidas"),
     ("duration_s",                "Duração (s)"),
 ]
 

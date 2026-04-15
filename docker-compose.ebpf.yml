@@ -17,10 +17,16 @@ services:
       dockerfile: configs/Dockerfile
     container_name: monitor-server
     network_mode: "host"
+    pid: "host"
+    privileged: true
     volumes:
+      - /sys/kernel/debug:/sys/kernel/debug:rw
+      - /sys/fs/bpf:/sys/fs/bpf:rw
+      - /lib/modules:/lib/modules:ro
+      - /usr/src:/usr/src:ro
       - ./src/vnf:/app/vnf
       - results_vol:/app/results
-    command: python3 /app/vnf/monitor_server.py
+    command: python3 /app/vnf/monitor_ebpf.py
     depends_on:
       - waf
 
@@ -30,6 +36,8 @@ services:
       dockerfile: configs/Dockerfile.client
     container_name: socket-client
     network_mode: "host"
+    environment:
+      - NUM_MESSAGES=${NUM_MESSAGES:-100}
     volumes:
       - ./src/client:/app
     command: python3 /app/client.py
@@ -41,19 +49,15 @@ services:
       context: .
       dockerfile: configs/Dockerfile
     container_name: ebpf-collector
-    pid: "host"
-    privileged: true
     network_mode: "host"
     environment:
-      - BCC_KERNEL_SOURCE=/usr/src/linux-headers-6.6.87.2-microsoft-standard-WSL2
+      - COLLECTOR=ebpf
+      - RESULTS_PATH=/app/results/ebpf_results.json
+      - DURATION=${DURATION:-100}
     volumes:
-      - /sys/kernel/debug:/sys/kernel/debug:rw
-      - /sys/fs/bpf:/sys/fs/bpf:rw
-      - /lib/modules:/lib/modules:ro
-      - /usr/src:/usr/src:ro
-      - ./src/ebpf:/app/ebpf
+      - ./src:/app/src
       - results_vol:/app/results
-    command: python3 /app/ebpf/monitor_bcc.py
+    command: python3 /app/src/probe.py
     depends_on:
       - monitor-server
 

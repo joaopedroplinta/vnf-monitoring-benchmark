@@ -2,75 +2,125 @@
 
 ## Visão Geral
 
-O sistema avalia o desempenho de funções de rede virtuais (VNF) através de três metodologias de monitoramento simultâneas. O cenário de teste utiliza um **Web Application Firewall (WAF)** como alvo do monitoramento.
+O sistema avalia três abordagens de monitoramento aplicadas a uma VNF (WAF TCP).
+Cada ferramenta é testada isoladamente em sua própria stack Docker, com a mesma
+carga de tráfego e duração, para garantir comparação justa.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        Ambiente (WSL2/Linux)                │
-│                                                             │
-│   ┌────────────┐   HTTP/TCP   ┌──────────────┐              │
-│   │  Gerador   │ ────────────▶│     WAF      │              │
-│   │ de Tráfego │              │ (Porta 8080) │              │
-│   └────────────┘              └──────┬───────┘              │
-│                                      │                      │
-│          ┌───────────────────────────┤                      │
-│          │ exporta métricas (UDP 9999)│                      │
-│          ▼                           ▼                      │
-│  ┌───────────────┐        ┌─────────────────┐               │
-│  │  eBPF (BCC)   │        │  Monitor Trad.  │               │
-│  │  v19          │        │  (Sysstat/Prom) │               │
-│  │               │        │                 │               │
-│  │ · sock_hooks  │        │ · psutil        │               │
-│  │ · kprobes     │        │ · polling       │               │
-│  │ · PID Filter  │        │ · UDP probes    │               │
-│  └──────┬────────┘        └───────┬─────────┘               │
-│         │                         │                         │
-│         ▼                         ▼                         │
-│  ebpf_results.json        sysstat_results.json              │
-│                           prometheus_results.json           │
-│         │                         │                         │
-│         └──────────────┬──────────┘                         │
-│                        ▼                                    │
-│                  compare.py                                 │
-│                        │                                    │
-│            ┌───────────┴───────────┐                        │
-│            ▼                       ▼                        │
-│    comparison.csv          comparison.json                  │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                        Host Linux (kernel 6.12+)                 │
+│                                                                  │
+│   ┌─────────────┐   TCP :8080   ┌─────────────────────────────┐  │
+│   │   Cliente   │ ────────────▶ │            WAF              │  │
+│   │  client.py  │  payload.bin  │          waf.py             │  │
+│   └─────────────┘               │  SQLi/XSS/RCE/PathTraversal │  │
+│                                 └─────────────────────────────┘  │
+│                                           ▲                      │
+│                                    observa via ferramenta        │
+│                                           │                      │
+│                    ┌──────────────────────┴───────────────────┐  │
+│                    │          Monitor-server (UDP :9999)       │  │
+│                    │                                          │  │
+│                    │  eBPF variant     monitor_ebpf.py        │  │
+│                    │  → kprobes tcp_sendmsg/tcp_cleanup_rbuf  │  │
+│                    │  → psutil CPU/mem do processo WAF        │  │
+│                    │                                          │  │
+│                    │  sysstat variant  monitor_sysstat.py     │  │
+│                    │  → /proc/net/dev (interface lo)          │  │
+│                    │  → psutil CPU/mem do processo WAF        │  │
+│                    │                                          │  │
+│                    │  Prometheus variant monitor_prometheus.py│  │
+│                    │  → /proc/net/dev (interface lo)          │  │
+│                    │  → psutil CPU/mem do processo WAF        │  │
+│                    │  → HTTP :8000/metrics                    │  │
+│                    └──────────────────┬───────────────────────┘  │
+│                                       │                          │
+│                          request/response UDP (1/s)              │
+│                          (latência = tempo de roundtrip)         │
+│                                       │                          │
+│                              ┌────────┴────────┐                 │
+│                              │    probe.py      │                 │
+│                              │  (mesmo para    │                 │
+│                              │  os 3 testes)   │                 │
+│                              └────────┬────────┘                 │
+│                                       │                          │
+│              ┌────────────────────────┤                          │
+│              │                        │                          │
+│              ▼                        ▼                          │
+│   ebpf_results.json       sysstat_results.json                   │
+│   prometheus_results.json                                        │
+│              │                        │                          │
+│              └────────────┬───────────┘                          │
+│                           ▼                                      │
+│                       compare.py                                 │
+│                           │                                      │
+│              ┌────────────┴────────────┐                         │
+│              ▼                         ▼                         │
+│       comparison.csv           comparison.json                   │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Componentes
 
-### 1. VNF Alvo (WAF)
-Localizado em `src/vnf/waf.py`. Inspeciona payloads TCP em busca de padrões SQLi, XSS, etc. Inclui uma pequena carga computacional artificial para tornar o uso de CPU mensurável.
+### WAF — `src/vnf/waf.py`
+- Servidor TCP na porta 8080.
+- Inspeciona cada payload com 5 regras: SQLi, XSS, PathTraversal, RCE, NullByte.
+- Não escreve métricas — essas são coletadas externamente pelo monitor-server.
 
-### 2. Servidor de Telemetria
-Localizado em `src/vnf/monitor_server.py`. Recebe requisições UDP na porta 9999 e responde com um JSON contendo as métricas internas do WAF (bytes processados, conexões, CPU).
+### Monitor-server — `src/vnf/monitor_ebpf.py` | `monitor_sysstat.py` | `monitor_prometheus.py`
+- Servidor UDP na porta 9999.
+- Coleta ativamente métricas do WAF usando a ferramenta correspondente.
+- Responde cada request UDP com JSON contendo `bytes_rx`, `bytes_tx`, `cpu_pct`, `mem_mb`.
+- É o ponto de medição de latência: o probe envia um request UDP e mede o tempo até a resposta.
+- O que muda entre variantes é **como** os bytes RX/TX são coletados:
+  - **eBPF**: kprobes no kernel (`tcp_sendmsg`, `tcp_cleanup_rbuf`), filtrando `sport=8080`. Requer `privileged: true`, `pid: host`.
+  - **sysstat**: polling de `/proc/net/dev` (interface `lo`), delta desde o início do teste. Requer `pid: host`.
+  - **Prometheus**: igual ao sysstat + expõe HTTP `:8000/metrics`. Requer `pid: host`.
+- CPU/mem do processo WAF coletados via psutil em todas as variantes.
 
-### 3. Coletores
-- **eBPF**: Intercepta as funções `sock_sendmsg` e `sock_recvmsg` no kernel para medir a latência exata do processo de monitoramento sem depender de relógios de userspace.
-- **Sysstat/Prometheus**: Utilizam a biblioteca `psutil` para ler dados do `/proc` e realizam probes UDP manuais para medir latência (RTT).
+### Probe UDP — `src/probe.py`
+- Único script de probe, configurado via variáveis de ambiente (`COLLECTOR`, `RESULTS_PATH`, `DURATION`).
+- Envia request UDP ao monitor-server a cada 1s e mede a latência de roundtrip.
+- Registra as métricas retornadas na resposta.
+- Salva resultados em `results/<collector>_results.json`.
+
+### Cliente TCP — `src/client/client.py`
+- Envia requisições TCP com `payload.bin` para o WAF.
+- Distribuição 60/40 (maliciosos/benignos) com seed fixa para reprodutibilidade.
+
+### Comparador — `src/compare.py`
+- Lê os três arquivos de resultado e gera `comparison.csv` e `comparison.json`.
 
 ---
 
 ## Comparação Técnica
 
-| Recurso | eBPF (BCC) | Sysstat (psutil) | Prometheus |
-|---------|------------|------------------|------------|
-| **Ponto de Coleta** | Kernel (Ring 0) | Userspace (Ring 3) | Userspace (Ring 3) |
-| **Mecanismo** | Kprobes dinâmicos | Polling /proc | Polling / Scrape |
-| **Latência** | Medição via hooks | RTT de rede (UDP) | RTT de rede (UDP) |
-| **Overhead** | Mínimo (Event-driven) | Médio (Polling) | Médio (Polling + HTTP) |
-| **Requisito** | Privilégios/Headers | Padrão | Runtime Prometheus |
+| Recurso | eBPF | sysstat | Prometheus |
+|---------|------|---------|------------|
+| **Ponto de coleta de bytes** | Kernel (kprobe, sport=8080) | Userspace (/proc/net/dev, lo) | Userspace (/proc/net/dev, lo) |
+| **CPU/mem do WAF** | psutil (pid: host) | psutil (pid: host) | psutil (pid: host) |
+| **Exposição de métricas** | UDP :9999 | UDP :9999 | UDP :9999 + HTTP :8000 |
+| **Overhead de setup** | Alto (privilégios, headers, BCC) | Baixo | Médio (runtime prometheus_client) |
+| **Bytes medidos** | Só tráfego WAF (sport=8080) | Todo tráfego loopback | Todo tráfego loopback |
 
 ---
 
-## Fluxo de Coleta
+## Fluxo de Execução
 
-1. O **Gerador de Tráfego** inicia o envio de ataques simulados ao WAF.
-2. Cada **Coletor** sonda o Servidor de Telemetria a cada 1 segundo.
-3. O eBPF registra os timestamps no kernel no momento exato em que o pacote de monitoramento cruza a camada de socket.
-4. Os dados são acumulados por 240 segundos.
-5. O `compare.py` consolida as médias e desvios padrão para gerar a comparação final.
+1. Script `run_<ferramenta>.sh` sobe a stack via Docker Compose.
+2. WAF inicia na porta 8080; monitor-server inicia e começa a coletar métricas.
+3. Cliente começa a enviar requisições ao WAF.
+4. Probe envia requests UDP ao monitor-server a cada 1s e registra latência + métricas.
+5. Após o tempo configurado, o probe salva o resultado em `results/<ferramenta>_results.json`.
+6. Após os três testes, `compare.py` consolida os resultados.
+
+---
+
+## Limitações Conhecidas
+
+- A latência do eBPF é medida no userspace (igual aos demais) devido à incompatibilidade do kprobe `udp_recvmsg` com o kernel 6.12+.
+- Bytes RX/TX são incomparáveis entre eBPF e os demais: eBPF mede apenas o tráfego do WAF (sport=8080); sysstat/Prometheus medem todo o tráfego da interface loopback.
+- O overhead de CPU do Prometheus inclui o custo do servidor HTTP, não apenas da coleta.
+- CPU/mem via psutil requer `pid: host` — o monitor-server enxerga o processo WAF via namespace de PID do host.

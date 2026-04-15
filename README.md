@@ -135,16 +135,17 @@ Gera `results/comparison.csv` e `results/comparison.json`.
 
 ---
 
-## Resultados (última execução — 60s, 60 amostras)
-
-> ⚠️ Resultados obtidos com a arquitetura anterior (WAF escrevia métricas). Serão atualizados após nova execução.
+## Resultados (última execução — ~100s, 100 mensagens)
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
-| Latência média (ms) | 0.301 | 0.332 | 0.308 |
-| Desvio padrão (ms) | 0.089 | 0.039 | 0.107 |
-| Latência máx (ms) | 0.855 | 0.475 | 0.918 |
-| Latência mín (ms) | 0.168 | 0.231 | 0.191 |
-| CPU média WAF (%) | 0.33 | 0.33 | 0.83 |
-| Memória média WAF (MB) | 15.07 | 15.20 | 15.43 |
-| Bytes RX | ~123 MB | ~122 MB | ~122 MB |
+| Latência média (ms) | 1.9807 | 3.1118 | 1.3208 |
+| Desvio padrão (ms) | 3.4661 | 21.6598 | 4.2995 |
+| Latência máx (ms) | 32.2006 | 217.3324 | 42.6896 |
+| Latência mín (ms) | 0.3250 | 0.3316 | 0.3242 |
+| Amostras coletadas | 91 | 100 | 97 |
+| CPU média WAF (%) | 0.20 | 0.11 | 0.11 |
+| Memória média WAF (MB) | 11.49 | 11.31 | 11.47 |
+| Bytes RX | 85 221 | 160 194 | 159 878 |
+| Bytes TX | 1 131 | 160 194 | 159 878 |
+| Duração (s) | 100.35 | 100.38 | 100.19 |

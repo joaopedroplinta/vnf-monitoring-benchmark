@@ -1,50 +1,45 @@
 ================================================================================
 TCC — GERENCIAMENTO E MONITORAMENTO DE REDE
-Relatório do Projeto | Gerado em: 07/04/2026
+Relatório do Projeto | Gerado em: 14/04/2026
 ================================================================================
 
 OBJETIVO
 --------
 Projeto de TCC que compara 3 abordagens de monitoramento de rede aplicadas a
 uma VNF (Web Application Firewall):
-  - eBPF (BCC):       instrumentação em nível de kernel via kprobes
-  - Sysstat (psutil): polling tradicional em userspace via /proc
-  - Prometheus:       stack moderna com scraping HTTP
+  - eBPF (BCC):  instrumentação em nível de kernel via kprobes
+  - Sysstat:     polling tradicional em userspace via /proc
+  - Prometheus:  mesma coleta do sysstat + exposição HTTP de métricas
 
 
 ESTRUTURA DO PROJETO
 --------------------
 tcc_gerenciamento_rede/
 ├── src/
-│   ├── ebpf/
-│   │   └── monitor_bcc.py         # v23 — kprobes TCP, filtro sport=8080
-│   ├── sysstat/
-│   │   └── collector.py           # v2  — /proc/net/dev + UDP RTT
-│   ├── prometheus/
-│   │   └── exporter.py            # v2  — HTTP exporter, Gauge + Histogram
+│   ├── probe.py                   # Probe UDP único (configurado por env vars)
 │   ├── vnf/
-│   │   ├── waf.py                 # WAF em TCP 8080
-│   │   └── monitor_server.py      # Servidor UDP 9999 de telemetria
+│   │   ├── waf.py                 # WAF TCP porta 8080
+│   │   ├── monitor_ebpf.py        # Monitor eBPF: kprobes sport=8080 + psutil
+│   │   ├── monitor_sysstat.py     # Monitor sysstat: /proc/net/dev + psutil
+│   │   └── monitor_prometheus.py  # Monitor Prometheus: /proc/net/dev + psutil + HTTP :8000
 │   ├── client/
-│   │   ├── client.py              # Envia 200 mensagens TCP a 1s de intervalo
-│   │   └── gen_payload.py         # Gera payload 2MB (60% limpo + 40% malicioso)
+│   │   ├── client.py              # Envia NUM_MESSAGES mensagens TCP
+│   │   └── gen_payload.py         # Gera payload.bin (60% limpo + 40% malicioso)
 │   └── compare.py                 # Consolida resultados em CSV e JSON
 ├── configs/
-│   ├── Dockerfile                 # Ubuntu 24.04 + BCC tools
+│   ├── Dockerfile                 # Ubuntu 24.04 + BCC tools + Python 3
 │   └── Dockerfile.client          # Python 3.9 slim
-├── docker-compose.yml             # Orquestração completa (todos os coletores)
 ├── docker-compose.ebpf.yml        # Stack isolada eBPF
-├── docker-compose.prometheus.yml  # Stack isolada Prometheus
 ├── docker-compose.sysstat.yml     # Stack isolada Sysstat
+├── docker-compose.prometheus.yml  # Stack isolada Prometheus
 ├── scripts/
-│   ├── run_ebpf.sh                # Benchmark eBPF (120s)
-│   ├── run_prometheus.sh          # Benchmark Prometheus (120s)
-│   └── run_sysstat.sh             # Benchmark Sysstat (120s)
+│   ├── run_ebpf.sh                # Executa benchmark eBPF completo
+│   ├── run_sysstat.sh             # Executa benchmark Sysstat completo
+│   └── run_prometheus.sh          # Executa benchmark Prometheus completo
 └── results/
     ├── ebpf_results.json
     ├── sysstat_results.json
     ├── prometheus_results.json
-    ├── vnf_metrics.json
     ├── comparison.csv
     └── comparison.json
 
@@ -53,116 +48,89 @@ COMPONENTES IMPLEMENTADOS
 --------------------------
 
 1. VNF — Web Application Firewall (src/vnf/)
-   - waf.py (153 linhas): TCP server na porta 8080
+   - waf.py (85 linhas): TCP server na porta 8080
      * Detecta: SQLi, XSS, Path Traversal, RCE, Null Byte
-     * Rastreia métricas por conexão (bytes RX/TX, blocked/allowed)
-     * Simula carga de CPU com loops matemáticos intencionais
-     * Exporta métricas para vnf_metrics.json periodicamente
-   - monitor_server.py (42 linhas): UDP server na porta 9999
-     * Responde a qualquer requisição UDP com métricas do WAF em JSON
-     * Ponto central de telemetria para todos os coletores
+     * Bloqueia ou encaminha requisições; não escreve métricas
+   - monitor_ebpf.py (113 linhas): monitor eBPF
+     * Kprobes em tcp_sendmsg e tcp_cleanup_rbuf, filtro sport=8080
+     * Coleta bytes RX/TX + CPU/mem do WAF via psutil
+     * Responde a probes UDP na porta 9999 com JSON de métricas
+   - monitor_sysstat.py (83 linhas): monitor sysstat
+     * Lê /proc/net/dev (interface lo)
+     * Coleta CPU/mem do WAF via psutil
+     * Responde a probes UDP na porta 9999
+   - monitor_prometheus.py (100 linhas): monitor Prometheus
+     * Mesma lógica do sysstat
+     * Expõe Gauges adicionais em :8000/metrics via prometheus_client
 
-2. Coletores (src/)
-
-   eBPF (monitor_bcc.py — v23, 171 linhas):
-   - Kprobes em tcp_sendmsg e tcp_cleanup_rbuf
-   - Filtra sport == 8080 para evitar dupla contagem no loopback
-   - Latência medida via UDP RTT em userspace
-   - 1 amostra/segundo por 60 segundos
-   - Saída: results/ebpf_results.json
-
-   Sysstat (collector.py — v2, 134 linhas):
-   - Lê /proc/net/dev na interface loopback
-   - Consultas UDP ao monitor server para métricas do WAF
-   - Latência como RTT UDP usando time.time_ns()
-   - Saída: results/sysstat_results.json
-
-   Prometheus (exporter.py — v2, 144 linhas):
-   - Métricas exportadas:
-     * monitor_latency_ms (Gauge)
-     * monitor_latency_histogram_ms (Histogram)
-     * waf_connections_total, waf_bytes_rx_total, waf_bytes_tx_total
-     * waf_cpu_percent, waf_mem_mb
-     * waf_blocked_total, waf_allowed_total
-   - Saída: results/prometheus_results.json
+2. Probe (src/probe.py — 100 linhas)
+   - Script único compartilhado pelos três stacks
+   - Envia requisição UDP ao monitor-server a cada 1s
+   - Mede RTT (roundtrip time) como métrica principal de overhead
+   - Configurável via variáveis de ambiente: NUM_MESSAGES, DURATION
+   - Saída: results/<ferramenta>_results.json
 
 3. Geração de Tráfego (src/client/)
-   - client.py (83 linhas): envia 200 mensagens TCP com intervalo de 1s
-   - gen_payload.py (75 linhas): gera payload.bin de 2MB com:
+   - client.py (115 linhas): envia NUM_MESSAGES mensagens TCP ao WAF
+   - gen_payload.py (75 linhas): gera payload.bin com seed fixa para
+     reprodutibilidade:
      * 60% conteúdo limpo (texto, números, pontuação aleatórios)
      * 40% padrões maliciosos:
-       - 5 variantes SQLi (UNION, DROP, INSERT...)
-       - 4 variantes XSS (script, onerror, javascript...)
-       - 4 variantes RCE (bash, wget, cmd, curl...)
-       - 4 variantes Path Traversal (../, variantes encoded)
-       - Padrões de Null Byte
-     * Payload reutilizado em todos os testes para consistência
+       - SQLi (UNION, DROP, INSERT...)
+       - XSS (script, onerror, javascript...)
+       - RCE (bash, wget, cmd, curl...)
+       - Path Traversal (../, variantes encoded)
+       - Null Byte
 
-4. Comparação (src/compare.py — 80 linhas)
-   - Consolida saídas dos 3 coletores
-   - Compara 13 métricas-chave
+4. Comparação (src/compare.py — 76 linhas)
+   - Consolida saídas dos 3 monitores
    - Gera results/comparison.csv e results/comparison.json
 
 
 INFRAESTRUTURA DOCKER
 ----------------------
-- docker-compose.yml:   orquestra WAF + Monitor + Client + 3 coletores + Comparador
-  * Comparador aguarda 480s (8min) antes de rodar compare.py
-  * Volume compartilhado results_vol para persistência dos resultados
-- docker-compose.{ebpf,prometheus,sysstat}.yml: stacks isoladas por coletor
+Três stacks independentes com topologia idêntica:
+
+  Cliente TCP → WAF (porta 8080) → Monitor-server (UDP :9999)
+                                          ↑
+                                   probe.py (1 req/s)
 
 Configurações relevantes:
-  - network_mode: host (para monitorar interface loopback)
-  - eBPF: privileged: true, pid: host (acesso ao kernel)
-  - Bind mounts: /sys/kernel/debug, /sys/fs/bpf, /lib/modules, /usr/src
+  - eBPF:            privileged: true, pid: host, BPF filesystem mounts
+  - sysstat/Prom:    unprivileged, /proc montado read-only, pid: host
+  - Variáveis de ambiente: NUM_MESSAGES (padrão 100), DURATION (padrão = NUM_MESSAGES)
 
 
-RESULTADOS MAIS RECENTES (04/04/2026 — duração: 60s)
-------------------------------------------------------
-Métrica                    | eBPF       | Sysstat    | Prometheus
----------------------------|------------|------------|------------
-Latência média (ms)        | 0.301      | 0.332      | 0.308
-Desvio padrão latência (ms)| 0.089      | 0.039 (*)  | 0.107
-Latência mín (ms)          | 0.168      | 0.231      | 0.191
-Latência máx (ms)          | 0.855      | 0.475      | 0.918
-Amostras coletadas         | 60         | 60         | 60
-Conexões                   | 62         | 60         | 60
-Bytes RX                   | 123.731.968| 121.885.041| 122.156.850
-Bytes TX                   | 767 (**)   | 121.885.041| 122.156.850
-CPU média (%)              | 0.33 (*)   | 0.33 (*)   | 0.83
-Memória média (MB)         | 15.07 (*)  | 15.20      | 15.43
-WAF bloqueados             | 61         | 59         | 59
-WAF permitidos             | 1          | 1          | 1
-Duração (s)                | 60.04      | 60.05      | 60.04
+RESULTADOS MAIS RECENTES (14/04/2026 — ~100s, 100 mensagens)
+--------------------------------------------------------------
+Métrica                     | eBPF       | Sysstat     | Prometheus
+----------------------------|------------|-------------|------------
+Latência média (ms)         | 1.9807 (*) | 3.1118      | 1.3208 (*)
+Desvio padrão latência (ms) | 3.4661     | 21.6598     | 4.2995
+Latência mín (ms)           | 0.3250     | 0.3316      | 0.3242 (*)
+Latência máx (ms)           | 32.2006    | 217.3324    | 42.6896
+Amostras coletadas          | 91         | 100 (*)     | 97
+Bytes RX                    | 85.221     | 160.194     | 159.878
+Bytes TX                    | 1.131 (**) | 160.194     | 159.878
+CPU média WAF (%)           | 0.20       | 0.11 (*)    | 0.11 (*)
+Memória média WAF (MB)      | 11.49      | 11.31 (*)   | 11.47
+Duração (s)                 | 100.35     | 100.38      | 100.19
 
 (*) Melhor valor na métrica
-(**) Anomalia conhecida — eBPF mede apenas lado servidor (sport=8080)
+(**) eBPF mede apenas o lado servidor (sport=8080), resultando em TX menor
 
 Observações:
-  - eBPF tem latência competitiva, porém maior variância
-  - Sysstat apresenta menor desvio padrão (mais estável/previsível)
-  - Prometheus tem overhead de CPU ~2.5x maior que eBPF/Sysstat
-  - eBPF TX bytes = 767 reflete que o coletor mede apenas o lado do servidor
-
-
-HISTÓRICO DE DESENVOLVIMENTO (destaques)
------------------------------------------
-- v23: Filtro eBPF em sport=8080 para evitar dupla contagem no loopback
-- v22–v19: Refinamentos progressivos em latência, contagem de bytes e
-           compatibilidade de kernel
-- Correções: interface de rede Prometheus (loopback), cálculo de CPU/mem
-             médios no Sysstat, bytes RX/TX no eBPF
-- Compatibilidade: workarounds para kernel 6.10+ (struct bpf_wq)
-- Arquitetura: Docker Compose modularizado (stacks separadas por coletor)
-- Scripts: duração ajustada para 120s com exibição dinâmica do valor
+  - sysstat apresenta maior variância de latência (stddev 21ms, máx 217ms),
+    indicando maior instabilidade no polling /proc sob carga
+  - eBPF e Prometheus têm latências médias mais baixas e previsíveis
+  - CPU e memória do WAF são similares entre os três monitores
 
 
 ESTADO ATUAL
 -------------
-- Branch dev/joao: limpa, atualizada, sem alterações pendentes
-- Coletores: v23 (eBPF), v2 (Sysstat), v2 (Prometheus)
-- Resultados: gerados e validados
-- Scripts: ajustados para 120s de execução
-- Total de código: ~802 linhas Python em 15 arquivos
+- Branch: dev/joao, limpa e atualizada com main
+- Arquitetura: probe.py único + monitor por variante (nova arquitetura)
+- Resultados: gerados e validados (100 mensagens, seed fixa)
+- Total de código: ~747 linhas Python em 8 arquivos
 
 ================================================================================

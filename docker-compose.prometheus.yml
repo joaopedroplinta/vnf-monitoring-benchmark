@@ -17,10 +17,11 @@ services:
       dockerfile: configs/Dockerfile
     container_name: monitor-server
     network_mode: "host"
+    pid: "host"
     volumes:
       - ./src/vnf:/app/vnf
       - results_vol:/app/results
-    command: python3 /app/vnf/monitor_server.py
+    command: python3 /app/vnf/monitor_prometheus.py
     depends_on:
       - waf
 
@@ -30,6 +31,8 @@ services:
       dockerfile: configs/Dockerfile.client
     container_name: socket-client
     network_mode: "host"
+    environment:
+      - NUM_MESSAGES=${NUM_MESSAGES:-100}
     volumes:
       - ./src/client:/app
     command: python3 /app/client.py
@@ -42,10 +45,14 @@ services:
       dockerfile: configs/Dockerfile
     container_name: prometheus-collector
     network_mode: "host"
+    environment:
+      - COLLECTOR=prometheus
+      - RESULTS_PATH=/app/results/prometheus_results.json
+      - DURATION=${DURATION:-100}
     volumes:
-      - ./src/prometheus:/app/prometheus
+      - ./src:/app/src
       - results_vol:/app/results
-    command: python3 /app/prometheus/exporter.py
+    command: python3 /app/src/probe.py
     depends_on:
       - monitor-server
 

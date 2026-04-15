@@ -4,7 +4,10 @@
 
 TOOL="sysstat"
 COMPOSE="docker-compose.${TOOL}.yml"
-DURATION=120
+NUM_MESSAGES=100
+DURATION=$((NUM_MESSAGES))        # coletores rodam exatamente o tempo do cliente
+SLEEP=$((DURATION + 30))          # script espera +30s de buffer para startup e overhead
+export NUM_MESSAGES DURATION
 
 echo "========================================"
 echo "  TCC — Teste com ${TOOL^^}"
@@ -23,8 +26,8 @@ docker compose -f $COMPOSE up -d
 
 echo ""
 echo "✅ Rodando. Logs: docker compose -f $COMPOSE logs -f sysstat-collector"
-echo "⏰ Aguardando ${DURATION}s..."
-sleep $DURATION
+echo "⏰ Aguardando ${SLEEP}s (${DURATION}s coleta + 30s buffer)..."
+sleep $SLEEP
 
 echo ""
 echo "🛑 Parando..."
@@ -38,5 +41,6 @@ d=json.load(sys.stdin)
 print(f\"  lat_avg : {d.get('monitor_latency_avg_ms','?')} ms\")
 print(f\"  stddev  : {d.get('monitor_latency_stddev_ms','?')} ms\")
 print(f\"  amostras: {d.get('monitor_samples','?')}\")
-print(f\"  bloqueados WAF: {d.get('waf_blocked','?')}\")
+print(f\"  cpu_avg : {d.get('cpu_avg_pct','?')} %\")
+print(f\"  mem_avg : {d.get('mem_avg_mb','?')} MB\")
 " 2>/dev/null

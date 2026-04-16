@@ -3,18 +3,23 @@
 Comparador v2 — TCC Gerenciamento de Rede
 Gera comparison.csv e comparison.json comparando as 3 ferramentas
 com foco na métrica principal: tempo de monitoramento (média + desvio padrão).
+
+Uso: python3 compare.py [NUM_MESSAGES]
+  NUM_MESSAGES  número de amostras do run (padrão: 100)
 """
-import json, csv, os
+import json, csv, os, sys
+
+NUM_MESSAGES = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("NUM_MESSAGES", "100")
 
 # Detectar se estamos rodando dentro do container ou no host
 RESULTS_DIR = "/app/results" if os.path.exists("/app/results") else os.path.join(os.getcwd(), "results")
-OUTPUT_CSV   = os.path.join(RESULTS_DIR, "comparison.csv")
-OUTPUT_JSON  = os.path.join(RESULTS_DIR, "comparison.json")
+OUTPUT_CSV   = os.path.join(RESULTS_DIR, f"comparison_{NUM_MESSAGES}.csv")
+OUTPUT_JSON  = os.path.join(RESULTS_DIR, f"comparison_{NUM_MESSAGES}.json")
 
 FILES = {
-    "ebpf":       os.path.join(RESULTS_DIR, "ebpf_results.json"),
-    "sysstat":    os.path.join(RESULTS_DIR, "sysstat_results.json"),
-    "prometheus": os.path.join(RESULTS_DIR, "prometheus_results.json"),
+    "ebpf":       os.path.join(RESULTS_DIR, f"ebpf_{NUM_MESSAGES}_results.json"),
+    "sysstat":    os.path.join(RESULTS_DIR, f"sysstat_{NUM_MESSAGES}_results.json"),
+    "prometheus": os.path.join(RESULTS_DIR, f"prometheus_{NUM_MESSAGES}_results.json"),
 }
 
 METRICS = [
@@ -72,6 +77,7 @@ def main():
         print(f"{row['metrica']:<35} {str(row.get('ebpf','')):>12} "
               f"{str(row.get('sysstat','')):>12} {str(row.get('prometheus','')):>12}")
     print(f"\n✅ Salvo em {OUTPUT_CSV} e {OUTPUT_JSON}")
+    print(f"   (run: {NUM_MESSAGES} mensagens)")
 
 if __name__ == "__main__":
     main()

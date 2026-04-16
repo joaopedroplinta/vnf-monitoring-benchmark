@@ -47,7 +47,7 @@ services:
     network_mode: "host"
     environment:
       - COLLECTOR=sysstat
-      - RESULTS_PATH=/app/results/sysstat_results.json
+      - RESULTS_PATH=/app/results/sysstat_${NUM_MESSAGES:-100}_results.json
       - DURATION=${DURATION:-100}
     volumes:
       - ./src:/app/src

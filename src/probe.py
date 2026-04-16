@@ -58,11 +58,26 @@ def save(start_time, latencies, samples):
         json.dump(result, f, indent=2)
     print(f"\n💾 [{COLLECTOR}] salvo | lat_avg={result['monitor_latency_avg_ms']}ms | n={result['monitor_samples']}\n")
 
+def wait_ready(max_wait: int = 60) -> None:
+    """Aguarda o monitor responder antes de iniciar a medição."""
+    print(f"  Aguardando monitor em {MONITOR_HOST}:{MONITOR_PORT}...", flush=True)
+    deadline = time.time() + max_wait
+    while time.time() < deadline:
+        try:
+            query()
+            print("  Monitor pronto. Iniciando coleta.", flush=True)
+            return
+        except Exception:
+            time.sleep(0.5)
+    print(f"  AVISO: monitor não respondeu em {max_wait}s. Iniciando mesmo assim.", flush=True)
+
+
 def main():
     print("=" * 55)
     print(f"  Probe [{COLLECTOR}] — {MONITOR_HOST}:{MONITOR_PORT}")
     print("=" * 55)
 
+    wait_ready()
     start_time = time.time()
     last_save  = time.time()
     latencies  = []

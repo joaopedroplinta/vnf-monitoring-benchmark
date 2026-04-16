@@ -139,13 +139,13 @@ Gera `results/comparison.csv` e `results/comparison.json`.
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
-| Latência média (ms) | 1.9807 | 3.1118 | 1.3208 |
-| Desvio padrão (ms) | 3.4661 | 21.6598 | 4.2995 |
-| Latência máx (ms) | 32.2006 | 217.3324 | 42.6896 |
-| Latência mín (ms) | 0.3250 | 0.3316 | 0.3242 |
-| Amostras coletadas | 91 | 100 | 97 |
-| CPU média WAF (%) | 0.20 | 0.11 | 0.11 |
-| Memória média WAF (MB) | 11.49 | 11.31 | 11.47 |
-| Bytes RX | 85 221 | 160 194 | 159 878 |
-| Bytes TX | 1 131 | 160 194 | 159 878 |
-| Duração (s) | 100.35 | 100.38 | 100.19 |
+| Latência média (ms) | 0.4361 | 0.4510 | **0.3779** |
+| Desvio padrão (ms) | **0.0293** | 0.0603 | 0.0923 |
+| Latência máx (ms) | **0.5032** | 0.6338 | 0.6418 |
+| Latência mín (ms) | 0.2814 | 0.2464 | **0.2261** |
+| Amostras coletadas | **100** | **100** | **100** |
+| CPU média WAF (%) | 0.05 | **0.04** | 0.05 |
+| Memória média WAF (MB) | 11.47 | **11.37** | 11.47 |
+| Bytes RX | 89 338 | 160 987 | 159 173 |
+| Bytes TX | 1 202 | 160 987 | 159 173 |
+| Duração (s) | 100.08 | 100.08 | 100.07 |

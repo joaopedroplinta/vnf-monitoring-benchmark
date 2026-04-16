@@ -4,14 +4,15 @@
 
 TOOL="sysstat"
 COMPOSE="docker-compose.${TOOL}.yml"
-NUM_MESSAGES=100
+NUM_MESSAGES=${NUM_MESSAGES:-100}
+RUN_ID=${RUN_ID:-1}
 DURATION=$((NUM_MESSAGES))        # coletores rodam exatamente o tempo do cliente
 SLEEP=$((DURATION + 30))          # script espera +30s de buffer para startup e overhead
-export NUM_MESSAGES DURATION
+export NUM_MESSAGES RUN_ID DURATION
 
 echo "========================================"
 echo "  TCC — Teste com ${TOOL^^}"
-echo "  Duração: ${DURATION}s"
+echo "  Duração: ${DURATION}s  |  Run: ${RUN_ID}"
 echo "========================================"
 
 echo "[1/3] Limpando estado anterior..."
@@ -34,8 +35,8 @@ echo "🛑 Parando..."
 docker compose -f $COMPOSE down
 
 echo ""
-echo "✅ Resultado em: results/sysstat_results.json"
-cat results/sysstat_results.json 2>/dev/null | python3 -c "
+echo "✅ Resultado em: results/sysstat_${NUM_MESSAGES}_run${RUN_ID}_results.json"
+cat results/sysstat_${NUM_MESSAGES}_run${RUN_ID}_results.json 2>/dev/null | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
 print(f\"  lat_avg : {d.get('monitor_latency_avg_ms','?')} ms\")

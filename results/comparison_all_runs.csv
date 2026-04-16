@@ -1,0 +1,3 @@
+n_messages,ebpf_monitor_latency_avg_ms,ebpf_monitor_latency_stddev_ms,ebpf_monitor_latency_max_ms,ebpf_monitor_samples,ebpf_cpu_avg_pct,ebpf_mem_avg_mb,sysstat_monitor_latency_avg_ms,sysstat_monitor_latency_stddev_ms,sysstat_monitor_latency_max_ms,sysstat_monitor_samples,sysstat_cpu_avg_pct,sysstat_mem_avg_mb,prometheus_monitor_latency_avg_ms,prometheus_monitor_latency_stddev_ms,prometheus_monitor_latency_max_ms,prometheus_monitor_samples,prometheus_cpu_avg_pct,prometheus_mem_avg_mb
+100,0.4347,0.029,0.4772,100,0.05,11.29,0.451,0.0603,0.6338,100,0.04,11.37,0.3779,0.0923,0.6418,100,0.05,11.47
+1000,0.4071,0.0833,1.2971,999,0.05,11.5,0.4531,0.1221,2.9097,999,0.05,11.49,0.476,0.0401,0.8506,999,0.05,11.49

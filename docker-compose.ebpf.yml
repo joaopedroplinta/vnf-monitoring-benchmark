@@ -52,7 +52,7 @@ services:
     network_mode: "host"
     environment:
       - COLLECTOR=ebpf
-      - RESULTS_PATH=/app/results/ebpf_results.json
+      - RESULTS_PATH=/app/results/ebpf_${NUM_MESSAGES:-100}_run${RUN_ID:-1}_results.json
       - DURATION=${DURATION:-100}
     volumes:
       - ./src:/app/src

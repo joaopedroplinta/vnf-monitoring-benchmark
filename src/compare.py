@@ -3,13 +3,15 @@
 Comparador — TCC Gerenciamento de Rede
 
 Modos de uso:
-  python3 compare.py <N>   Compara as 3 ferramentas para N mensagens.
-                           Gera comparison_<N>.csv e comparison_<N>.json
-  python3 compare.py       Compara as 3 ferramentas em todos os runs
-                           disponíveis em results/. Gera
-                           comparison_all_runs.csv e comparison_all_runs.json
+  python3 compare.py <N>         Compara as 3 ferramentas para N mensagens
+                                 (usa run1). Gera comparison_<N>.csv/.json
+  python3 compare.py <N> <RUNS>  Agrega RUNS repetições de N mensagens:
+                                 média ± desvio entre runs.
+                                 Gera comparison_<N>_<RUNS>runs.csv/.json
+  python3 compare.py             Compara as 3 ferramentas em todos os N
+                                 disponíveis. Gera comparison_all_runs.csv/.json
 """
-import json, csv, os, sys, re
+import json, csv, os, sys, re, statistics
 
 RESULTS_DIR = "/app/results" if os.path.exists("/app/results") else os.path.join(os.getcwd(), "results")
 TOOLS       = ["ebpf", "sysstat", "prometheus"]
@@ -36,8 +38,8 @@ def load(path):
         return {}
 
 def compare_single(n):
-    """Compara as 3 ferramentas para um único valor de N."""
-    files = {tool: os.path.join(RESULTS_DIR, f"{tool}_{n}_results.json") for tool in TOOLS}
+    """Compara as 3 ferramentas para um único valor de N (run 1)."""
+    files = {tool: os.path.join(RESULTS_DIR, f"{tool}_{n}_run1_results.json") for tool in TOOLS}
     data  = {tool: load(path) for tool, path in files.items()}
 
     rows = []
@@ -71,7 +73,7 @@ def discover_runs():
     """Retorna lista ordenada dos valores de N disponíveis nos results/."""
     ns = set()
     for fname in os.listdir(RESULTS_DIR):
-        m = re.match(r"ebpf_(\d+)_results\.json", fname)
+        m = re.match(r"ebpf_(\d+)_run\d+_results\.json", fname)
         if m:
             ns.add(int(m.group(1)))
     return sorted(ns)
@@ -97,7 +99,7 @@ def compare_all_runs():
     for n in runs:
         row = {"n_messages": n}
         for tool in TOOLS:
-            path = os.path.join(RESULTS_DIR, f"{tool}_{n}_results.json")
+            path = os.path.join(RESULTS_DIR, f"{tool}_{n}_run1_results.json")
             data = load(path)
             for metric in cross_metrics:
                 row[f"{tool}_{metric}"] = data.get(metric, "")
@@ -131,8 +133,69 @@ def compare_all_runs():
         )
     print(f"\n✅ Salvo em {out_csv} e {out_json}")
 
+def compare_aggregate(n, num_runs):
+    """Agrega múltiplos runs de N mensagens: média ± desvio entre runs."""
+    num_runs = int(num_runs)
+    agg_metrics = [
+        "monitor_latency_avg_ms",
+        "monitor_latency_stddev_ms",
+        "monitor_latency_max_ms",
+        "monitor_latency_min_ms",
+        "monitor_samples",
+        "cpu_avg_pct",
+        "mem_avg_mb",
+    ]
+
+    rows = []
+    for metric in agg_metrics:
+        row = {"metrica": metric}
+        for tool in TOOLS:
+            values = []
+            for run_id in range(1, num_runs + 1):
+                path = os.path.join(RESULTS_DIR, f"{tool}_{n}_run{run_id}_results.json")
+                data = load(path)
+                val = data.get(metric)
+                if val != "" and val is not None:
+                    values.append(float(val))
+            if values:
+                mean = round(statistics.mean(values), 4)
+                std  = round(statistics.stdev(values), 4) if len(values) > 1 else 0
+                row[tool]          = mean
+                row[f"{tool}_std"] = std
+            else:
+                row[tool]          = ""
+                row[f"{tool}_std"] = ""
+        rows.append(row)
+
+    out_csv  = os.path.join(RESULTS_DIR, f"comparison_{n}_{num_runs}runs.csv")
+    out_json = os.path.join(RESULTS_DIR, f"comparison_{n}_{num_runs}runs.json")
+
+    fieldnames = ["metrica"] + [f"{t}{s}" for t in TOOLS for s in ("", "_std")]
+    with open(out_csv, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        w.writerows(rows)
+
+    with open(out_json, "w") as f:
+        json.dump({"n_messages": n, "num_runs": num_runs, "tools": TOOLS,
+                   "metrics": agg_metrics, "data": rows}, f, indent=2)
+
+    print(f"\n📊 Agregação — {n} msgs × {num_runs} runs:\n")
+    header = f"{'métrica':<35} {'eBPF mean±std':>18} {'sysstat mean±std':>18} {'prom mean±std':>18}"
+    print(header)
+    print("-" * len(header))
+    for row in rows:
+        def fmt(t):
+            m, s = row.get(t, ""), row.get(f"{t}_std", "")
+            return f"{m}±{s}" if m != "" else "-"
+        print(f"{row['metrica']:<35} {fmt('ebpf'):>18} {fmt('sysstat'):>18} {fmt('prometheus'):>18}")
+    print(f"\n✅ Salvo em {out_csv} e {out_json}")
+
+
 def main():
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 3:
+        compare_aggregate(sys.argv[1], sys.argv[2])
+    elif len(sys.argv) == 2:
         compare_single(sys.argv[1])
     else:
         compare_all_runs()

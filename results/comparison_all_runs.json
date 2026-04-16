@@ -1,6 +1,7 @@
 {
   "runs": [
-    100
+    100,
+    1000
   ],
   "tools": [
     "ebpf",
@@ -18,12 +19,12 @@
   "data": [
     {
       "n_messages": 100,
-      "ebpf_monitor_latency_avg_ms": 0.4361,
-      "ebpf_monitor_latency_stddev_ms": 0.0293,
-      "ebpf_monitor_latency_max_ms": 0.5032,
+      "ebpf_monitor_latency_avg_ms": 0.4347,
+      "ebpf_monitor_latency_stddev_ms": 0.029,
+      "ebpf_monitor_latency_max_ms": 0.4772,
       "ebpf_monitor_samples": 100,
       "ebpf_cpu_avg_pct": 0.05,
-      "ebpf_mem_avg_mb": 11.47,
+      "ebpf_mem_avg_mb": 11.29,
       "sysstat_monitor_latency_avg_ms": 0.451,
       "sysstat_monitor_latency_stddev_ms": 0.0603,
       "sysstat_monitor_latency_max_ms": 0.6338,
@@ -36,6 +37,27 @@
       "prometheus_monitor_samples": 100,
       "prometheus_cpu_avg_pct": 0.05,
       "prometheus_mem_avg_mb": 11.47
+    },
+    {
+      "n_messages": 1000,
+      "ebpf_monitor_latency_avg_ms": 0.4071,
+      "ebpf_monitor_latency_stddev_ms": 0.0833,
+      "ebpf_monitor_latency_max_ms": 1.2971,
+      "ebpf_monitor_samples": 999,
+      "ebpf_cpu_avg_pct": 0.05,
+      "ebpf_mem_avg_mb": 11.5,
+      "sysstat_monitor_latency_avg_ms": 0.4531,
+      "sysstat_monitor_latency_stddev_ms": 0.1221,
+      "sysstat_monitor_latency_max_ms": 2.9097,
+      "sysstat_monitor_samples": 999,
+      "sysstat_cpu_avg_pct": 0.05,
+      "sysstat_mem_avg_mb": 11.49,
+      "prometheus_monitor_latency_avg_ms": 0.476,
+      "prometheus_monitor_latency_stddev_ms": 0.0401,
+      "prometheus_monitor_latency_max_ms": 0.8506,
+      "prometheus_monitor_samples": 999,
+      "prometheus_cpu_avg_pct": 0.05,
+      "prometheus_mem_avg_mb": 11.49
     }
   ]
 }

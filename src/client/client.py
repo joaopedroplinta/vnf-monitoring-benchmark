@@ -9,11 +9,12 @@ import time
 import os
 import random
 import string
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 WAF_HOST     = 'localhost'
 WAF_PORT     = 8080
 NUM_MESSAGES = int(os.environ.get("NUM_MESSAGES", 100))
-DELAY        = 1  # segundos entre envios
+WORKERS      = int(os.environ.get("WORKERS", 10))
 
 MALICIOUS_PATTERNS = [
     "' OR '1'='1'; DROP TABLE users; --",
@@ -76,7 +77,7 @@ def send_payload(payload: bytes) -> str:
 def main():
     print("=" * 50)
     print(f"  Cliente TCP — WAF {WAF_HOST}:{WAF_PORT}")
-    print(f"  Mensagens: {NUM_MESSAGES} | Intervalo: {DELAY}s")
+    print(f"  Mensagens: {NUM_MESSAGES} | Workers: {WORKERS} | Sem delay")
     print(f"  Distribuição: 60% limpos / 40% maliciosos")
     print("=" * 50)
 
@@ -87,29 +88,24 @@ def main():
     payloads = build_sequence(NUM_MESSAGES)
     print(f"\n🚀 Iniciando envio...")
     allowed = blocked = errors = 0
+    t_start = time.time()
 
-    for i, payload in enumerate(payloads):
-        t0 = time.time()
-        try:
-            response = send_payload(payload)
-            if response.startswith("BLOCKED"):
-                blocked += 1
-                status = f"BLOCK | {response}"
-            else:
-                allowed += 1
-                status = f"ALLOW | {response}"
-            print(f"[{i+1:03d}/{NUM_MESSAGES}] {status}")
-        except Exception as e:
-            errors += 1
-            print(f"[{i+1:03d}/{NUM_MESSAGES}] ERRO: {e}")
+    with ThreadPoolExecutor(max_workers=WORKERS) as executor:
+        futures = {executor.submit(send_payload, p): i for i, p in enumerate(payloads)}
+        for future in as_completed(futures):
+            i = futures[future]
+            try:
+                response = future.result()
+                if response.startswith("BLOCKED"):
+                    blocked += 1
+                else:
+                    allowed += 1
+            except Exception:
+                errors += 1
 
-        if i < NUM_MESSAGES - 1:
-            elapsed = time.time() - t0
-            remaining_delay = DELAY - elapsed
-            if remaining_delay > 0:
-                time.sleep(remaining_delay)
-
-    print(f"\n✅ Concluído — ALLOW:{allowed} BLOCK:{blocked} ERRO:{errors}")
+    elapsed = round(time.time() - t_start, 2)
+    rate    = round(NUM_MESSAGES / elapsed, 1) if elapsed > 0 else 0
+    print(f"\n✅ Concluído em {elapsed}s (~{rate} msg/s) — ALLOW:{allowed} BLOCK:{blocked} ERRO:{errors}")
 
 if __name__ == "__main__":
     main()

@@ -50,8 +50,7 @@ tcc_gerenciamento_rede/
 │   │   ├── monitor_sysstat.py    # Monitor sysstat: /proc/net/dev + psutil WAF
 │   │   └── monitor_prometheus.py # Monitor Prometheus: /proc/net/dev + psutil WAF + HTTP :8000
 │   ├── client/
-│   │   ├── client.py             # Gerador de tráfego TCP → WAF
-│   │   └── gen_payload.py        # Gerador do payload.bin
+│   │   └── client.py             # Gerador de tráfego TCP → WAF
 │   └── compare.py                # Consolida resultados em CSV e JSON (3 modos)
 ├── configs/
 │   ├── Dockerfile                # Imagem base Ubuntu 24.04 + BCC
@@ -151,32 +150,16 @@ python3 src/compare.py            # cross-N com todos os valores disponíveis
 
 ## Resultados
 
-### N = 100 mensagens (run 1)
+> Resultados preliminares (N=100 e N=1000, run único) estão em `results/pre_testes/`.
 
-| Métrica | eBPF | sysstat | Prometheus |
-|---------|------|---------|------------|
-| Latência média (ms) | 0.4347 | 0.4510 | **0.3779** |
-| Desvio padrão (ms) | **0.0290** | 0.0603 | 0.0923 |
-| Latência máx (ms) | **0.4772** | 0.6338 | 0.6418 |
-| Latência mín (ms) | 0.2854 | 0.2464 | **0.2261** |
-| Amostras coletadas | **100** | **100** | **100** |
-| CPU média WAF (%) | 0.05 | **0.04** | 0.05 |
-| Memória média WAF (MB) | **11.29** | 11.37 | 11.47 |
-| Bytes RX | 89 338 | 160 987 | 159 173 |
-| Bytes TX | 1 202 | 160 987 | 159 173 |
-| Duração (s) | 100.08 | 100.08 | 100.07 |
+### N = 2000 mensagens (média de 5 runs)
 
-### N = 1000 mensagens (run 1)
-
-| Métrica | eBPF | sysstat | Prometheus |
-|---------|------|---------|------------|
-| Latência média (ms) | **0.4071** | 0.4531 | 0.4760 |
-| Desvio padrão (ms) | 0.0833 | 0.1221 | **0.0401** |
-| Latência máx (ms) | **1.2971** | 2.9097 | 0.8506 |
-| Latência mín (ms) | **0.1840** | 0.2120 | 0.2587 |
-| Amostras coletadas | 999 | 999 | 999 |
-| CPU média WAF (%) | **0.05** | **0.05** | **0.05** |
-| Memória média WAF (MB) | 11.50 | **11.49** | **11.49** |
-| Bytes RX | 868 696 | 1 794 483 | 1 593 103 |
-| Bytes TX | 12 325 | 1 794 483 | 1 593 103 |
-| Duração (s) | 1000.14 | 1000.19 | 1000.22 |
+| Métrica | eBPF (média ± dp) | sysstat (média ± dp) | Prometheus (média ± dp) |
+|---------|-------------------|----------------------|--------------------------|
+| Latência média (ms) | 0.4816 ± 0.1202 | 0.4613 ± 0.0304 | **0.4558 ± 0.0282** |
+| Desvio padrão (ms) | 0.2013 ± 0.2522 | 0.1015 ± 0.1159 | **0.0551 ± 0.0260** |
+| Latência máx (ms) | 3.1734 ± 2.5816 | 1.9079 ± 2.7544 | **0.6873 ± 0.0182** |
+| Latência mín (ms) | 0.2468 ± 0.0242 | 0.2528 ± 0.0331 | **0.2315 ± 0.0493** |
+| Amostras coletadas | 1996.2 | 1997.0 | 1997.0 |
+| CPU média WAF (%) | 0.058 | **0.050** | **0.050** |
+| Memória média WAF (MB) | 11.454 | **11.490** | **11.490** |

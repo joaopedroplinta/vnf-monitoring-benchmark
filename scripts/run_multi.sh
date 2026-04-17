@@ -10,7 +10,7 @@
 #   bash scripts/run_multi.sh prometheus 100 5
 
 TOOL=${1}
-NUM_MESSAGES=${2:-100}
+NUM_MESSAGES=${2:-100000}
 NUM_RUNS=${3:-5}
 
 if [ -z "$TOOL" ]; then

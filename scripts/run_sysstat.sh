@@ -4,11 +4,12 @@
 
 TOOL="sysstat"
 COMPOSE="docker-compose.${TOOL}.yml"
-NUM_MESSAGES=${NUM_MESSAGES:-100}
+NUM_MESSAGES=${NUM_MESSAGES:-100000}
 RUN_ID=${RUN_ID:-1}
-DURATION=$((NUM_MESSAGES))        # coletores rodam exatamente o tempo do cliente
-SLEEP=$((DURATION + 30))          # script espera +30s de buffer para startup e overhead
-export NUM_MESSAGES RUN_ID DURATION
+WORKERS=${WORKERS:-10}
+DURATION=$(( (NUM_MESSAGES / 3500) + 15 )) # estimativa: ~3500 msg/s (10 workers) + 15s margem
+SLEEP=$((DURATION + 30))                    # +30s para startup/shutdown dos containers
+export NUM_MESSAGES RUN_ID WORKERS DURATION
 
 echo "========================================"
 echo "  TCC — Teste com ${TOOL^^}"

@@ -33,6 +33,7 @@ services:
     network_mode: "host"
     environment:
       - NUM_MESSAGES=${NUM_MESSAGES:-100}
+      - WORKERS=${WORKERS:-10}
     volumes:
       - ./src/client:/app
     command: python3 /app/client.py

@@ -50,8 +50,10 @@ def save(start_time, latencies, samples):
         "latencies_raw":             latencies,
         "bytes_rx":                  last.get("bytes_rx", 0),
         "bytes_tx":                  last.get("bytes_tx", 0),
-        "cpu_avg_pct":               round(statistics.mean([s["cpu_pct"] for s in samples]), 2),
-        "mem_avg_mb":                round(statistics.mean([s["mem_mb"]  for s in samples]), 2),
+        "cpu_avg_pct":               round(statistics.mean([s["cpu_pct"]           for s in samples]), 2),
+        "mem_avg_mb":                round(statistics.mean([s["mem_mb"]            for s in samples]), 2),
+        "collector_cpu_avg_pct":     round(statistics.mean([s["collector_cpu_pct"] for s in samples]), 2),
+        "collector_mem_avg_mb":      round(statistics.mean([s["collector_mem_mb"]  for s in samples]), 2),
         "samples":                   samples,
     }
     with open(RESULTS_PATH, "w") as f:
@@ -90,12 +92,14 @@ def main():
                 lat_ms, m = query()
                 latencies.append(lat_ms)
                 sample = {
-                    "time":       now,
-                    "latency_ms": lat_ms,
-                    "bytes_rx":   m.get("bytes_rx", 0),
-                    "bytes_tx":   m.get("bytes_tx", 0),
-                    "cpu_pct":    m.get("cpu_pct", 0),
-                    "mem_mb":     m.get("mem_mb", 0),
+                    "time":              now,
+                    "latency_ms":        lat_ms,
+                    "bytes_rx":          m.get("bytes_rx", 0),
+                    "bytes_tx":          m.get("bytes_tx", 0),
+                    "cpu_pct":           m.get("cpu_pct", 0),
+                    "mem_mb":            m.get("mem_mb", 0),
+                    "collector_cpu_pct": m.get("collector_cpu_pct", 0),
+                    "collector_mem_mb":  m.get("collector_mem_mb", 0),
                 }
                 samples.append(sample)
                 print(f"[{now}] lat={lat_ms}ms | rx={m.get('bytes_rx',0)} | cpu={m.get('cpu_pct',0)}%", flush=True)

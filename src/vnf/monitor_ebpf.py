@@ -51,6 +51,7 @@ int kprobe__tcp_cleanup_rbuf(struct pt_regs *ctx, struct sock *sk, int copied) {
 }
 """
 
+_self_proc = psutil.Process()
 _waf_proc = None
 
 def _find_waf():
@@ -88,6 +89,7 @@ def main():
     _waf_proc = _find_waf()
     if _waf_proc:
         _waf_proc.cpu_percent(interval=None)
+    _self_proc.cpu_percent(interval=None)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((HOST, PORT))
@@ -100,10 +102,12 @@ def main():
             tx = b["net_stats"][ct.c_uint32(1)].value
             cpu, mem = get_waf_metrics()
             resp = json.dumps({
-                "bytes_rx": rx,
-                "bytes_tx": tx,
-                "cpu_pct":  cpu,
-                "mem_mb":   mem,
+                "bytes_rx":          rx,
+                "bytes_tx":          tx,
+                "cpu_pct":           cpu,
+                "mem_mb":            mem,
+                "collector_cpu_pct": round(_self_proc.cpu_percent(interval=None), 2),
+                "collector_mem_mb":  round(_self_proc.memory_info().rss / 1024 / 1024, 2),
             }).encode("utf-8")
             sock.sendto(resp, addr)
         except Exception as e:

@@ -18,6 +18,7 @@ waf_bytes_tx = Gauge("waf_bytes_tx_total", "Bytes TX no loopback (delta desde in
 waf_cpu      = Gauge("waf_cpu_percent",    "CPU do processo WAF (%)")
 waf_mem      = Gauge("waf_mem_mb",         "Memória do processo WAF (MB)")
 
+_self_proc = psutil.Process()
 _waf_proc = None
 
 def get_proc_bytes():
@@ -67,6 +68,7 @@ def main():
     proc = _find_waf()
     if proc:
         proc.cpu_percent(interval=None)
+    _self_proc.cpu_percent(interval=None)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((HOST, PORT))
@@ -87,10 +89,12 @@ def main():
             waf_mem.set(mem)
 
             resp = json.dumps({
-                "bytes_rx": delta_rx,
-                "bytes_tx": delta_tx,
-                "cpu_pct":  cpu,
-                "mem_mb":   mem,
+                "bytes_rx":          delta_rx,
+                "bytes_tx":          delta_tx,
+                "cpu_pct":           cpu,
+                "mem_mb":            mem,
+                "collector_cpu_pct": round(_self_proc.cpu_percent(interval=None), 2),
+                "collector_mem_mb":  round(_self_proc.memory_info().rss / 1024 / 1024, 2),
             }).encode("utf-8")
             sock.sendto(resp, addr)
         except Exception as e:

@@ -203,7 +203,7 @@ Os scripts `run_*.sh` aguardam o container do coletor terminar via `docker wait`
 
 ## Estado Atual
 
-- Branch: `dev/joao`
+- Branch: `dev/joao` | PR #15 (código/resultados) e PR #16 (docs README + relatório) abertas para `main`
 - Arquitetura: `probe.py` único + monitor por variante
 
 ### Correções aplicadas (17/04/2026)

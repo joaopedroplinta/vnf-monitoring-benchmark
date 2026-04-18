@@ -1,0 +1,207 @@
+{
+  "collector": "prometheus",
+  "timestamp": "2026-04-18T02:48:01.442630",
+  "duration_s": 17.01,
+  "monitor_latency_avg_ms": 0.4667,
+  "monitor_latency_stddev_ms": 0.0991,
+  "monitor_latency_max_ms": 0.5759,
+  "monitor_latency_min_ms": 0.2327,
+  "monitor_samples": 17,
+  "latencies_raw": [
+    0.2327,
+    0.3299,
+    0.3411,
+    0.3462,
+    0.5202,
+    0.5004,
+    0.5568,
+    0.4171,
+    0.5759,
+    0.5198,
+    0.5621,
+    0.4968,
+    0.5262,
+    0.52,
+    0.5187,
+    0.5319,
+    0.4374
+  ],
+  "bytes_rx": 14345539,
+  "bytes_tx": 14345539,
+  "cpu_avg_pct": 16.81,
+  "mem_avg_mb": 11.73,
+  "collector_cpu_avg_pct": 0.06,
+  "collector_mem_avg_mb": 24.62,
+  "samples": [
+    {
+      "time": "02:47:44.429",
+      "latency_ms": 0.2327,
+      "bytes_rx": 208,
+      "bytes_tx": 208,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.22,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:45.429",
+      "latency_ms": 0.3299,
+      "bytes_rx": 1626798,
+      "bytes_tx": 1626798,
+      "cpu_pct": 32.0,
+      "mem_mb": 11.66,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:46.429",
+      "latency_ms": 0.3411,
+      "bytes_rx": 7635289,
+      "bytes_tx": 7635289,
+      "cpu_pct": 116.9,
+      "mem_mb": 11.71,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:47.430",
+      "latency_ms": 0.3462,
+      "bytes_rx": 13130728,
+      "bytes_tx": 13130728,
+      "cpu_pct": 113.9,
+      "mem_mb": 11.79,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:48.431",
+      "latency_ms": 0.5202,
+      "bytes_rx": 14343270,
+      "bytes_tx": 14343270,
+      "cpu_pct": 23.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:49.431",
+      "latency_ms": 0.5004,
+      "bytes_rx": 14343460,
+      "bytes_tx": 14343460,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:50.432",
+      "latency_ms": 0.5568,
+      "bytes_rx": 14343649,
+      "bytes_tx": 14343649,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:51.433",
+      "latency_ms": 0.4171,
+      "bytes_rx": 14343838,
+      "bytes_tx": 14343838,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:52.434",
+      "latency_ms": 0.5759,
+      "bytes_rx": 14344027,
+      "bytes_tx": 14344027,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 1.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:53.435",
+      "latency_ms": 0.5198,
+      "bytes_rx": 14344216,
+      "bytes_tx": 14344216,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:54.435",
+      "latency_ms": 0.5621,
+      "bytes_rx": 14344405,
+      "bytes_tx": 14344405,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:55.438",
+      "latency_ms": 0.4968,
+      "bytes_rx": 14344594,
+      "bytes_tx": 14344594,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:56.439",
+      "latency_ms": 0.5262,
+      "bytes_rx": 14344783,
+      "bytes_tx": 14344783,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:57.439",
+      "latency_ms": 0.52,
+      "bytes_rx": 14344972,
+      "bytes_tx": 14344972,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:58.440",
+      "latency_ms": 0.5187,
+      "bytes_rx": 14345161,
+      "bytes_tx": 14345161,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:47:59.441",
+      "latency_ms": 0.5319,
+      "bytes_rx": 14345350,
+      "bytes_tx": 14345350,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    },
+    {
+      "time": "02:48:00.441",
+      "latency_ms": 0.4374,
+      "bytes_rx": 14345539,
+      "bytes_tx": 14345539,
+      "cpu_pct": 0.0,
+      "mem_mb": 11.77,
+      "collector_cpu_pct": 0.0,
+      "collector_mem_mb": 24.62
+    }
+  ]
+}

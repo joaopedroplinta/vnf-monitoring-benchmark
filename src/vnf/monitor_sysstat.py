@@ -12,6 +12,7 @@ HOST      = '0.0.0.0'
 PORT      = 9999
 INTERFACE = "lo"
 
+_self_proc = psutil.Process()
 _waf_proc = None
 
 def get_proc_bytes():
@@ -59,6 +60,7 @@ def main():
     proc = _find_waf()
     if proc:
         proc.cpu_percent(interval=None)
+    _self_proc.cpu_percent(interval=None)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((HOST, PORT))
@@ -70,10 +72,12 @@ def main():
             rx, tx = get_proc_bytes()
             cpu, mem = get_waf_metrics()
             resp = json.dumps({
-                "bytes_rx": rx - start_rx,
-                "bytes_tx": tx - start_tx,
-                "cpu_pct":  cpu,
-                "mem_mb":   mem,
+                "bytes_rx":          rx - start_rx,
+                "bytes_tx":          tx - start_tx,
+                "cpu_pct":           cpu,
+                "mem_mb":            mem,
+                "collector_cpu_pct": round(_self_proc.cpu_percent(interval=None), 2),
+                "collector_mem_mb":  round(_self_proc.memory_info().rss / 1024 / 1024, 2),
             }).encode("utf-8")
             sock.sendto(resp, addr)
         except Exception as e:

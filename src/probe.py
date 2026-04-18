@@ -9,8 +9,12 @@ Configurado via variáveis de ambiente:
   MONITOR_HOST — host do monitor-server (padrão: 127.0.0.1)
   MONITOR_PORT — porta UDP do monitor-server (padrão: 9999)
 """
+import signal, sys
 import socket, time, json, os, statistics
 from datetime import datetime
+
+# Garante que SIGTERM (docker compose down) salva resultados antes de sair
+signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
 
 COLLECTOR    = os.environ.get("COLLECTOR",    "unknown")
 RESULTS_PATH = os.environ.get("RESULTS_PATH", f"/app/results/{COLLECTOR}_results.json")
@@ -36,6 +40,7 @@ def query() -> tuple[float, dict]:
 
 def save(start_time, latencies, samples):
     if not samples:
+        print(f"⚠️  [{COLLECTOR}] nenhuma amostra coletada — arquivo não será salvo", flush=True)
         return
     last = samples[-1]
     result = {
@@ -50,8 +55,10 @@ def save(start_time, latencies, samples):
         "latencies_raw":             latencies,
         "bytes_rx":                  last.get("bytes_rx", 0),
         "bytes_tx":                  last.get("bytes_tx", 0),
-        "cpu_avg_pct":               round(statistics.mean([s["cpu_pct"] for s in samples]), 2),
-        "mem_avg_mb":                round(statistics.mean([s["mem_mb"]  for s in samples]), 2),
+        "cpu_avg_pct":               round(statistics.mean([s["cpu_pct"]           for s in samples]), 2),
+        "mem_avg_mb":                round(statistics.mean([s["mem_mb"]            for s in samples]), 2),
+        "collector_cpu_avg_pct":     round(statistics.mean([s["collector_cpu_pct"] for s in samples]), 2),
+        "collector_mem_avg_mb":      round(statistics.mean([s["collector_mem_mb"]  for s in samples]), 2),
         "samples":                   samples,
     }
     with open(RESULTS_PATH, "w") as f:
@@ -90,12 +97,14 @@ def main():
                 lat_ms, m = query()
                 latencies.append(lat_ms)
                 sample = {
-                    "time":       now,
-                    "latency_ms": lat_ms,
-                    "bytes_rx":   m.get("bytes_rx", 0),
-                    "bytes_tx":   m.get("bytes_tx", 0),
-                    "cpu_pct":    m.get("cpu_pct", 0),
-                    "mem_mb":     m.get("mem_mb", 0),
+                    "time":              now,
+                    "latency_ms":        lat_ms,
+                    "bytes_rx":          m.get("bytes_rx", 0),
+                    "bytes_tx":          m.get("bytes_tx", 0),
+                    "cpu_pct":           m.get("cpu_pct", 0),
+                    "mem_mb":            m.get("mem_mb", 0),
+                    "collector_cpu_pct": m.get("collector_cpu_pct", 0),
+                    "collector_mem_mb":  m.get("collector_mem_mb", 0),
                 }
                 samples.append(sample)
                 print(f"[{now}] lat={lat_ms}ms | rx={m.get('bytes_rx',0)} | cpu={m.get('cpu_pct',0)}%", flush=True)

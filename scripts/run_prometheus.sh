@@ -4,11 +4,18 @@
 
 TOOL="prometheus"
 COMPOSE="docker-compose.${TOOL}.yml"
-NUM_MESSAGES=${NUM_MESSAGES:-100}
+NUM_MESSAGES=${NUM_MESSAGES:-100000}
 RUN_ID=${RUN_ID:-1}
-DURATION=$((NUM_MESSAGES))        # coletores rodam exatamente o tempo do cliente
-SLEEP=$((DURATION + 30))          # script espera +30s de buffer para startup e overhead
-export NUM_MESSAGES RUN_ID DURATION
+WORKERS=${WORKERS:-10}
+DURATION=$(( (NUM_MESSAGES / 3500) + 15 )) # estimativa: ~3500 msg/s (10 workers) + 15s margem
+SLEEP=$((DURATION + 30))                    # +30s para startup/shutdown dos containers
+if [ -n "${RESULTS_SUBDIR:-}" ]; then
+    RESULTS_PREFIX_CONT="/app/results/${RESULTS_SUBDIR}"
+    mkdir -p "results/${RESULTS_SUBDIR}"
+else
+    RESULTS_PREFIX_CONT="/app/results"
+fi
+export NUM_MESSAGES RUN_ID WORKERS DURATION RESULTS_SUBDIR RESULTS_PREFIX_CONT
 
 echo "========================================"
 echo "  TCC — Teste com ${TOOL^^}"
@@ -16,7 +23,7 @@ echo "  Duração: ${DURATION}s  |  Run: ${RUN_ID}"
 echo "========================================"
 
 echo "[1/3] Limpando estado anterior..."
-docker compose -f $COMPOSE down --volumes --remove-orphans 2>/dev/null || true
+docker compose -f $COMPOSE down --remove-orphans 2>/dev/null || true
 mkdir -p results
 
 echo "[2/3] Build..."
@@ -27,16 +34,22 @@ docker compose -f $COMPOSE up -d
 
 echo ""
 echo "✅ Rodando. Logs: docker compose -f $COMPOSE logs -f prometheus-collector"
-echo "⏰ Aguardando ${SLEEP}s (${DURATION}s coleta + 30s buffer)..."
-sleep $SLEEP
+echo "⏰ Aguardando coletor finalizar (DURATION=${DURATION}s, timeout=${SLEEP}s)..."
+docker wait prometheus-collector 2>/dev/null || sleep $SLEEP
 
 echo ""
+RESULTS_HOST_DIR="results${RESULTS_SUBDIR:+/${RESULTS_SUBDIR}}"
+RESULT_FILE="${RESULTS_HOST_DIR}/prometheus_${NUM_MESSAGES}_run${RUN_ID}_results.json"
+
 echo "🛑 Parando..."
+# Captura logs antes de derrubar (útil se o arquivo de resultado não aparecer)
+docker compose -f $COMPOSE logs prometheus-collector 2>/dev/null > /tmp/collector_last_logs.txt || true
 docker compose -f $COMPOSE down
 
 echo ""
-echo "✅ Resultado em: results/prometheus_${NUM_MESSAGES}_run${RUN_ID}_results.json"
-cat results/prometheus_${NUM_MESSAGES}_run${RUN_ID}_results.json 2>/dev/null | python3 -c "
+if [ -f "$RESULT_FILE" ]; then
+    echo "✅ Resultado em: ${RESULT_FILE}"
+    cat "$RESULT_FILE" | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
 print(f\"  lat_avg : {d.get('monitor_latency_avg_ms','?')} ms\")
@@ -45,3 +58,8 @@ print(f\"  amostras: {d.get('monitor_samples','?')}\")
 print(f\"  cpu_avg : {d.get('cpu_avg_pct','?')} %\")
 print(f\"  mem_avg : {d.get('mem_avg_mb','?')} MB\")
 " 2>/dev/null
+else
+    echo "❌ Resultado NÃO encontrado: ${RESULT_FILE}"
+    echo "   Últimos logs do coletor:"
+    tail -30 /tmp/collector_last_logs.txt 2>/dev/null || echo "   (sem logs)"
+fi

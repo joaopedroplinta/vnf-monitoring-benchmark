@@ -1,0 +1,83 @@
+{
+  "n_messages": "50000",
+  "num_runs": 5,
+  "tools": [
+    "ebpf",
+    "sysstat",
+    "prometheus"
+  ],
+  "metrics": [
+    "monitor_latency_avg_ms",
+    "monitor_latency_stddev_ms",
+    "monitor_latency_max_ms",
+    "monitor_latency_min_ms",
+    "monitor_samples",
+    "cpu_avg_pct",
+    "mem_avg_mb"
+  ],
+  "data": [
+    {
+      "metrica": "monitor_latency_avg_ms",
+      "ebpf": "",
+      "ebpf_std": "",
+      "sysstat": "",
+      "sysstat_std": "",
+      "prometheus": 0.7993,
+      "prometheus_std": 0.0613
+    },
+    {
+      "metrica": "monitor_latency_stddev_ms",
+      "ebpf": "",
+      "ebpf_std": "",
+      "sysstat": "",
+      "sysstat_std": "",
+      "prometheus": 0.4252,
+      "prometheus_std": 0.2542
+    },
+    {
+      "metrica": "monitor_latency_max_ms",
+      "ebpf": "",
+      "ebpf_std": "",
+      "sysstat": "",
+      "sysstat_std": "",
+      "prometheus": 2.4027,
+      "prometheus_std": 1.5301
+    },
+    {
+      "metrica": "monitor_latency_min_ms",
+      "ebpf": "",
+      "ebpf_std": "",
+      "sysstat": "",
+      "sysstat_std": "",
+      "prometheus": 0.3979,
+      "prometheus_std": 0.1221
+    },
+    {
+      "metrica": "monitor_samples",
+      "ebpf": "",
+      "ebpf_std": "",
+      "sysstat": "",
+      "sysstat_std": "",
+      "prometheus": 29.0,
+      "prometheus_std": 0.0
+    },
+    {
+      "metrica": "cpu_avg_pct",
+      "ebpf": "",
+      "ebpf_std": "",
+      "sysstat": "",
+      "sysstat_std": "",
+      "prometheus": 66.076,
+      "prometheus_std": 31.9378
+    },
+    {
+      "metrica": "mem_avg_mb",
+      "ebpf": "",
+      "ebpf_std": "",
+      "sysstat": "",
+      "sysstat_std": "",
+      "prometheus": 11.662,
+      "prometheus_std": 0.1069
+    }
+  ]
+}

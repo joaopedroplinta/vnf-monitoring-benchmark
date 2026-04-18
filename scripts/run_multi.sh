@@ -10,11 +10,12 @@
 #   bash scripts/run_multi.sh prometheus 100 5
 
 TOOL=${1}
-NUM_MESSAGES=${2:-100}
+NUM_MESSAGES=${2:-100000}
 NUM_RUNS=${3:-5}
+PRE_ARG="${4:-}"
 
 if [ -z "$TOOL" ]; then
-    echo "Uso: bash scripts/run_multi.sh <ebpf|sysstat|prometheus> <num_messages> <num_runs>"
+    echo "Uso: bash scripts/run_multi.sh <ebpf|sysstat|prometheus> <num_messages> <num_runs> [--pre]"
     exit 1
 fi
 
@@ -23,11 +24,18 @@ if [ ! -f "$(dirname "$0")/run_${TOOL}.sh" ]; then
     exit 1
 fi
 
+if [ "$PRE_ARG" = "--pre" ]; then
+    export RESULTS_SUBDIR="pre_testes"
+else
+    export RESULTS_SUBDIR=""
+fi
+
 echo "========================================"
 echo "  TCC — Multi-run"
 echo "  Ferramenta : ${TOOL}"
 echo "  Mensagens  : ${NUM_MESSAGES}"
 echo "  Repetições : ${NUM_RUNS}"
+[ -n "$RESULTS_SUBDIR" ] && echo "  Destino    : results/${RESULTS_SUBDIR}/" || echo "  Destino    : results/"
 echo "========================================"
 
 for i in $(seq 1 $NUM_RUNS); do

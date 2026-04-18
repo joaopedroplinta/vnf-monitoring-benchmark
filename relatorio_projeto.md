@@ -1,5 +1,5 @@
 # TCC — Gerenciamento e Monitoramento de Rede
-**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 18/04/2026 — rev 3)
+**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 18/04/2026 — rev 4)
 
 ---
 
@@ -40,7 +40,6 @@ tcc_gerenciamento_rede/
 │   ├── run_sysstat.sh             # Executa benchmark Sysstat completo
 │   └── run_prometheus.sh          # Executa benchmark Prometheus completo
 └── results/
-    ├── pre_testes/                 # Resultados preliminares (N=100, N=1000)
     ├── <ferramenta>_<N>_run<ID>_results.json
     ├── comparison_<N>_<RUNS>runs.csv/.json
     └── comparison_all_runs.csv/.json
@@ -128,25 +127,9 @@ Variáveis de ambiente relevantes:
 
 ---
 
-## Resultados (17/04/2026)
+## Resultados (18/04/2026)
 
-> Resultados preliminares estão em `results/pre_testes/` (gerados com flag `--pre`).
-
-### N = 2000 mensagens — 5 runs (média ± desvio entre runs)
-
-| Métrica | eBPF (média ± dp) | Sysstat (média ± dp) | Prometheus (média ± dp) |
-|---------|-------------------|----------------------|--------------------------|
-| Latência média (ms) | 0.4816 ± 0.1202 | 0.4613 ± 0.0304 | **0.4558 ± 0.0282** ✓ |
-| Desvio padrão (ms) | 0.2013 ± 0.2522 | 0.1015 ± 0.1159 | **0.0551 ± 0.0260** ✓ |
-| Latência máx (ms) | 3.1734 ± 2.5816 | 1.9079 ± 2.7544 | **0.6873 ± 0.0182** ✓ |
-| Latência mín (ms) | 0.2468 ± 0.0242 | 0.2528 ± 0.0331 | **0.2315 ± 0.0493** ✓ |
-| Amostras coletadas | 1996.2 | **1997.0** ✓ | **1997.0** ✓ |
-| CPU média WAF (%) | 0.058 | **0.050** ✓ | **0.050** ✓ |
-| Memória média WAF (MB) | 11.454 | **11.490** ✓ | **11.490** ✓ |
-
-> ✓ Melhor valor na métrica
-
-### N = 100.000 mensagens — 5 runs (média ± desvio entre runs) — **resultado definitivo**
+### N = 100.000 mensagens — 5 runs (média ± desvio entre runs)
 
 | Métrica | eBPF (média ± dp) | sysstat (média ± dp) | Prometheus (média ± dp) |
 |---------|-------------------|----------------------|--------------------------|
@@ -155,27 +138,36 @@ Variáveis de ambiente relevantes:
 | Latência máx (ms) | **2.4065 ± 1.243** | 3.1361 ± 1.797 | 4.4650 ± 1.526 |
 | Latência mín (ms) | 0.4033 ± 0.056 | **0.2755 ± 0.061** | 0.4890 ± 0.124 |
 | Amostras coletadas | 43 ± 0 | 43 ± 0 | 43 ± 0 |
-| CPU média coletor (%) | 70.998 ± 0.611 | **66.828 ± 1.253** | 78.182 ± 5.143 |
-| Memória média coletor (MB) | 11.738 ± 0.023 | **11.648 ± 0.066** | 11.808 ± 0.066 |
+| CPU média WAF (%) | 70.998 ± 0.611 | **66.828 ± 1.253** | 78.182 ± 5.143 |
+| Memória média WAF (MB) | 11.738 ± 0.023 | **11.648 ± 0.066** | 11.808 ± 0.066 |
+| CPU média coletor (%) | **0.104 ± 0.093** | 0.108 ± 0.097 | 0.088 ± 0.035 |
+| Memória média coletor (MB) | 196.458 ± 0.314 | **13.704 ± 0.050** | 24.596 ± 0.162 |
 
-> Nota: DURATION = 100000/3500 + 15 = 43s → 43 amostras por run.
+> Nota: DURATION = 100000/3500 + 15 ≈ 43s → 43 amostras por run.
 
-### N = 50000 mensagens — 5 runs preliminares (Prometheus, `pre_testes/`)
+### N = 500.000 mensagens — 5 runs (média ± desvio entre runs)
 
-| Métrica | Prometheus (média ± dp) |
-|---------|--------------------------|
-| Latência média (ms) | 0.7993 ± 0.061 |
-| Latência máx (ms) | 2.4027 ± 1.530 |
-| Amostras coletadas | 29 ± 0 |
-| CPU média coletor (%) | 66.08 ± 31.94 |
+| Métrica | eBPF (média ± dp) | sysstat (média ± dp) | Prometheus (média ± dp) |
+|---------|-------------------|----------------------|--------------------------|
+| Latência média (ms) | **0.7691 ± 0.037** | 0.8374 ± 0.016 | 0.9531 ± 0.069 |
+| Desvio padrão (ms) | 0.5447 ± 0.140 | **0.5130 ± 0.093** | 0.5694 ± 0.173 |
+| Latência máx (ms) | 5.2284 ± 1.584 | 4.7667 ± 1.181 | **4.6328 ± 1.399** |
+| Latência mín (ms) | 0.2804 ± 0.056 | **0.2757 ± 0.040** | 0.3025 ± 0.084 |
+| Amostras coletadas | 157 ± 0 | 157 ± 0 | 157 ± 0 |
+| CPU média WAF (%) | 51.758 ± 0.471 | **50.728 ± 0.378** | 67.384 ± 8.324 |
+| Memória média WAF (MB) | 11.722 ± 0.036 | **11.664 ± 0.076** | 11.816 ± 0.046 |
+| CPU média coletor (%) | **0.056 ± 0.006** | 2.530 ± 5.523 | 2.906 ± 6.319 |
+| Memória média coletor (MB) | 196.182 ± 0.325 | **13.504 ± 0.062** | 24.502 ± 0.125 |
+
+> Nota: DURATION = 500000/3500 + 15 ≈ 157s → 157 amostras por run.
 
 ### Observações
 
-- **eBPF** tem a menor latência média (0.80ms) e máxima (2.41ms) em N=100k — overhead de coleta mais baixo sob carga alta, apesar do custo de setup do kprobe.
-- **sysstat** tem o menor consumo de CPU (66.8%) e menor memória — implementação mais leve por não ter overhead HTTP.
-- **Prometheus** apresenta maior variância na CPU (±5.1%) e na latência (±0.16ms), reflexo do custo adicional do servidor HTTP em `:8000/metrics`.
+- **eBPF** tem a menor latência média em ambos os N — overhead de coleta mais baixo sob carga alta, apesar do custo de setup do kprobe.
+- **Memória do coletor eBPF ~196 MB** vs sysstat ~13 MB e Prometheus ~24 MB: custo do BCC carregar o runtime do kernel em espaço de usuário.
+- **CPU do coletor eBPF** é extremamente baixa (< 0.1%) porque a coleta ocorre no kernel; sysstat e Prometheus têm variância alta em N=500k (std > 5%), possivelmente por variações no polling de `/proc`.
+- **Prometheus** apresenta maior variância na CPU do WAF em N=500k (±8.3%) e na latência, reflexo do custo adicional do servidor HTTP em `:8000/metrics`.
 - **sysstat** e **Prometheus** contabilizam todo o tráfego da interface `lo` (incluindo probes UDP), enquanto o eBPF mede com precisão apenas a porta 8080 — bytes RX/TX não são comparáveis entre as abordagens.
-- Resultados anteriores (N=2000, N=50000) e experimentais preservados em `results/pre_testes/`.
 
 ---
 
@@ -203,7 +195,7 @@ Os scripts `run_*.sh` aguardam o container do coletor terminar via `docker wait`
 
 ## Estado Atual
 
-- Branch: `dev/joao` | PR #15 (código/resultados) e PR #16 (docs README + relatório) abertas para `main`
+- Branch: `dev/joao`
 - Arquitetura: `probe.py` único + monitor por variante
 
 ### Correções aplicadas (17/04/2026)
@@ -221,7 +213,5 @@ Os scripts `run_*.sh` aguardam o container do coletor terminar via `docker wait`
 
 | N | Ferramenta | Runs | Localização |
 |---|---|---|---|
-| 100000 | eBPF, sysstat, Prometheus | 5 | `results/` ← **definitivos** |
-| 50000 | Prometheus | 5 | `results/pre_testes/` |
-| 2000 | eBPF, sysstat, Prometheus | 5 | `results/pre_testes/` |
-| 10000 | Prometheus | 5 | `results/pre_testes/` |
+| 100000 | eBPF, sysstat, Prometheus | 5 | `results/` |
+| 500000 | eBPF, sysstat, Prometheus | 5 | `results/` |

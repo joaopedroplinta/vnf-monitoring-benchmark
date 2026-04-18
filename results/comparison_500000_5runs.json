@@ -1,0 +1,103 @@
+{
+  "n_messages": "500000",
+  "num_runs": 5,
+  "tools": [
+    "ebpf",
+    "sysstat",
+    "prometheus"
+  ],
+  "metrics": [
+    "monitor_latency_avg_ms",
+    "monitor_latency_stddev_ms",
+    "monitor_latency_max_ms",
+    "monitor_latency_min_ms",
+    "monitor_samples",
+    "cpu_avg_pct",
+    "mem_avg_mb",
+    "collector_cpu_avg_pct",
+    "collector_mem_avg_mb"
+  ],
+  "data": [
+    {
+      "metrica": "Lat\u00eancia m\u00e9dia (ms)",
+      "eBPF": 0.7691,
+      "eBPF_std": 0.0367,
+      "sysstat": 0.8374,
+      "sysstat_std": 0.0157,
+      "Prometheus": 0.9531,
+      "Prometheus_std": 0.0689
+    },
+    {
+      "metrica": "Desvio padr\u00e3o (ms)",
+      "eBPF": 0.5447,
+      "eBPF_std": 0.1402,
+      "sysstat": 0.513,
+      "sysstat_std": 0.0926,
+      "Prometheus": 0.5694,
+      "Prometheus_std": 0.1726
+    },
+    {
+      "metrica": "Lat\u00eancia m\u00e1x (ms)",
+      "eBPF": 5.2284,
+      "eBPF_std": 1.5842,
+      "sysstat": 4.7667,
+      "sysstat_std": 1.1806,
+      "Prometheus": 4.6328,
+      "Prometheus_std": 1.3988
+    },
+    {
+      "metrica": "Lat\u00eancia m\u00edn (ms)",
+      "eBPF": 0.2804,
+      "eBPF_std": 0.0563,
+      "sysstat": 0.2757,
+      "sysstat_std": 0.0395,
+      "Prometheus": 0.3025,
+      "Prometheus_std": 0.0842
+    },
+    {
+      "metrica": "Amostras coletadas",
+      "eBPF": 157.0,
+      "eBPF_std": 0.0,
+      "sysstat": 157.0,
+      "sysstat_std": 0.0,
+      "Prometheus": 157.0,
+      "Prometheus_std": 0.0
+    },
+    {
+      "metrica": "CPU m\u00e9dia WAF (%)",
+      "eBPF": 51.758,
+      "eBPF_std": 0.4713,
+      "sysstat": 50.728,
+      "sysstat_std": 0.3784,
+      "Prometheus": 67.384,
+      "Prometheus_std": 8.3243
+    },
+    {
+      "metrica": "Mem\u00f3ria m\u00e9dia WAF (MB)",
+      "eBPF": 11.722,
+      "eBPF_std": 0.0356,
+      "sysstat": 11.664,
+      "sysstat_std": 0.0757,
+      "Prometheus": 11.816,
+      "Prometheus_std": 0.0462
+    },
+    {
+      "metrica": "CPU m\u00e9dia coletor (%)",
+      "eBPF": 0.056,
+      "eBPF_std": 0.0055,
+      "sysstat": 2.53,
+      "sysstat_std": 5.5231,
+      "Prometheus": 2.906,
+      "Prometheus_std": 6.3191
+    },
+    {
+      "metrica": "Mem\u00f3ria m\u00e9dia coletor (MB)",
+      "eBPF": 196.182,
+      "eBPF_std": 0.3251,
+      "sysstat": 13.504,
+      "sysstat_std": 0.0619,
+      "Prometheus": 24.502,
+      "Prometheus_std": 0.1246
+    }
+  ]
+}

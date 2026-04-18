@@ -5,7 +5,7 @@ Coleta bytes RX/TX via /proc/net/dev (loopback) + CPU/mem do processo WAF via ps
 Serve métricas via UDP :9999 e expõe HTTP :8000 para scraping Prometheus.
 Requer: pid=host.
 """
-import socket, json
+import socket, json, time
 import psutil
 from prometheus_client import start_http_server, Gauge
 
@@ -60,8 +60,23 @@ def main():
     print("  Monitor Prometheus — /proc/net/dev + psutil WAF")
     print("=" * 55)
 
-    start_http_server(8000)
-    print("Prometheus HTTP em :8000/metrics", flush=True)
+    # UDP primeiro: probe.py pode conectar imediatamente,
+    # independente do status da porta HTTP (que pode estar em TIME_WAIT)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind((HOST, PORT))
+    print(f"Monitor Prometheus UDP escutando em {HOST}:{PORT}", flush=True)
+
+    for attempt in range(30):
+        try:
+            start_http_server(8000)
+            print("Prometheus HTTP em :8000/metrics", flush=True)
+            break
+        except OSError:
+            if attempt < 29:
+                print(f"  Porta 8000 ocupada, aguardando 2s... ({attempt+1}/30)", flush=True)
+                time.sleep(2)
+            else:
+                print("  ⚠️  Porta 8000 não liberou — continuando sem HTTP Prometheus", flush=True)
 
     start_rx, start_tx = get_proc_bytes()
 
@@ -69,10 +84,6 @@ def main():
     if proc:
         proc.cpu_percent(interval=None)
     _self_proc.cpu_percent(interval=None)
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((HOST, PORT))
-    print(f"Monitor Prometheus UDP escutando em {HOST}:{PORT}", flush=True)
 
     while True:
         try:

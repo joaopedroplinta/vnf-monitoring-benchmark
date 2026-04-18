@@ -13,7 +13,9 @@ Modos de uso:
 """
 import json, csv, os, sys, re, statistics
 
-RESULTS_DIR = "/app/results" if os.path.exists("/app/results") else os.path.join(os.getcwd(), "results")
+_results_base = "/app/results" if os.path.exists("/app/results") else os.path.join(os.getcwd(), "results")
+_results_sub  = os.environ.get("RESULTS_SUBDIR", "")
+RESULTS_DIR   = os.path.join(_results_base, _results_sub) if _results_sub else _results_base
 TOOLS       = ["ebpf", "sysstat", "prometheus"]
 
 METRICS = [
@@ -148,14 +150,20 @@ def compare_aggregate(n, num_runs):
         "mem_avg_mb",
     ]
 
+    # Pré-carrega todos os arquivos (evita re-leitura e warnings repetidos)
+    all_data = {}
+    for tool in TOOLS:
+        for run_id in range(1, num_runs + 1):
+            path = os.path.join(RESULTS_DIR, f"{tool}_{n}_run{run_id}_results.json")
+            all_data[(tool, run_id)] = load(path)
+
     rows = []
     for metric in agg_metrics:
         row = {"metrica": metric}
         for tool in TOOLS:
             values = []
             for run_id in range(1, num_runs + 1):
-                path = os.path.join(RESULTS_DIR, f"{tool}_{n}_run{run_id}_results.json")
-                data = load(path)
+                data = all_data[(tool, run_id)]
                 val = data.get(metric)
                 if val != "" and val is not None:
                     values.append(float(val))

@@ -9,8 +9,12 @@ Configurado via variáveis de ambiente:
   MONITOR_HOST — host do monitor-server (padrão: 127.0.0.1)
   MONITOR_PORT — porta UDP do monitor-server (padrão: 9999)
 """
+import signal, sys
 import socket, time, json, os, statistics
 from datetime import datetime
+
+# Garante que SIGTERM (docker compose down) salva resultados antes de sair
+signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
 
 COLLECTOR    = os.environ.get("COLLECTOR",    "unknown")
 RESULTS_PATH = os.environ.get("RESULTS_PATH", f"/app/results/{COLLECTOR}_results.json")
@@ -36,6 +40,7 @@ def query() -> tuple[float, dict]:
 
 def save(start_time, latencies, samples):
     if not samples:
+        print(f"⚠️  [{COLLECTOR}] nenhuma amostra coletada — arquivo não será salvo", flush=True)
         return
     last = samples[-1]
     result = {

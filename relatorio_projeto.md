@@ -167,7 +167,7 @@ Variáveis de ambiente relevantes:
 - **Memória do coletor eBPF ~196 MB** vs sysstat ~13 MB e Prometheus ~24 MB: custo do BCC carregar o runtime do kernel em espaço de usuário.
 - **CPU do coletor eBPF** é extremamente baixa (< 0.1%) porque a coleta ocorre no kernel; sysstat e Prometheus têm variância alta em N=500k (std > 5%), possivelmente por variações no polling de `/proc`.
 - **Prometheus** apresenta maior variância na CPU do WAF em N=500k (±8.3%) e na latência, reflexo do custo adicional do servidor HTTP em `:8000/metrics`.
-- **sysstat** e **Prometheus** contabilizam todo o tráfego da interface `lo` (incluindo probes UDP), enquanto o eBPF mede com precisão apenas a porta 8080 — bytes RX/TX não são comparáveis entre as abordagens.
+- **Bytes RX/TX não são comparáveis entre eBPF e sysstat/Prometheus** por diferença no ponto de medição. O monitor eBPF intercepta as chamadas de sistema `tcp_sendmsg` e `tcp_cleanup_rbuf` via kprobes com filtro `sport=8080`, contabilizando exclusivamente o tráfego TCP do WAF. Já sysstat e Prometheus leem `/proc/net/dev` na interface `lo`, que agrega *todo* o tráfego da loopback — incluindo as probes UDP na porta 9999 e qualquer outro tráfego da máquina. Comparar os bytes reportados pelas duas abordagens equivale a comparar medições de escopos distintos.
 
 ---
 

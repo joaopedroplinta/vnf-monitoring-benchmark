@@ -24,15 +24,15 @@ Cliente TCP ──► WAF (porta 8080)
                probe UDP (1/s)
                mede latência de roundtrip
                       │
-              <ferramenta>_results.json
+              <ferramenta>_<N>_run<ID>_results.json
                       │
                  compare.py
                       │
-         comparison.csv / comparison.json
+         comparison_<N>_<RUNS>runs.csv/.json
 ```
 
-- O **WAF** inspeciona cada payload e responde ao cliente. Não escreve métricas.
-- O **monitor-server** coleta ativamente as métricas do WAF usando a ferramenta correspondente e serve qualquer request UDP com um JSON de métricas.
+- O **WAF** inspeciona cada payload (SQLi, XSS, PathTraversal, RCE, NullByte) e responde ao cliente. Não escreve métricas.
+- O **monitor-server** coleta métricas do WAF usando a ferramenta correspondente e responde a qualquer request UDP com um JSON de métricas.
 - O **probe** envia requests UDP a cada 1s e mede o tempo de roundtrip — essa latência é a métrica principal de comparação.
 - A ferramenta muda entre os testes; o probe é o mesmo script (`probe.py`) nos três casos.
 
@@ -50,7 +50,7 @@ tcc_gerenciamento_rede/
 │   │   ├── monitor_sysstat.py    # Monitor sysstat: /proc/net/dev + psutil WAF
 │   │   └── monitor_prometheus.py # Monitor Prometheus: /proc/net/dev + psutil WAF + HTTP :8000
 │   ├── client/
-│   │   └── client.py             # Gerador de tráfego TCP → WAF
+│   │   └── client.py             # Gerador de tráfego TCP (10 workers, ~3500 msg/s)
 │   └── compare.py                # Consolida resultados em CSV e JSON (3 modos)
 ├── configs/
 │   ├── Dockerfile                # Imagem base Ubuntu 24.04 + BCC
@@ -61,8 +61,9 @@ tcc_gerenciamento_rede/
 │   ├── run_prometheus.sh         # Executa o teste completo com Prometheus
 │   └── run_multi.sh              # Executa N repetições sequenciais de uma ferramenta
 ├── docs/
-│   └── arquitetura_c4.svg        # Diagrama de arquitetura C4
-├── results/                      # Resultados gerados (*_<N>_run<ID>_results.json, .csv, .json)
+│   └── architecture.md           # Documentação de arquitetura
+├── results/                      # Resultados definitivos (*_<N>_run<ID>_results.json, .csv, .json)
+│   └── pre_testes/               # Resultados preliminares e experimentais
 ├── docker-compose.ebpf.yml
 ├── docker-compose.sysstat.yml
 └── docker-compose.prometheus.yml
@@ -79,7 +80,7 @@ tcc_gerenciamento_rede/
 
 ### Executar cada teste
 
-Cada script sobe a stack completa (WAF + monitor-server + cliente + probe), aguarda a coleta e exibe um resumo:
+Cada script sobe a stack completa (WAF + monitor-server + cliente + probe), aguarda o coletor finalizar via `docker wait` e exibe um resumo:
 
 ```bash
 bash scripts/run_ebpf.sh
@@ -88,19 +89,26 @@ bash scripts/run_prometheus.sh
 ```
 
 Variáveis de ambiente opcionais:
-```bash
-NUM_MESSAGES=1000 bash scripts/run_ebpf.sh        # 1000 mensagens
-NUM_MESSAGES=1000 RUN_ID=2 bash scripts/run_ebpf.sh  # run específico
-```
+
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `NUM_MESSAGES` | 100000 | Mensagens TCP enviadas pelo cliente |
+| `DURATION` | `NUM_MESSAGES/3500 + 15` | Duração da coleta (segundos) |
+| `RUN_ID` | 1 | Identificador do run |
+| `WORKERS` | 10 | Threads concorrentes do cliente |
 
 ### Executar múltiplas repetições
 
 ```bash
-bash scripts/run_multi.sh <ferramenta> <num_messages> <num_runs>
+bash scripts/run_multi.sh <ferramenta> <num_messages> <num_runs> [--pre]
 
-bash scripts/run_multi.sh ebpf       100 5
-bash scripts/run_multi.sh sysstat    100 5
-bash scripts/run_multi.sh prometheus 100 5
+# Exemplos:
+bash scripts/run_multi.sh ebpf       100000 5
+bash scripts/run_multi.sh sysstat    100000 5
+bash scripts/run_multi.sh prometheus 100000 5
+
+# Com flag --pre: salva em results/pre_testes/ (testes preliminares)
+bash scripts/run_multi.sh prometheus 50000 5 --pre
 ```
 
 Salva cada repetição como `<ferramenta>_<N>_run<ID>_results.json` e gera a agregação ao final.
@@ -108,9 +116,9 @@ Salva cada repetição como `<ferramenta>_<N>_run<ID>_results.json` e gera a agr
 ### Gerar comparativo
 
 ```bash
-python3 src/compare.py 100        # compara 3 ferramentas para N=100 (run 1)
-python3 src/compare.py 100 5      # agrega 5 runs de N=100 (média ± desvio)
-python3 src/compare.py            # cross-N com todos os valores disponíveis
+python3 src/compare.py 100000        # compara 3 ferramentas para N=100000 (run 1)
+python3 src/compare.py 100000 5      # agrega 5 runs de N=100000 (média ± desvio)
+python3 src/compare.py               # cross-N com todos os valores disponíveis
 ```
 
 ---
@@ -121,9 +129,13 @@ python3 src/compare.py            # cross-N com todos os valores disponíveis
 |---------|--------|-----------|
 | `monitor_latency_avg_ms` | probe | Latência média da roundtrip UDP (overhead do monitoramento) |
 | `monitor_latency_stddev_ms` | probe | Desvio padrão da latência |
+| `monitor_latency_max_ms` | probe | Latência máxima observada |
+| `monitor_samples` | probe | Número de amostras coletadas |
 | `bytes_rx / bytes_tx` | monitor-server | eBPF: kprobe sport=8080; sysstat/Prom: `/proc/net/dev` |
 | `cpu_avg_pct` | monitor-server (psutil) | Uso médio de CPU do processo WAF |
 | `mem_avg_mb` | monitor-server (psutil) | Uso médio de memória do processo WAF |
+| `collector_cpu_avg_pct` | monitor-server (psutil) | Uso médio de CPU do próprio coletor |
+| `collector_mem_avg_mb` | monitor-server (psutil) | Uso médio de memória do próprio coletor |
 
 ---
 
@@ -144,22 +156,29 @@ python3 src/compare.py            # cross-N com todos os valores disponíveis
 ### Prometheus (`monitor_prometheus.py`)
 - Mesma lógica de coleta do sysstat.
 - Expõe Gauges em `:8000/metrics` via `prometheus_client`.
+- Bind do UDP :9999 feito antes do HTTP :8000 para evitar falha por TIME_WAIT entre runs.
 - Requer `pid: host`.
 
 ---
 
 ## Resultados
 
-> Resultados preliminares (N=100 e N=1000, run único) estão em `results/pre_testes/`.
+Resultados preliminares e experimentais estão em `results/pre_testes/`.
 
-### N = 2000 mensagens (média de 5 runs)
+### N = 100.000 mensagens — 5 runs (média ± desvio entre runs)
 
-| Métrica | eBPF (média ± dp) | sysstat (média ± dp) | Prometheus (média ± dp) |
-|---------|-------------------|----------------------|--------------------------|
-| Latência média (ms) | 0.4816 ± 0.1202 | 0.4613 ± 0.0304 | **0.4558 ± 0.0282** |
-| Desvio padrão (ms) | 0.2013 ± 0.2522 | 0.1015 ± 0.1159 | **0.0551 ± 0.0260** |
-| Latência máx (ms) | 3.1734 ± 2.5816 | 1.9079 ± 2.7544 | **0.6873 ± 0.0182** |
-| Latência mín (ms) | 0.2468 ± 0.0242 | 0.2528 ± 0.0331 | **0.2315 ± 0.0493** |
-| Amostras coletadas | 1996.2 | 1997.0 | 1997.0 |
-| CPU média WAF (%) | 0.058 | **0.050** | **0.050** |
-| Memória média WAF (MB) | 11.454 | **11.490** | **11.490** |
+| Métrica | eBPF | sysstat | Prometheus |
+|---------|------|---------|------------|
+| Latência média (ms) | **0.8039 ± 0.043** | 0.8995 ± 0.118 | 1.0924 ± 0.160 |
+| Desvio padrão (ms) | **0.3922 ± 0.160** | 0.5672 ± 0.324 | 0.7512 ± 0.297 |
+| Latência máx (ms) | **2.4065 ± 1.243** | 3.1361 ± 1.797 | 4.4650 ± 1.526 |
+| Latência mín (ms) | 0.4033 ± 0.056 | **0.2755 ± 0.061** | 0.4890 ± 0.124 |
+| Amostras coletadas | 43 | 43 | 43 |
+| CPU média coletor (%) | 70.998 ± 0.611 | **66.828 ± 1.253** | 78.182 ± 5.143 |
+| Memória média coletor (MB) | 11.738 ± 0.023 | **11.648 ± 0.066** | 11.808 ± 0.066 |
+
+**Observações:**
+- **eBPF** tem a menor latência média e máxima — overhead de coleta mais baixo sob carga alta.
+- **sysstat** tem o menor consumo de CPU e memória do coletor — implementação mais leve.
+- **Prometheus** apresenta maior variância na CPU (~5%) e na latência, atribuído ao custo adicional do servidor HTTP.
+- Bytes RX/TX não são comparáveis entre eBPF e os demais: eBPF mede apenas tráfego do WAF (sport=8080); sysstat/Prometheus medem todo o tráfego da interface loopback.

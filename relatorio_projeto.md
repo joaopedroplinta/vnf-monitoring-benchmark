@@ -1,5 +1,5 @@
 # TCC — Gerenciamento e Monitoramento de Rede
-**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 17/04/2026 — rev 2)
+**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 18/04/2026 — rev 3)
 
 ---
 
@@ -146,28 +146,36 @@ Variáveis de ambiente relevantes:
 
 > ✓ Melhor valor na métrica
 
-### N = 50000 mensagens — 5 runs preliminares (Prometheus, `pre_testes/`)
+### N = 100.000 mensagens — 5 runs (média ± desvio entre runs) — **resultado definitivo**
 
-> Executado em 17/04/2026 após correção do bug de TIME_WAIT. Apenas Prometheus disponível por enquanto.
+| Métrica | eBPF (média ± dp) | sysstat (média ± dp) | Prometheus (média ± dp) |
+|---------|-------------------|----------------------|--------------------------|
+| Latência média (ms) | **0.8039 ± 0.043** | 0.8995 ± 0.118 | 1.0924 ± 0.160 |
+| Desvio padrão (ms) | **0.3922 ± 0.160** | 0.5672 ± 0.324 | 0.7512 ± 0.297 |
+| Latência máx (ms) | **2.4065 ± 1.243** | 3.1361 ± 1.797 | 4.4650 ± 1.526 |
+| Latência mín (ms) | 0.4033 ± 0.056 | **0.2755 ± 0.061** | 0.4890 ± 0.124 |
+| Amostras coletadas | 43 ± 0 | 43 ± 0 | 43 ± 0 |
+| CPU média coletor (%) | 70.998 ± 0.611 | **66.828 ± 1.253** | 78.182 ± 5.143 |
+| Memória média coletor (MB) | 11.738 ± 0.023 | **11.648 ± 0.066** | 11.808 ± 0.066 |
+
+> Nota: DURATION = 100000/3500 + 15 = 43s → 43 amostras por run.
+
+### N = 50000 mensagens — 5 runs preliminares (Prometheus, `pre_testes/`)
 
 | Métrica | Prometheus (média ± dp) |
 |---------|--------------------------|
-| Latência média (ms) | 0.8832 ± 0.0126 |
-| Desvio padrão (ms) | 0.4390 ± 0.0583 |
-| Latência máx (ms) | 2.3655 ± 0.3574 |
-| Latência mín (ms) | 0.3113 ± 0.0371 |
-| Amostras coletadas | 29.0 ± 0.0 |
-| CPU média coletor (%) | 84.49 ± 2.05 |
-| Memória média coletor (MB) | 11.68 ± 0.10 |
-
-> Nota: "amostras" = 29 porque DURATION = 50000/3500 + 15 = 29s e o probe coleta 1 amostra/s.
+| Latência média (ms) | 0.7993 ± 0.061 |
+| Latência máx (ms) | 2.4027 ± 1.530 |
+| Amostras coletadas | 29 ± 0 |
+| CPU média coletor (%) | 66.08 ± 31.94 |
 
 ### Observações
 
-- **Prometheus** apresenta a maior consistência em N=2000: latência máxima de 0.69ms (vs 3.17ms do eBPF e 1.91ms do sysstat) e desvio entre runs quase zero (±0.02ms).
-- **eBPF** apresenta alta variância nos picos (máx ±2.58ms entre runs), comportamento atribuído à natureza do kprobe sob carga prolongada.
-- **sysstat** e **Prometheus** contabilizam todo o tráfego da interface `lo`, incluindo as próprias probes UDP, distorcendo os bytes RX/TX. O eBPF mede com precisão apenas a porta 8080.
-- Em N=50000, a CPU do coletor Prometheus sobe para ~85%, indicando overhead significativo do servidor HTTP sob carga alta — dado relevante para a comparação final.
+- **eBPF** tem a menor latência média (0.80ms) e máxima (2.41ms) em N=100k — overhead de coleta mais baixo sob carga alta, apesar do custo de setup do kprobe.
+- **sysstat** tem o menor consumo de CPU (66.8%) e menor memória — implementação mais leve por não ter overhead HTTP.
+- **Prometheus** apresenta maior variância na CPU (±5.1%) e na latência (±0.16ms), reflexo do custo adicional do servidor HTTP em `:8000/metrics`.
+- **sysstat** e **Prometheus** contabilizam todo o tráfego da interface `lo` (incluindo probes UDP), enquanto o eBPF mede com precisão apenas a porta 8080 — bytes RX/TX não são comparáveis entre as abordagens.
+- Resultados anteriores (N=2000, N=50000) e experimentais preservados em `results/pre_testes/`.
 
 ---
 
@@ -195,7 +203,7 @@ Os scripts `run_*.sh` aguardam o container do coletor terminar via `docker wait`
 
 ## Estado Atual
 
-- Branch: `dev/joao`
+- Branch: `dev/joao` | PR #15 (código/resultados) e PR #16 (docs README + relatório) abertas para `main`
 - Arquitetura: `probe.py` único + monitor por variante
 
 ### Correções aplicadas (17/04/2026)
@@ -213,6 +221,7 @@ Os scripts `run_*.sh` aguardam o container do coletor terminar via `docker wait`
 
 | N | Ferramenta | Runs | Localização |
 |---|---|---|---|
-| 2000 | eBPF, sysstat, Prometheus | 5 | `results/` |
-| 50000 | Prometheus | 5 (preliminar) | `results/pre_testes/` |
-| 100000 | eBPF | 5 (preliminar) | `results/pre_testes/` |
+| 100000 | eBPF, sysstat, Prometheus | 5 | `results/` ← **definitivos** |
+| 50000 | Prometheus | 5 | `results/pre_testes/` |
+| 2000 | eBPF, sysstat, Prometheus | 5 | `results/pre_testes/` |
+| 10000 | Prometheus | 5 | `results/pre_testes/` |

@@ -63,7 +63,6 @@ tcc_gerenciamento_rede/
 ├── docs/
 │   └── architecture.md           # Documentação de arquitetura
 ├── results/                      # Resultados definitivos (*_<N>_run<ID>_results.json, .csv, .json)
-│   └── pre_testes/               # Resultados preliminares e experimentais
 ├── docker-compose.ebpf.yml
 ├── docker-compose.sysstat.yml
 └── docker-compose.prometheus.yml
@@ -163,8 +162,6 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 ## Resultados
 
-Resultados preliminares e experimentais estão em `results/pre_testes/`.
-
 ### N = 100.000 mensagens — 5 runs (média ± desvio entre runs)
 
 | Métrica | eBPF | sysstat | Prometheus |
@@ -174,11 +171,28 @@ Resultados preliminares e experimentais estão em `results/pre_testes/`.
 | Latência máx (ms) | **2.4065 ± 1.243** | 3.1361 ± 1.797 | 4.4650 ± 1.526 |
 | Latência mín (ms) | 0.4033 ± 0.056 | **0.2755 ± 0.061** | 0.4890 ± 0.124 |
 | Amostras coletadas | 43 | 43 | 43 |
-| CPU média coletor (%) | 70.998 ± 0.611 | **66.828 ± 1.253** | 78.182 ± 5.143 |
-| Memória média coletor (MB) | 11.738 ± 0.023 | **11.648 ± 0.066** | 11.808 ± 0.066 |
+| CPU média WAF (%) | 70.998 ± 0.611 | **66.828 ± 1.253** | 78.182 ± 5.143 |
+| Memória média WAF (MB) | 11.738 ± 0.023 | **11.648 ± 0.066** | 11.808 ± 0.066 |
+| CPU média coletor (%) | **0.104 ± 0.093** | 0.108 ± 0.097 | 0.088 ± 0.035 |
+| Memória média coletor (MB) | 196.458 ± 0.314 | **13.704 ± 0.050** | 24.596 ± 0.162 |
+
+### N = 500.000 mensagens — 5 runs (média ± desvio entre runs)
+
+| Métrica | eBPF | sysstat | Prometheus |
+|---------|------|---------|------------|
+| Latência média (ms) | **0.7691 ± 0.037** | 0.8374 ± 0.016 | 0.9531 ± 0.069 |
+| Desvio padrão (ms) | 0.5447 ± 0.140 | **0.5130 ± 0.093** | 0.5694 ± 0.173 |
+| Latência máx (ms) | 5.2284 ± 1.584 | 4.7667 ± 1.181 | **4.6328 ± 1.399** |
+| Latência mín (ms) | 0.2804 ± 0.056 | **0.2757 ± 0.040** | 0.3025 ± 0.084 |
+| Amostras coletadas | 157 | 157 | 157 |
+| CPU média WAF (%) | 51.758 ± 0.471 | **50.728 ± 0.378** | 67.384 ± 8.324 |
+| Memória média WAF (MB) | 11.722 ± 0.036 | **11.664 ± 0.076** | 11.816 ± 0.046 |
+| CPU média coletor (%) | **0.056 ± 0.006** | 2.530 ± 5.523 | 2.906 ± 6.319 |
+| Memória média coletor (MB) | 196.182 ± 0.325 | **13.504 ± 0.062** | 24.502 ± 0.125 |
 
 **Observações:**
-- **eBPF** tem a menor latência média e máxima — overhead de coleta mais baixo sob carga alta.
-- **sysstat** tem o menor consumo de CPU e memória do coletor — implementação mais leve.
-- **Prometheus** apresenta maior variância na CPU (~5%) e na latência, atribuído ao custo adicional do servidor HTTP.
+- **eBPF** tem a menor latência média em ambos os N — overhead de coleta mais baixo sob carga alta.
+- **Memória do coletor eBPF ~196 MB** vs sysstat ~13 MB e Prometheus ~24 MB: custo do BCC carregar o runtime do kernel em espaço de usuário.
+- **CPU do coletor eBPF** é extremamente baixa (< 0.1%) porque a coleta ocorre no kernel; sysstat e Prometheus têm variância alta em N=500k (std > 5%).
+- **Prometheus** apresenta maior variância na CPU do WAF (~8.3%) e na latência, reflexo do custo adicional do servidor HTTP.
 - Bytes RX/TX não são comparáveis entre eBPF e os demais: eBPF mede apenas tráfego do WAF (sport=8080); sysstat/Prometheus medem todo o tráfego da interface loopback.

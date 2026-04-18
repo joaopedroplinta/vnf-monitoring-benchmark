@@ -13,71 +13,91 @@
     "monitor_latency_min_ms",
     "monitor_samples",
     "cpu_avg_pct",
-    "mem_avg_mb"
+    "mem_avg_mb",
+    "collector_cpu_avg_pct",
+    "collector_mem_avg_mb"
   ],
   "data": [
     {
-      "metrica": "monitor_latency_avg_ms",
-      "ebpf": 0.8039,
-      "ebpf_std": 0.0428,
+      "metrica": "Lat\u00eancia m\u00e9dia (ms)",
+      "eBPF": 0.8039,
+      "eBPF_std": 0.0428,
       "sysstat": 0.8995,
       "sysstat_std": 0.1183,
-      "prometheus": 1.0924,
-      "prometheus_std": 0.1603
+      "Prometheus": 1.0924,
+      "Prometheus_std": 0.1603
     },
     {
-      "metrica": "monitor_latency_stddev_ms",
-      "ebpf": 0.3922,
-      "ebpf_std": 0.1596,
+      "metrica": "Desvio padr\u00e3o (ms)",
+      "eBPF": 0.3922,
+      "eBPF_std": 0.1596,
       "sysstat": 0.5672,
       "sysstat_std": 0.3235,
-      "prometheus": 0.7512,
-      "prometheus_std": 0.2965
+      "Prometheus": 0.7512,
+      "Prometheus_std": 0.2965
     },
     {
-      "metrica": "monitor_latency_max_ms",
-      "ebpf": 2.4065,
-      "ebpf_std": 1.2432,
+      "metrica": "Lat\u00eancia m\u00e1x (ms)",
+      "eBPF": 2.4065,
+      "eBPF_std": 1.2432,
       "sysstat": 3.1361,
       "sysstat_std": 1.7965,
-      "prometheus": 4.465,
-      "prometheus_std": 1.5262
+      "Prometheus": 4.465,
+      "Prometheus_std": 1.5262
     },
     {
-      "metrica": "monitor_latency_min_ms",
-      "ebpf": 0.4033,
-      "ebpf_std": 0.0557,
+      "metrica": "Lat\u00eancia m\u00edn (ms)",
+      "eBPF": 0.4033,
+      "eBPF_std": 0.0557,
       "sysstat": 0.2755,
       "sysstat_std": 0.0607,
-      "prometheus": 0.489,
-      "prometheus_std": 0.124
+      "Prometheus": 0.489,
+      "Prometheus_std": 0.124
     },
     {
-      "metrica": "monitor_samples",
-      "ebpf": 43.0,
-      "ebpf_std": 0.0,
+      "metrica": "Amostras coletadas",
+      "eBPF": 43.0,
+      "eBPF_std": 0.0,
       "sysstat": 43.0,
       "sysstat_std": 0.0,
-      "prometheus": 43.0,
-      "prometheus_std": 0.0
+      "Prometheus": 43.0,
+      "Prometheus_std": 0.0
     },
     {
-      "metrica": "cpu_avg_pct",
-      "ebpf": 70.998,
-      "ebpf_std": 0.6111,
+      "metrica": "CPU m\u00e9dia WAF (%)",
+      "eBPF": 70.998,
+      "eBPF_std": 0.6111,
       "sysstat": 66.828,
       "sysstat_std": 1.2528,
-      "prometheus": 78.182,
-      "prometheus_std": 5.1433
+      "Prometheus": 78.182,
+      "Prometheus_std": 5.1433
     },
     {
-      "metrica": "mem_avg_mb",
-      "ebpf": 11.738,
-      "ebpf_std": 0.0228,
+      "metrica": "Mem\u00f3ria m\u00e9dia WAF (MB)",
+      "eBPF": 11.738,
+      "eBPF_std": 0.0228,
       "sysstat": 11.648,
       "sysstat_std": 0.0657,
-      "prometheus": 11.808,
-      "prometheus_std": 0.0661
+      "Prometheus": 11.808,
+      "Prometheus_std": 0.0661
+    },
+    {
+      "metrica": "CPU m\u00e9dia coletor (%)",
+      "eBPF": 0.104,
+      "eBPF_std": 0.0932,
+      "sysstat": 0.108,
+      "sysstat_std": 0.0965,
+      "Prometheus": 0.088,
+      "Prometheus_std": 0.0349
+    },
+    {
+      "metrica": "Mem\u00f3ria m\u00e9dia coletor (MB)",
+      "eBPF": 196.458,
+      "eBPF_std": 0.3142,
+      "sysstat": 13.704,
+      "sysstat_std": 0.0503,
+      "Prometheus": 24.596,
+      "Prometheus_std": 0.162
     }
   ]
 }

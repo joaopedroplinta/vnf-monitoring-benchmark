@@ -17,6 +17,7 @@ _results_base = "/app/results" if os.path.exists("/app/results") else os.path.jo
 _results_sub  = os.environ.get("RESULTS_SUBDIR", "")
 RESULTS_DIR   = os.path.join(_results_base, _results_sub) if _results_sub else _results_base
 TOOLS       = ["ebpf", "sysstat", "prometheus"]
+TOOL_LABELS = {"ebpf": "eBPF", "sysstat": "sysstat", "prometheus": "Prometheus"}
 
 METRICS = [
     ("monitor_latency_avg_ms",    "Latência média (ms)"),
@@ -32,6 +33,7 @@ METRICS = [
     ("collector_mem_avg_mb",      "Memória média coletor (MB)"),
     ("duration_s",                "Duração (s)"),
 ]
+METRICS_LABEL = {key: label for key, label in METRICS}
 
 def load(path):
     try:
@@ -46,18 +48,19 @@ def compare_single(n):
     files = {tool: os.path.join(RESULTS_DIR, f"{tool}_{n}_run1_results.json") for tool in TOOLS}
     data  = {tool: load(path) for tool, path in files.items()}
 
+    col_tools = [TOOL_LABELS[t] for t in TOOLS]
     rows = []
     for key, label in METRICS:
-        row = {"metrica": key}
+        row = {"metrica": label}
         for tool in TOOLS:
-            row[tool] = data[tool].get(key, "")
+            row[TOOL_LABELS[tool]] = data[tool].get(key, "")
         rows.append(row)
 
     out_csv  = os.path.join(RESULTS_DIR, f"comparison_{n}.csv")
     out_json = os.path.join(RESULTS_DIR, f"comparison_{n}.json")
 
     with open(out_csv, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["metrica"] + TOOLS)
+        w = csv.DictWriter(f, fieldnames=["metrica"] + col_tools)
         w.writeheader()
         w.writerows(rows)
 
@@ -148,6 +151,8 @@ def compare_aggregate(n, num_runs):
         "monitor_samples",
         "cpu_avg_pct",
         "mem_avg_mb",
+        "collector_cpu_avg_pct",
+        "collector_mem_avg_mb",
     ]
 
     # Pré-carrega todos os arquivos (evita re-leitura e warnings repetidos)
@@ -159,8 +164,9 @@ def compare_aggregate(n, num_runs):
 
     rows = []
     for metric in agg_metrics:
-        row = {"metrica": metric}
+        row = {"metrica": METRICS_LABEL.get(metric, metric)}
         for tool in TOOLS:
+            tl = TOOL_LABELS[tool]
             values = []
             for run_id in range(1, num_runs + 1):
                 data = all_data[(tool, run_id)]
@@ -170,17 +176,17 @@ def compare_aggregate(n, num_runs):
             if values:
                 mean = round(statistics.mean(values), 4)
                 std  = round(statistics.stdev(values), 4) if len(values) > 1 else 0
-                row[tool]          = mean
-                row[f"{tool}_std"] = std
+                row[tl]             = mean
+                row[f"{tl}_std"]    = std
             else:
-                row[tool]          = ""
-                row[f"{tool}_std"] = ""
+                row[tl]             = ""
+                row[f"{tl}_std"]    = ""
         rows.append(row)
 
     out_csv  = os.path.join(RESULTS_DIR, f"comparison_{n}_{num_runs}runs.csv")
     out_json = os.path.join(RESULTS_DIR, f"comparison_{n}_{num_runs}runs.json")
 
-    fieldnames = ["metrica"] + [f"{t}{s}" for t in TOOLS for s in ("", "_std")]
+    fieldnames = ["metrica"] + [f"{TOOL_LABELS[t]}{s}" for t in TOOLS for s in ("", "_std")]
     with open(out_csv, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
@@ -196,7 +202,8 @@ def compare_aggregate(n, num_runs):
     print("-" * len(header))
     for row in rows:
         def fmt(t):
-            m, s = row.get(t, ""), row.get(f"{t}_std", "")
+            tl = TOOL_LABELS[t]
+            m, s = row.get(tl, ""), row.get(f"{tl}_std", "")
             return f"{m}±{s}" if m != "" else "-"
         print(f"{row['metrica']:<35} {fmt('ebpf'):>18} {fmt('sysstat'):>18} {fmt('prometheus'):>18}")
     print(f"\n✅ Salvo em {out_csv} e {out_json}")

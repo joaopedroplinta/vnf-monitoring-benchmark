@@ -1,8 +1,0 @@
-metrica,ebpf,ebpf_std,sysstat,sysstat_std,prometheus,prometheus_std
-monitor_latency_avg_ms,0.849,0.0966,0.8979,0.0669,1.0373,0
-monitor_latency_stddev_ms,0.6249,0.2702,0.5488,0.161,0.6291,0
-monitor_latency_max_ms,3.6764,1.2111,3.4766,1.183,2.8959,0
-monitor_latency_min_ms,0.2836,0.0464,0.2641,0.0361,0.2533,0
-monitor_samples,43.0,0.0,43.0,0.0,43.0,0
-cpu_avg_pct,67.714,3.8958,62.104,5.907,69.5,0
-mem_avg_mb,11.672,0.0795,11.704,0.0321,11.65,0

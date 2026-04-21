@@ -1,0 +1,256 @@
+% ============================================================
+% Template LaTeX para Trabalhos Acadêmicos
+% Instituto Federal do Paraná – Campus Pinhais
+% APÊNDICE K – Modelo de Trabalho Acadêmico para Projeto de Curso I
+%
+% Baseado na estrutura do template UTFPR-PG (abntex2)
+% Adaptado para o modelo do IFPR Campus Pinhais
+% ============================================================
+
+\documentclass{ifpr-pinhais}
+
+\usepackage{cmap}
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{amssymb}
+
+\graphicspath{{imagens/}}
+
+% ---- Metadados do trabalho ----
+\curso{Bacharelado em Ciência da Computação}
+\departamento{Coordenação do Curso de Bacharelado em Ciência da Computação}
+\autor{ALVES, Rafael Correia \\ PLINTA, João Pedro dos Santos Henrique}
+\titulo{Monitoramento de VNFs: Estudo Comparativo de Overhead entre eBPF, sysstat e Prometheus.}
+\tipotrabalho{Trabalho de Conclusão de Curso}
+\local{Pinhais}
+\data{2026}
+
+\orientador{Prof. OLIVEIRA, Guilherme Werneck de}
+% \coorientador{Prof. Nome do Coorientador}  % descomente se houver
+
+\preambulo{%
+  \imprimirtipotrabalho\ apresentado como requisito parcial para
+  obtenção do título de Bacharel em \imprimircurso, do
+  \ifpr\ -- \campus.
+}
+
+% ---- Configurações do PDF ----
+\makeatletter
+\hypersetup{
+  pdftitle={\@title},
+  pdfauthor={\@author},
+  pdfsubject={\imprimirpreambulo},
+  pdfcreator={LaTeX com abntex2 e ifpr-pinhais},
+  colorlinks=false,
+}
+\makeatother
+
+% ---- Espaçamento entre parágrafos ----
+\setlength{\parskip}{0.1cm}
+
+\makeindex
+
+% ============================================================
+\begin{document}
+\frenchspacing
+
+% ================================================================
+% ELEMENTOS PRÉ-TEXTUAIS
+% ================================================================
+\pretextual
+
+% --- Capa ---
+\imprimircapa
+
+% --- Folha de Rosto ---
+\imprimirfolhaderosto
+
+% --- Folha de Aprovação ---
+% (preencha com os dados reais antes de imprimir)
+\imprimirfolhadeaprovacao
+
+% --- Dedicatória (opcional) ---
+% \begin{dedicatoria}
+%   \vspace*{\fill}
+%   \centering
+%   \noindent
+%   \textit{Dedico este trabalho...}
+%   \vspace*{\fill}
+% \end{dedicatoria}
+
+% --- Agradecimentos (opcional) ---
+% \begin{agradecimentos}
+%   Agradeço...
+% \end{agradecimentos}
+
+% --- Epígrafe (opcional) ---
+% \begin{epigrafe}
+%   \vspace*{\fill}
+%   \begin{flushright}
+%     \textit{``Frase de efeito.''\\(Autor, Ano)}
+%   \end{flushright}
+% \end{epigrafe}
+
+% --- Resumo em português --- (pendente: escrever após Desenvolvimento)
+% \begin{resumo}
+%   Conter de 150 e 500 palavras, em parágrafo único com espaçamento simples,
+%   tamanho 12, sem recuo na primeira linha. Deve-se ressaltar sucintamente o
+%   conteúdo de um texto: os objetivos, os métodos empregados, os resultados
+%   preliminares e as conclusões. Recomenda-se para documento técnico e científico
+%   o resumo informativo.
+%
+%   \vspace{\onelineskip}
+%   \noindent
+%   \textbf{Palavras-chave}: palavra 1; palavra 2; palavra 3; palavra 4; palavra 5.
+% \end{resumo}
+
+% --- Abstract (resumo em inglês) --- (pendente)
+% \begin{resumo}[Abstract]
+%   \begin{otherlanguage*}{english}
+%     Mandatory element, written preferably in English. It must contain the same
+%     information as the Portuguese abstract, including keywords.
+%
+%     \vspace{\onelineskip}
+%     \noindent
+%     \textbf{Keywords}: word 1; word 2; word 3; word 4; word 5.
+%   \end{otherlanguage*}
+% \end{resumo}
+
+% --- Lista de Figuras (a partir de 5 figuras) --- (pendente)
+% \pdfbookmark[0]{\listfigurename}{lof}
+% \listoffigures*
+% \cleardoublepage
+
+% --- Lista de Gráficos (a partir de 5 gráficos) --- (pendente)
+% \pdfbookmark[0]{Lista de Gráficos}{log}
+% \listof{grafico}{Lista de Gráficos}
+% \cleardoublepage
+
+% --- Lista de Tabelas (a partir de 5 tabelas) --- (pendente)
+% \pdfbookmark[0]{\listtablename}{lot}
+% \listoftables*
+% \cleardoublepage
+
+% --- Lista de Quadros (opcional) ---
+% \pdfbookmark[0]{Lista de Quadros}{loq}
+% \listof{quadro}{Lista de Quadros}
+% \cleardoublepage
+
+% --- Lista de Abreviaturas e Siglas ---
+\begin{siglas}
+  \item[BCC]   BPF Compiler Collection
+  \item[BPF]   Berkeley Packet Filter
+  \item[CPU]   Central Processing Unit
+  \item[eBPF]  Extended Berkeley Packet Filter
+  \item[IFPR]  Instituto Federal do Paraná
+  \item[NFV]   Network Functions Virtualisation
+  \item[RTT]   Round-Trip Time
+  \item[TCP]   Transmission Control Protocol
+  \item[UDP]   User Datagram Protocol
+  \item[VNF]   Virtual Network Function
+  \item[WAF]   Web Application Firewall
+\end{siglas}
+
+% --- Lista de Símbolos (opcional) ---
+% \begin{simbolos}
+%   \item[$\Gamma$] Letra grega Gama
+% \end{simbolos}
+
+% --- Sumário ---
+\pdfbookmark[0]{\contentsname}{toc}
+\tableofcontents*
+\cleardoublepage
+
+% ================================================================
+% ELEMENTOS TEXTUAIS
+% ================================================================
+\textual
+\pagestyle{simple}
+
+% ----------------------------------------------------------------
+\chapter{Introdução}
+% ----------------------------------------------------------------
+
+A crescente demanda por otimização de sistemas computacionais torna essencial a escolha de ferramentas eficientes para o monitoramento de desempenho em redes. O monitoramento de rede consiste na coleta de métricas como latência, throughput, consumo de CPU e memória, sendo fundamental para identificar gargalos e garantir o bom funcionamento de servidores e aplicações distribuídas.
+
+Dentre as tecnologias disponíveis para essa finalidade, destacam-se o Extended Berkeley Packet Filter (eBPF) \cite{gregg_bpf_2019}, o Sysstat \cite{sysstat_project} e o Prometheus \cite{turnbull_prometheus_2018}, cada qual com abordagens distintas para a obtenção de métricas de rede.
+
+O presente trabalho propõe uma análise comparativa de desempenho entre essas três tecnologias de monitoramento, com o objetivo de verificar qual apresenta maior eficiência em termos de overhead e latência. A relevância desta pesquisa fundamenta-se na necessidade de compreender as diferenças práticas entre as abordagens kernel-level e user-level \cite{linux_bpf_docs}, considerando que a escolha da ferramenta adequada pode impactar significativamente na performance de sistemas produção.
+
+A metodologia adotada consiste em experimentos quantitativos utilizando sockets TCP \cite{rfc8172}, onde uma aplicação WAF recebe requisições de um cliente enquanto os monitores coletam métricas de forma independente. Os experimentos foram conduzidos com N=100.000 e N=500.000 mensagens, em 5 repetições por configuração, mensurando latência de roundtrip, uso de CPU e memória do WAF e do próprio coletor. Os resultados indicam que o eBPF apresenta menor latência média e menor consumo de CPU do coletor, enquanto o sysstat se destaca pelo menor footprint de memória; o Prometheus apresenta o maior overhead geral, reflexo do custo adicional do servidor HTTP de exposição de métricas.
+
+A estrutura do artigo segue com a revisão de literatura abordando os conceitos teóricos do eBPF, sysstat e Prometheus, seguida pela metodologia detalhada dos experimentos. Em seguida, são apresentados os resultados obtidos e a análise estatística comparativa. Por fim, são discutidas as conclusões e contribuições do trabalho para a área de gerenciamento e monitoramento de redes
+
+
+% ----
+\section{Problema}
+
+Delimitado o tema da comparação entre tecnologias de monitoramento de rede, faz-se necessário identificar o problema prático que motivou a realização desta pesquisa.
+
+A escolha da ferramenta de monitoramento adequada pode impactar diretamente na performance de servidores e aplicações em produção, uma vez que cada tecnologia apresenta diferentes abordagens de coleta de métricas e geração de overhead no sistema monitorado.
+Dessa forma, emerge a seguinte questão de pesquisa: Quais são as diferenças práticas de desempenho entre o eBPF, o sysstat e o Prometheus quando aplicados ao monitoramento de uma VNF, e qual tecnologia oferece menor overhead sem comprometer a qualidade da coleta de métricas?
+
+A motivação para essa investigação surge da constatação de que, embora o eBPF seja amplamente reconhecido por sua capacidade de estender as funcionalidades do kernel de forma segura através de kprobes \cite{bcc_project}, há uma carência de estudos comparativos quantitativos que demonstrem, na prática, as vantagens dessa abordagem em cenário controlado \cite{usman_observability_2022}. Da mesma forma, o sysstat e o Prometheus, embora sejam ferramentas consolidadas e amplamente utilizadas em ambientes de produção, carecem de análises comparativas diretas para que administradores de sistema possam fundamentar suas decisões de escolha.
+
+% ----
+\section{Hipótese}
+
+O eBPF, por operar em nível de kernel através de kprobes \cite{gregg_bpf_2019}, apresenta menor overhead de monitoramento em comparação ao sysstat \cite{sysstat_project} e ao Prometheus \cite{prometheus_docs}, que realizam polling em espaço de usuário via \texttt{/proc} \cite{linux_proc_man}. Consequentemente, espera-se que o eBPF produza menor latência de coleta e menor impacto no desempenho da VNF monitorada \cite{oliveira_intelligent_vnf_2023}, ainda que com maior consumo de memória decorrente do runtime BCC \cite{bcc_project}.
+
+% ----
+\section{Justificativa}
+
+A escolha da ferramenta de monitoramento adequada representa um desafio constante para administradores de sistemas e engenheiros de rede, uma vez que cada tecnologia apresenta características distintas de coleta de métricas e geração de overhead \cite{oliveira_observability_2026}. O sysstat \cite{sysstat_project} e o Prometheus \cite{turnbull_prometheus_2018}, embora sejam ferramentas consolidadas e amplamente utilizadas em ambientes de produção, baseiam-se em polling em nível de usuário via \texttt{/proc} \cite{linux_proc_man}, gerando tráfego constante de rede e aumentando a latência do sistema monitorado. Já o eBPF \cite{gregg_bpf_2019}, tecnologia relativamente recente, promete capturar dados no nível do kernel através de kprobes \cite{bcc_project}, eliminando a necessidade de serialização e transmissão de métricas pela rede.
+
+A relevância desta pesquisa justifica-se pela carência de estudos comparativos quantitativos que demonstrem, na prática, as vantagens de desempenho de cada abordagem \cite{usman_observability_2022}. Os resultados obtidos podem fornecer base técnica para que profissionais da área possam fundamentar suas decisões na escolha de ferramentas de monitoramento, considerando não apenas a funcionalidade, mas também o impacto na performance do sistema monitorado \cite{john_observability_vnf_2017}. Além disso, o trabalho contribui para o avanço do conhecimento científico ao demonstrar empiricamente as diferenças entre tecnologias kernel-level e user-level de monitoramento.
+
+% ----
+\section{Objetivos}
+
+Após a identificação do problema da pesquisa e hipótese(s), se estabelece o objetivo,
+que é a delimitação e recorte do estudo.
+
+\subsection{Objetivo Geral}
+
+Comparar o desempenho das tecnologias eBPF \cite{gregg_bpf_2019}, sysstat \cite{sysstat_project} e Prometheus \cite{turnbull_prometheus_2018} no monitoramento de uma VNF (Virtual Network Function) \cite{oliveira_intelligent_vnf_2023}, identificando qual apresentam menor overhead e maior eficiência em diferentes condições de carga.
+
+
+
+\subsection{Objetivos Específicos}
+
+\begin{itemize}
+  \item Implementar três monitores utilizando as tecnologias estudadas (eBPF, sysstat e Prometheus) para coleta de métricas de uma aplicação WAF.
+  \item Executar experimentos quantitativos com cargas de N=100.000 e N=500.000 mensagens, com 5 repetições cada, mensurando latência de roundtrip, uso de CPU e memória do WAF e do coletor.
+  \item Analisar estatisticamente os resultados obtidos para verificar qual tecnologia apresenta melhor desempenho sob diferentes condições de carga.
+  \item Discutir as vantagens e limitações de cada abordagem, considerando latência, consumo de recursos e precisão da coleta de métricas.
+\end{itemize}
+
+% ----------------------------------------------------------------
+% \chapter{Desenvolvimento}   (pendente: Metodologia, Revisão de Literatura, Resultados)
+% ----------------------------------------------------------------
+
+% % ----
+% \section{Metodologia}
+% ...
+
+% % ----
+% \section{Revisão de Literatura}
+% ...
+
+% % ----
+% \section{Resultados Preliminares}
+% ...
+
+% ----------------------------------------------------------------
+% \chapter{Considerações Finais}   (pendente)
+% ----------------------------------------------------------------
+
+% ================================================================
+% ELEMENTOS PÓS-TEXTUAIS
+% ================================================================
+\postextual
+
+% --- Referências ---
+\bibliography{referencias}
+
+\end{document}

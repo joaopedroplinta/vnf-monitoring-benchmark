@@ -28,10 +28,7 @@ def inspect(payload: bytes) -> tuple[bool, str]:
     for i in range(1000):
         x += i * i
 
-    try:
-        text = payload.decode("utf-8", errors="replace")
-    except Exception:
-        return True, "DecodeError"
+    text = payload.decode("utf-8", errors="replace")
     for pattern, name in WAF_RULES:
         if pattern.search(text):
             return True, name

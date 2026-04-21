@@ -100,8 +100,9 @@ def main():
                     blocked += 1
                 else:
                     allowed += 1
-            except Exception:
+            except Exception as e:
                 errors += 1
+                print(f"[ERRO] payload {i}: {e}", flush=True)
 
     elapsed = round(time.time() - t_start, 2)
     rate    = round(NUM_MESSAGES / elapsed, 1) if elapsed > 0 else 0

@@ -22,8 +22,8 @@ def get_proc_bytes():
                 if INTERFACE in line:
                     parts = line.split()
                     return int(parts[1]), int(parts[9])
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[ERRO] get_proc_bytes: {e}", flush=True)
     return 0, 0
 
 def _find_waf():

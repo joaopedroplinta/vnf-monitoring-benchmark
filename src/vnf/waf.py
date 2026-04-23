@@ -8,10 +8,44 @@ antes de responder ao cliente.
 import socket
 import threading
 import re
+import json
+import os
+import time
 from datetime import datetime
 
 HOST = '0.0.0.0'
 PORT = 8080
+_METRICS_PATH = os.environ.get("WAF_METRICS_PATH", "/app/results/waf_metrics.json")
+_WRITE_EVERY  = 100  # grava a cada N inspeções
+
+_stats_lock = threading.Lock()
+_stats = {"count": 0, "total_ms": 0.0, "min_ms": float("inf"), "max_ms": 0.0}
+
+
+def _record(elapsed_ms: float) -> None:
+    with _stats_lock:
+        _stats["count"]    += 1
+        _stats["total_ms"] += elapsed_ms
+        if elapsed_ms < _stats["min_ms"]:
+            _stats["min_ms"] = elapsed_ms
+        if elapsed_ms > _stats["max_ms"]:
+            _stats["max_ms"] = elapsed_ms
+        if _stats["count"] % _WRITE_EVERY == 0:
+            _flush(_stats.copy())
+
+
+def _flush(s: dict) -> None:
+    data = {
+        "inspect_count":  s["count"],
+        "inspect_avg_ms": round(s["total_ms"] / s["count"], 6),
+        "inspect_min_ms": round(s["min_ms"], 6),
+        "inspect_max_ms": round(s["max_ms"], 6),
+    }
+    try:
+        with open(_METRICS_PATH, "w") as f:
+            json.dump(data, f)
+    except Exception as e:
+        print(f"[WARN] waf_metrics: {e}")
 
 # ── Regras WAF ────────────────────────────────────────────────────────────────
 WAF_RULES = [
@@ -24,10 +58,6 @@ WAF_RULES = [
 
 def inspect(payload: bytes) -> tuple[bool, str]:
     """Retorna (bloqueado, motivo). False = permitido."""
-    x = 0
-    for i in range(1000):
-        x += i * i
-
     text = payload.decode("utf-8", errors="replace")
     for pattern, name in WAF_RULES:
         if pattern.search(text):
@@ -46,7 +76,9 @@ def handle_client(conn, addr):
                 chunks.append(chunk)
             data = b"".join(chunks)
 
+            t0 = time.perf_counter()
             blocked, reason = inspect(data)
+            _record((time.perf_counter() - t0) * 1000)
 
             if blocked:
                 response = f"BLOCKED:{reason}\n".encode()

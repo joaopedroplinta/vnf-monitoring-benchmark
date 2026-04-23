@@ -11,11 +11,11 @@ services:
       - ./results:/app/results
     command: ["python3", "/app/vnf/waf.py"]
 
-  monitor-server:
+  observador:
     build:
       context: .
       dockerfile: configs/Dockerfile
-    container_name: monitor-server
+    container_name: observador
     network_mode: "host"
     pid: "host"
     privileged: true
@@ -26,7 +26,7 @@ services:
       - /usr/src:/usr/src:ro
       - ./src/vnf:/app/vnf
       - ./results:/app/results
-    command: ["python3", "/app/vnf/monitor_ebpf.py"]
+    command: ["python3", "/app/vnf/observador_ebpf.py"]
     depends_on:
       - waf
 
@@ -37,10 +37,11 @@ services:
     container_name: socket-client
     network_mode: "host"
     environment:
-      - NUM_MESSAGES=${NUM_MESSAGES:-100}
+      - PAYLOADS_FILE=${PAYLOADS_FILE}
       - WORKERS=${WORKERS:-10}
     volumes:
       - ./src/client:/app
+      - ./data/payloads:/app/payloads:ro
     command: ["python3", "/app/client.py"]
     depends_on:
       - waf
@@ -60,5 +61,5 @@ services:
       - ./results:/app/results
     command: ["python3", "/app/src/probe.py"]
     depends_on:
-      - monitor-server
+      - observador
 

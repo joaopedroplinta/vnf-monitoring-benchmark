@@ -187,20 +187,6 @@ Variáveis de ambiente relevantes:
 
 ---
 
-## Pendências e Decisões em Aberto
-
-### Loop de busy-wait no `waf.py` (linhas 27–29)
-
-A função `inspect()` executa um loop de 1000 iterações (`x += i * i`) antes de inspecionar cada payload. O resultado nunca é usado.
-
-**Impacto:** consome CPU real do processo WAF a cada mensagem — afeta diretamente as métricas de CPU do WAF medidas nos benchmarks. Não é overhead do coletor, é overhead artificial do próprio WAF.
-
-**Decisão pendente:**
-
-- **Remover** — WAF mais leve; resultados refletem apenas o overhead dos coletores (mais limpo para o TCC)
-
----
-
 ## Scripts de Execução
 
 **Passo 0 — gerar os arquivos de payloads (uma vez, antes de qualquer teste):**

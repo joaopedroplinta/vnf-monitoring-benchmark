@@ -1,6 +1,6 @@
 #!/bin/bash
 # Teste 3 — Coletor Prometheus
-# Sobe: WAF + Monitor UDP + Cliente + Prometheus collector
+# Sobe: WAF + Observador UDP + Cliente + Prometheus collector
 
 TOOL="prometheus"
 COMPOSE="docker-compose.${TOOL}.yml"
@@ -9,13 +9,23 @@ RUN_ID=${RUN_ID:-1}
 WORKERS=${WORKERS:-10}
 DURATION=$(( (NUM_MESSAGES / 3500) + 15 )) # estimativa: ~3500 msg/s (10 workers) + 15s margem
 SLEEP=$((DURATION + 30))                    # +30s para startup/shutdown dos containers
+
+# Arquivo de payloads pré-gerado (host → container via volume ./data/payloads:/app/payloads)
+_PAYLOADS_HOST="${PAYLOADS_FILE_HOST:-data/payloads/payloads_${NUM_MESSAGES}_6040.bin}"
+if [ ! -f "$_PAYLOADS_HOST" ]; then
+    echo "❌ Arquivo de payloads não encontrado: $_PAYLOADS_HOST"
+    echo "   Gere com: python3 scripts/gen_payloads.py ${NUM_MESSAGES}"
+    exit 1
+fi
+PAYLOADS_FILE="/app/payloads/$(basename $_PAYLOADS_HOST)"
+
 if [ -n "${RESULTS_SUBDIR:-}" ]; then
     RESULTS_PREFIX_CONT="/app/results/${RESULTS_SUBDIR}"
     mkdir -p "results/${RESULTS_SUBDIR}"
 else
     RESULTS_PREFIX_CONT="/app/results"
 fi
-export NUM_MESSAGES RUN_ID WORKERS DURATION RESULTS_SUBDIR RESULTS_PREFIX_CONT
+export NUM_MESSAGES RUN_ID WORKERS DURATION PAYLOADS_FILE RESULTS_SUBDIR RESULTS_PREFIX_CONT
 
 echo "========================================"
 echo "  TCC — Teste com ${TOOL^^}"
@@ -52,9 +62,9 @@ if [ -f "$RESULT_FILE" ]; then
     cat "$RESULT_FILE" | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
-print(f\"  lat_avg : {d.get('monitor_latency_avg_ms','?')} ms\")
-print(f\"  stddev  : {d.get('monitor_latency_stddev_ms','?')} ms\")
-print(f\"  amostras: {d.get('monitor_samples','?')}\")
+print(f\"  lat_avg : {d.get('observador_latency_avg_ms','?')} ms\")
+print(f\"  stddev  : {d.get('observador_latency_stddev_ms','?')} ms\")
+print(f\"  amostras: {d.get('observador_samples','?')}\")
 print(f\"  cpu_avg : {d.get('cpu_avg_pct','?')} %\")
 print(f\"  mem_avg : {d.get('mem_avg_mb','?')} MB\")
 " 2>/dev/null

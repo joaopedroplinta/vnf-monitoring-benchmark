@@ -12,20 +12,20 @@ services:
       - results_vol:/app/results
     command: python3 /app/vnf/waf.py
 
-  # ── VNF: Monitor UDP :9999 ───────────────────────────────────────────────────
-  # ATENÇÃO: cada ferramenta tem seu próprio monitor (monitor_ebpf/sysstat/prometheus.py).
+  # ── VNF: Observador UDP :9999 ───────────────────────────────────────────────────
+  # ATENÇÃO: cada ferramenta tem seu próprio observador (observador_ebpf/sysstat/prometheus.py).
   # Use os composes específicos: docker-compose.ebpf.yml / sysstat / prometheus.
   # Este compose genérico não pode rodar as 3 ferramentas simultaneamente (conflito porta 9999).
-  monitor-server:
+  observador:
     build:
       context: .
       dockerfile: configs/Dockerfile
-    container_name: monitor-server
+    container_name: observador
     network_mode: "host"
     volumes:
       - ./src/vnf:/app/vnf
       - results_vol:/app/results
-    command: python3 /app/vnf/monitor_ebpf.py
+    command: python3 /app/vnf/observador_ebpf.py
     depends_on:
       - waf
 
@@ -60,7 +60,7 @@ services:
       - results_vol:/app/results
     command: python3 /app/src/probe.py
     depends_on:
-      - monitor-server
+      - observador
 
   # ── Coletor sysstat ──────────────────────────────────────────────────────────
   sysstat-collector:
@@ -74,7 +74,7 @@ services:
       - results_vol:/app/results
     command: python3 /app/src/probe.py
     depends_on:
-      - monitor-server
+      - observador
 
   # ── Coletor Prometheus ───────────────────────────────────────────────────────
   prometheus-collector:
@@ -88,7 +88,7 @@ services:
       - results_vol:/app/results
     command: python3 /app/src/probe.py
     depends_on:
-      - monitor-server
+      - observador
 
   # ── Comparador ───────────────────────────────────────────────────────────────
   comparator:

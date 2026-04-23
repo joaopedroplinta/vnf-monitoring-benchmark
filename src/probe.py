@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
 Probe UDP — TCC Gerenciamento de Rede
-Mede a latência de monitoramento (round-trip UDP) de qualquer monitor-server.
+Mede a latência de monitoramento (round-trip UDP) de qualquer observador.
 Configurado via variáveis de ambiente:
   COLLECTOR    — nome da ferramenta (ebpf | sysstat | prometheus)
   RESULTS_PATH — caminho do JSON de saída
   DURATION     — duração da coleta em segundos (padrão: 60)
-  MONITOR_HOST — host do monitor-server (padrão: 127.0.0.1)
-  MONITOR_PORT — porta UDP do monitor-server (padrão: 9999)
+  OBSERVADOR_HOST — host do observador (padrão: 127.0.0.1)
+  OBSERVADOR_PORT — porta UDP do observador (padrão: 9999)
 """
 import signal, sys
 import socket, time, json, os, statistics
@@ -19,8 +19,8 @@ signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
 COLLECTOR    = os.environ.get("COLLECTOR",    "unknown")
 RESULTS_PATH = os.environ.get("RESULTS_PATH", f"/app/results/{COLLECTOR}_results.json")
 DURATION     = int(os.environ.get("DURATION",     60))
-MONITOR_HOST = os.environ.get("MONITOR_HOST", "127.0.0.1")
-MONITOR_PORT = int(os.environ.get("MONITOR_PORT", 9999))
+OBSERVADOR_HOST = os.environ.get("OBSERVADOR_HOST", "127.0.0.1")
+OBSERVADOR_PORT = int(os.environ.get("OBSERVADOR_PORT", 9999))
 INTERVAL     = 1
 SAVE_INTERVAL = 10
 
@@ -31,7 +31,7 @@ def query() -> tuple[float, dict]:
     sock.settimeout(2)
     try:
         t0 = time.time_ns()
-        sock.sendto(b"GET", (MONITOR_HOST, MONITOR_PORT))
+        sock.sendto(b"GET", (OBSERVADOR_HOST, OBSERVADOR_PORT))
         data, _ = sock.recvfrom(65536)
         lat_ms = round((time.time_ns() - t0) / 1e6, 4)
         return lat_ms, json.loads(data.decode("utf-8"))
@@ -47,11 +47,11 @@ def save(start_time, latencies, samples):
         "collector":                 COLLECTOR,
         "timestamp":                 datetime.utcnow().isoformat(),
         "duration_s":                round(time.time() - start_time, 2),
-        "monitor_latency_avg_ms":    round(statistics.mean(latencies), 4)   if latencies else 0,
-        "monitor_latency_stddev_ms": round(statistics.stdev(latencies), 4)  if len(latencies) > 1 else 0,
-        "monitor_latency_max_ms":    round(max(latencies), 4)               if latencies else 0,
-        "monitor_latency_min_ms":    round(min(latencies), 4)               if latencies else 0,
-        "monitor_samples":           len(latencies),
+        "observador_latency_avg_ms":    round(statistics.mean(latencies), 4)   if latencies else 0,
+        "observador_latency_stddev_ms": round(statistics.stdev(latencies), 4)  if len(latencies) > 1 else 0,
+        "observador_latency_max_ms":    round(max(latencies), 4)               if latencies else 0,
+        "observador_latency_min_ms":    round(min(latencies), 4)               if latencies else 0,
+        "observador_samples":           len(latencies),
         "latencies_raw":             latencies,
         "bytes_rx":                  last.get("bytes_rx", 0),
         "bytes_tx":                  last.get("bytes_tx", 0),
@@ -59,29 +59,33 @@ def save(start_time, latencies, samples):
         "mem_avg_mb":                round(statistics.mean([s["mem_mb"]            for s in samples]), 2),
         "collector_cpu_avg_pct":     round(statistics.mean([s["collector_cpu_pct"] for s in samples]), 2),
         "collector_mem_avg_mb":      round(statistics.mean([s["collector_mem_mb"]  for s in samples]), 2),
+        "inspect_count":             last.get("inspect_count", 0),
+        "inspect_avg_ms":            last.get("inspect_avg_ms", 0.0),
+        "inspect_min_ms":            last.get("inspect_min_ms", 0.0),
+        "inspect_max_ms":            last.get("inspect_max_ms", 0.0),
         "samples":                   samples,
     }
     with open(RESULTS_PATH, "w") as f:
         json.dump(result, f, indent=2)
-    print(f"\n💾 [{COLLECTOR}] salvo | lat_avg={result['monitor_latency_avg_ms']}ms | n={result['monitor_samples']}\n")
+    print(f"\n💾 [{COLLECTOR}] salvo | lat_avg={result['observador_latency_avg_ms']}ms | n={result['observador_samples']}\n")
 
 def wait_ready(max_wait: int = 60) -> None:
-    """Aguarda o monitor responder antes de iniciar a medição."""
-    print(f"  Aguardando monitor em {MONITOR_HOST}:{MONITOR_PORT}...", flush=True)
+    """Aguarda o observador responder antes de iniciar a medição."""
+    print(f"  Aguardando observador em {OBSERVADOR_HOST}:{OBSERVADOR_PORT}...", flush=True)
     deadline = time.time() + max_wait
     while time.time() < deadline:
         try:
             query()
-            print("  Monitor pronto. Iniciando coleta.", flush=True)
+            print("  Observador pronto. Iniciando coleta.", flush=True)
             return
         except Exception:
             time.sleep(0.5)
-    print(f"  AVISO: monitor não respondeu em {max_wait}s. Iniciando mesmo assim.", flush=True)
+    print(f"  AVISO: observador não respondeu em {max_wait}s. Iniciando mesmo assim.", flush=True)
 
 
 def main():
     print("=" * 55)
-    print(f"  Probe [{COLLECTOR}] — {MONITOR_HOST}:{MONITOR_PORT}")
+    print(f"  Probe [{COLLECTOR}] — {OBSERVADOR_HOST}:{OBSERVADOR_PORT}")
     print("=" * 55)
 
     wait_ready()
@@ -105,6 +109,10 @@ def main():
                     "mem_mb":            m.get("mem_mb", 0),
                     "collector_cpu_pct": m.get("collector_cpu_pct", 0),
                     "collector_mem_mb":  m.get("collector_mem_mb", 0),
+                    "inspect_count":     m.get("inspect_count", 0),
+                    "inspect_avg_ms":    m.get("inspect_avg_ms", 0.0),
+                    "inspect_min_ms":    m.get("inspect_min_ms", 0.0),
+                    "inspect_max_ms":    m.get("inspect_max_ms", 0.0),
                 }
                 samples.append(sample)
                 print(f"[{now}] lat={lat_ms}ms | rx={m.get('bytes_rx',0)} | cpu={m.get('cpu_pct',0)}%", flush=True)

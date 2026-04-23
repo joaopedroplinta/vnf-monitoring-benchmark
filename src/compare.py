@@ -11,7 +11,21 @@ Modos de uso:
   python3 compare.py             Compara as 3 ferramentas em todos os N
                                  disponíveis. Gera comparison_all_runs.csv/.json
 """
-import json, csv, os, sys, re, statistics
+import json, csv, math, os, sys, re, statistics
+
+# t crítico bicaudal 95% (α=0.05) por grau de liberdade (df = n-1)
+_T95 = {
+    1: 12.706, 2: 4.303,  3: 3.182,  4: 2.776,  5: 2.571,
+    6:  2.447, 7: 2.365,  8: 2.306,  9: 2.262, 10: 2.228,
+   11:  2.201,12: 2.179, 13: 2.160, 14: 2.145, 15: 2.131,
+   16:  2.120,17: 2.110, 18: 2.101, 19: 2.093, 20: 2.086,
+   21:  2.080,22: 2.074, 23: 2.069, 24: 2.064, 25: 2.060,
+   26:  2.056,27: 2.052, 28: 2.048, 29: 2.045, 30: 2.042,
+}
+
+def t_critical(df: int) -> float:
+    """t de Student bicaudal 95% para df graus de liberdade."""
+    return _T95.get(df, 1.960)  # df > 30 → aproximação normal
 
 _results_base = "/app/results" if os.path.exists("/app/results") else os.path.join(os.getcwd(), "results")
 _results_sub  = os.environ.get("RESULTS_SUBDIR", "")
@@ -20,11 +34,11 @@ TOOLS       = ["ebpf", "sysstat", "prometheus"]
 TOOL_LABELS = {"ebpf": "eBPF", "sysstat": "sysstat", "prometheus": "Prometheus"}
 
 METRICS = [
-    ("monitor_latency_avg_ms",    "Latência média (ms)"),
-    ("monitor_latency_stddev_ms", "Desvio padrão (ms)"),
-    ("monitor_latency_max_ms",    "Latência máx (ms)"),
-    ("monitor_latency_min_ms",    "Latência mín (ms)"),
-    ("monitor_samples",           "Amostras coletadas"),
+    ("observador_latency_avg_ms",    "Latência média (ms)"),
+    ("observador_latency_stddev_ms", "Desvio padrão (ms)"),
+    ("observador_latency_max_ms",    "Latência máx (ms)"),
+    ("observador_latency_min_ms",    "Latência mín (ms)"),
+    ("observador_samples",           "Amostras coletadas"),
     ("bytes_rx",                  "Bytes RX WAF"),
     ("bytes_tx",                  "Bytes TX WAF"),
     ("cpu_avg_pct",               "CPU média WAF (%)"),
@@ -94,10 +108,10 @@ def compare_all_runs():
 
     # Métricas relevantes para comparação cross-run
     cross_metrics = [
-        "monitor_latency_avg_ms",
-        "monitor_latency_stddev_ms",
-        "monitor_latency_max_ms",
-        "monitor_samples",
+        "observador_latency_avg_ms",
+        "observador_latency_stddev_ms",
+        "observador_latency_max_ms",
+        "observador_samples",
         "cpu_avg_pct",
         "mem_avg_mb",
     ]
@@ -131,12 +145,12 @@ def compare_all_runs():
     for row in rows:
         print(
             f"{row['n_messages']:>6}  "
-            f"{str(row.get('ebpf_monitor_latency_avg_ms','')):>10} "
-            f"{str(row.get('sysstat_monitor_latency_avg_ms','')):>10} "
-            f"{str(row.get('prometheus_monitor_latency_avg_ms','')):>10}  "
-            f"{str(row.get('ebpf_monitor_latency_stddev_ms','')):>10} "
-            f"{str(row.get('sysstat_monitor_latency_stddev_ms','')):>10} "
-            f"{str(row.get('prometheus_monitor_latency_stddev_ms','')):>10}"
+            f"{str(row.get('ebpf_observador_latency_avg_ms','')):>10} "
+            f"{str(row.get('sysstat_observador_latency_avg_ms','')):>10} "
+            f"{str(row.get('prometheus_observador_latency_avg_ms','')):>10}  "
+            f"{str(row.get('ebpf_observador_latency_stddev_ms','')):>10} "
+            f"{str(row.get('sysstat_observador_latency_stddev_ms','')):>10} "
+            f"{str(row.get('prometheus_observador_latency_stddev_ms','')):>10}"
         )
     print(f"\n✅ Salvo em {out_csv} e {out_json}")
 
@@ -144,11 +158,11 @@ def compare_aggregate(n, num_runs):
     """Agrega múltiplos runs de N mensagens: média ± desvio entre runs."""
     num_runs = int(num_runs)
     agg_metrics = [
-        "monitor_latency_avg_ms",
-        "monitor_latency_stddev_ms",
-        "monitor_latency_max_ms",
-        "monitor_latency_min_ms",
-        "monitor_samples",
+        "observador_latency_avg_ms",
+        "observador_latency_stddev_ms",
+        "observador_latency_max_ms",
+        "observador_latency_min_ms",
+        "observador_samples",
         "cpu_avg_pct",
         "mem_avg_mb",
         "collector_cpu_avg_pct",
@@ -176,17 +190,20 @@ def compare_aggregate(n, num_runs):
             if values:
                 mean = round(statistics.mean(values), 4)
                 std  = round(statistics.stdev(values), 4) if len(values) > 1 else 0
+                ci   = round(t_critical(len(values) - 1) * std / math.sqrt(len(values)), 4) if len(values) > 1 else 0
                 row[tl]             = mean
                 row[f"{tl}_std"]    = std
+                row[f"{tl}_ci95"]   = ci
             else:
                 row[tl]             = ""
                 row[f"{tl}_std"]    = ""
+                row[f"{tl}_ci95"]   = ""
         rows.append(row)
 
     out_csv  = os.path.join(RESULTS_DIR, f"comparison_{n}_{num_runs}runs.csv")
     out_json = os.path.join(RESULTS_DIR, f"comparison_{n}_{num_runs}runs.json")
 
-    fieldnames = ["metrica"] + [f"{TOOL_LABELS[t]}{s}" for t in TOOLS for s in ("", "_std")]
+    fieldnames = ["metrica"] + [f"{TOOL_LABELS[t]}{s}" for t in TOOLS for s in ("", "_std", "_ci95")]
     with open(out_csv, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
@@ -197,15 +214,15 @@ def compare_aggregate(n, num_runs):
                    "metrics": agg_metrics, "data": rows}, f, indent=2)
 
     print(f"\n📊 Agregação — {n} msgs × {num_runs} runs:\n")
-    header = f"{'métrica':<35} {'eBPF mean±std':>18} {'sysstat mean±std':>18} {'prom mean±std':>18}"
+    header = f"{'métrica':<35} {'eBPF mean±CI95':>20} {'sysstat mean±CI95':>20} {'prom mean±CI95':>20}"
     print(header)
     print("-" * len(header))
     for row in rows:
         def fmt(t):
             tl = TOOL_LABELS[t]
-            m, s = row.get(tl, ""), row.get(f"{tl}_std", "")
-            return f"{m}±{s}" if m != "" else "-"
-        print(f"{row['metrica']:<35} {fmt('ebpf'):>18} {fmt('sysstat'):>18} {fmt('prometheus'):>18}")
+            m, ci = row.get(tl, ""), row.get(f"{tl}_ci95", "")
+            return f"{m}±{ci}" if m != "" else "-"
+        print(f"{row['metrica']:<35} {fmt('ebpf'):>20} {fmt('sysstat'):>20} {fmt('prometheus'):>20}")
     print(f"\n✅ Salvo em {out_csv} e {out_json}")
 
 

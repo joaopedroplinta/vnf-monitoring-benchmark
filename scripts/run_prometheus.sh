@@ -1,10 +1,15 @@
 #!/bin/bash
+set -euo pipefail
 # Teste 3 — Coletor Prometheus
 # Sobe: WAF + Observador UDP + Cliente + Prometheus collector
 
 TOOL="prometheus"
 COMPOSE="docker-compose.${TOOL}.yml"
 NUM_MESSAGES=${NUM_MESSAGES:-100000}
+if ! [[ "${NUM_MESSAGES}" =~ ^[1-9][0-9]*$ ]]; then
+    echo "❌ NUM_MESSAGES deve ser um inteiro positivo (atual: '${NUM_MESSAGES}')"
+    exit 1
+fi
 RUN_ID=${RUN_ID:-1}
 WORKERS=${WORKERS:-10}
 DURATION=$(( (NUM_MESSAGES / 3500) + 15 )) # estimativa: ~3500 msg/s (10 workers) + 15s margem
@@ -59,15 +64,15 @@ docker compose -f $COMPOSE down
 echo ""
 if [ -f "$RESULT_FILE" ]; then
     echo "✅ Resultado em: ${RESULT_FILE}"
-    cat "$RESULT_FILE" | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
+    python3 -c "
+import json
+d=json.load(open('${RESULT_FILE}'))
 print(f\"  lat_avg : {d.get('observador_latency_avg_ms','?')} ms\")
 print(f\"  stddev  : {d.get('observador_latency_stddev_ms','?')} ms\")
 print(f\"  amostras: {d.get('observador_samples','?')}\")
 print(f\"  cpu_avg : {d.get('cpu_avg_pct','?')} %\")
 print(f\"  mem_avg : {d.get('mem_avg_mb','?')} MB\")
-" 2>/dev/null
+"
 else
     echo "❌ Resultado NÃO encontrado: ${RESULT_FILE}"
     echo "   Últimos logs do coletor:"

@@ -143,47 +143,56 @@ Variáveis de ambiente relevantes:
 
 ---
 
-## Resultados (18/04/2026)
+## Resultados preliminares (18/04/2026) — 5 runs, pré-testes
 
-### N = 100.000 mensagens — 5 runs (média ± desvio entre runs)
+> Arquivos em `results/pre_testes/`. Valores exibidos como média ± desvio padrão entre runs.
 
-| Métrica                    | eBPF (média ± dp)  | sysstat (média ± dp) | Prometheus (média ± dp) |
+### N = 100.000 mensagens
+
+| Métrica                    | eBPF               | sysstat              | Prometheus              |
 | -------------------------- | ------------------ | -------------------- | ----------------------- |
 | Latência média (ms)        | **0.8039 ± 0.043** | 0.8995 ± 0.118       | 1.0924 ± 0.160          |
 | Desvio padrão (ms)         | **0.3922 ± 0.160** | 0.5672 ± 0.324       | 0.7512 ± 0.297          |
-| Latência máx (ms)          | **2.4065 ± 1.243** | 3.1361 ± 1.797       | 4.4650 ± 1.526          |
-| Latência mín (ms)          | 0.4033 ± 0.056     | **0.2755 ± 0.061**   | 0.4890 ± 0.124          |
-| Amostras coletadas         | 43 ± 0             | 43 ± 0               | 43 ± 0                  |
 | CPU média WAF (%)          | 70.998 ± 0.611     | **66.828 ± 1.253**   | 78.182 ± 5.143          |
-| Memória média WAF (MB)     | 11.738 ± 0.023     | **11.648 ± 0.066**   | 11.808 ± 0.066          |
-| CPU média coletor (%)      | **0.104 ± 0.093**  | 0.108 ± 0.097        | 0.088 ± 0.035           |
 | Memória média coletor (MB) | 196.458 ± 0.314    | **13.704 ± 0.050**   | 24.596 ± 0.162          |
 
-> Nota: DURATION = 100000/3500 + 15 ≈ 43s → 43 amostras por run.
+### N = 500.000 mensagens
 
-### N = 500.000 mensagens — 5 runs (média ± desvio entre runs)
-
-| Métrica                    | eBPF (média ± dp)  | sysstat (média ± dp) | Prometheus (média ± dp) |
+| Métrica                    | eBPF               | sysstat              | Prometheus              |
 | -------------------------- | ------------------ | -------------------- | ----------------------- |
 | Latência média (ms)        | **0.7691 ± 0.037** | 0.8374 ± 0.016       | 0.9531 ± 0.069          |
 | Desvio padrão (ms)         | 0.5447 ± 0.140     | **0.5130 ± 0.093**   | 0.5694 ± 0.173          |
-| Latência máx (ms)          | 5.2284 ± 1.584     | 4.7667 ± 1.181       | **4.6328 ± 1.399**      |
-| Latência mín (ms)          | 0.2804 ± 0.056     | **0.2757 ± 0.040**   | 0.3025 ± 0.084          |
-| Amostras coletadas         | 157 ± 0            | 157 ± 0              | 157 ± 0                 |
 | CPU média WAF (%)          | 51.758 ± 0.471     | **50.728 ± 0.378**   | 67.384 ± 8.324          |
-| Memória média WAF (MB)     | 11.722 ± 0.036     | **11.664 ± 0.076**   | 11.816 ± 0.046          |
-| CPU média coletor (%)      | **0.056 ± 0.006**  | 2.530 ± 5.523        | 2.906 ± 6.319           |
 | Memória média coletor (MB) | 196.182 ± 0.325    | **13.504 ± 0.062**   | 24.502 ± 0.125          |
 
-> Nota: DURATION = 500000/3500 + 15 ≈ 157s → 157 amostras por run.
+---
 
-### Observações
+## Resultados oficiais (26/04/2026) — 30 runs
 
-- **eBPF** tem a menor latência média em ambos os N — overhead de coleta mais baixo sob carga alta, apesar do custo de setup do kprobe.
-- **Memória do coletor eBPF ~196 MB** vs sysstat ~13 MB e Prometheus ~24 MB: custo do BCC carregar o runtime do kernel em espaço de usuário.
-- **CPU do coletor eBPF** é extremamente baixa (< 0.1%) porque a coleta ocorre no kernel; sysstat e Prometheus têm variância alta em N=500k (std > 5%), possivelmente por variações no polling de `/proc`.
-- **Prometheus** apresenta maior variância na CPU do WAF em N=500k (±8.3%) e na latência, reflexo do custo adicional do servidor HTTP em `:8000/metrics`.
-- **Bytes RX/TX não são comparáveis entre eBPF e sysstat/Prometheus** por diferença no ponto de medição. O observador eBPF intercepta as chamadas de sistema `tcp_sendmsg` e `tcp_cleanup_rbuf` via kprobes com filtro `sport=8080`, contabilizando exclusivamente o tráfego TCP do WAF. Já sysstat e Prometheus leem `/proc/net/dev` na interface `lo`, que agrega _todo_ o tráfego da loopback — incluindo as probes UDP na porta 9999 e qualquer outro tráfego da máquina. Comparar os bytes reportados pelas duas abordagens equivale a comparar medições de escopos distintos.
+> Arquivos em `results/`. Valores exibidos como **média ± IC95%** (intervalo de confiança de 95% — t de Student, α=0.05).
+
+### N = 100.000 mensagens — 30 runs
+
+| Métrica                    | eBPF (média ± IC95)    | sysstat (média ± IC95)  | Prometheus (média ± IC95) |
+| -------------------------- | ---------------------- | ----------------------- | ------------------------- |
+| Latência média (ms)        | 1.2252 ± 0.0498        | **1.1876 ± 0.0414**     | 1.2348 ± 0.0690           |
+| Desvio padrão (ms)         | 0.9003 ± 0.1402        | **0.8323 ± 0.1306**     | 0.8647 ± 0.1148           |
+| Latência máx (ms)          | 5.5523 ± 0.9028        | 5.2487 ± 0.8089         | **5.0872 ± 0.6464**       |
+| Latência mín (ms)          | 0.5307 ± 0.0148        | 0.5265 ± 0.0226         | **0.4997 ± 0.0332**       |
+| CPU média WAF (%)          | **66.311 ± 2.2258**    | 70.008 ± 0.1606         | 68.356 ± 3.2806           |
+| Memória média WAF (MB)     | 12.194 ± 0.0147        | **12.155 ± 0.0200**     | 12.220 ± 0.0206           |
+| CPU média coletor (%)      | 1.927 ± 2.6211         | 2.860 ± 4.2246          | **1.402 ± 1.8656**        |
+| Memória média coletor (MB) | 196.474 ± 0.2631       | **13.689 ± 0.0292**     | 24.559 ± 0.0563           |
+
+> DURATION = 100000/3500 + 15 = 43s → 43 amostras por run.
+
+### Observações (30 runs)
+
+- As três ferramentas apresentam latências muito próximas em N=100k — sysstat teve a menor média (1.1876 ms), diferente dos pré-testes onde eBPF era o menor. Com 30 runs e IC95, os intervalos se sobrepõem, indicando que a diferença pode não ser estatisticamente significativa nesse volume.
+- **CPU do coletor** apresenta IC95 superior à própria média nas três ferramentas (e.g., eBPF: 1.93 ± 2.62), refletindo alta variância entre runs — provavelmente ruído de processo do sistema operacional em execuções curtas (~43s).
+- **Memória do coletor** mantém o padrão esperado: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB. IC95 estreito confirma estabilidade entre runs.
+- **CPU do WAF** com eBPF apresenta IC95 mais largo (±2.23%) que sysstat (±0.16%), sugerindo maior interferência do kprobe na CPU do processo monitorado.
+- **Bytes RX/TX não são comparáveis** entre eBPF e sysstat/Prometheus: eBPF mede exclusivamente tráfego TCP do WAF via kprobes (sport=8080); sysstat/Prometheus leem `/proc/net/dev` da interface `lo`, que inclui todo o tráfego da loopback (probes UDP, etc.).
 
 ---
 

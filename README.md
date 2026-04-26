@@ -194,37 +194,25 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 ## Resultados
 
-### N = 100.000 mensagens — 5 runs (média ± desvio entre runs)
+> Valores exibidos como **média ± IC95%** (intervalo de confiança de 95%, t de Student, α=0.05).
+
+### N = 100.000 mensagens — 30 runs (26/04/2026)
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
-| Latência média (ms) | **0.8039 ± 0.043** | 0.8995 ± 0.118 | 1.0924 ± 0.160 |
-| Desvio padrão (ms) | **0.3922 ± 0.160** | 0.5672 ± 0.324 | 0.7512 ± 0.297 |
-| Latência máx (ms) | **2.4065 ± 1.243** | 3.1361 ± 1.797 | 4.4650 ± 1.526 |
-| Latência mín (ms) | 0.4033 ± 0.056 | **0.2755 ± 0.061** | 0.4890 ± 0.124 |
-| Amostras coletadas | 43 | 43 | 43 |
-| CPU média WAF (%) | 70.998 ± 0.611 | **66.828 ± 1.253** | 78.182 ± 5.143 |
-| Memória média WAF (MB) | 11.738 ± 0.023 | **11.648 ± 0.066** | 11.808 ± 0.066 |
-| CPU média coletor (%) | **0.104 ± 0.093** | 0.108 ± 0.097 | 0.088 ± 0.035 |
-| Memória média coletor (MB) | 196.458 ± 0.314 | **13.704 ± 0.050** | 24.596 ± 0.162 |
-
-### N = 500.000 mensagens — 5 runs (média ± desvio entre runs)
-
-| Métrica | eBPF | sysstat | Prometheus |
-|---------|------|---------|------------|
-| Latência média (ms) | **0.7691 ± 0.037** | 0.8374 ± 0.016 | 0.9531 ± 0.069 |
-| Desvio padrão (ms) | 0.5447 ± 0.140 | **0.5130 ± 0.093** | 0.5694 ± 0.173 |
-| Latência máx (ms) | 5.2284 ± 1.584 | 4.7667 ± 1.181 | **4.6328 ± 1.399** |
-| Latência mín (ms) | 0.2804 ± 0.056 | **0.2757 ± 0.040** | 0.3025 ± 0.084 |
-| Amostras coletadas | 157 | 157 | 157 |
-| CPU média WAF (%) | 51.758 ± 0.471 | **50.728 ± 0.378** | 67.384 ± 8.324 |
-| Memória média WAF (MB) | 11.722 ± 0.036 | **11.664 ± 0.076** | 11.816 ± 0.046 |
-| CPU média coletor (%) | **0.056 ± 0.006** | 2.530 ± 5.523 | 2.906 ± 6.319 |
-| Memória média coletor (MB) | 196.182 ± 0.325 | **13.504 ± 0.062** | 24.502 ± 0.125 |
+| Latência média (ms) | 1.2252 ± 0.0498 | **1.1876 ± 0.0414** | 1.2348 ± 0.0690 |
+| Desvio padrão (ms) | 0.9003 ± 0.1402 | **0.8323 ± 0.1306** | 0.8647 ± 0.1148 |
+| Latência máx (ms) | 5.5523 ± 0.9028 | 5.2487 ± 0.8089 | **5.0872 ± 0.6464** |
+| Latência mín (ms) | 0.5307 ± 0.0148 | 0.5265 ± 0.0226 | **0.4997 ± 0.0332** |
+| CPU média WAF (%) | **66.311 ± 2.2258** | 70.008 ± 0.1606 | 68.356 ± 3.2806 |
+| Memória média WAF (MB) | 12.194 ± 0.0147 | **12.155 ± 0.0200** | 12.220 ± 0.0206 |
+| CPU média coletor (%) | 1.927 ± 2.6211 | 2.860 ± 4.2246 | **1.402 ± 1.8656** |
+| Memória média coletor (MB) | 196.474 ± 0.2631 | **13.689 ± 0.0292** | 24.559 ± 0.0563 |
 
 **Observações:**
-- **eBPF** tem a menor latência média em ambos os N — overhead de coleta mais baixo sob carga alta.
-- **Memória do coletor eBPF ~196 MB** vs sysstat ~13 MB e Prometheus ~24 MB: custo do BCC carregar o runtime do kernel em espaço de usuário.
-- **CPU do coletor eBPF** é extremamente baixa (< 0.1%) porque a coleta ocorre no kernel; sysstat e Prometheus têm variância alta em N=500k (std > 5%).
-- **Prometheus** apresenta maior variância na CPU do WAF (~8.3%) e na latência, reflexo do custo adicional do servidor HTTP.
-- Bytes RX/TX não são comparáveis entre eBPF e os demais: eBPF mede apenas tráfego do WAF (sport=8080); sysstat/Prometheus medem todo o tráfego da interface loopback.
+- As três ferramentas apresentam latências muito próximas — os IC95 se sobrepõem, indicando que a diferença pode não ser estatisticamente significativa em N=100k.
+- **CPU do coletor** tem IC95 superior à média nas três ferramentas, refletindo alta variância em runs curtos (~43s).
+- **Memória do coletor**: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB. IC95 estreito confirma estabilidade entre runs.
+- **Bytes RX/TX** não são comparáveis entre eBPF e os demais: eBPF mede exclusivamente tráfego TCP do WAF (sport=8080); sysstat/Prometheus medem toda a interface loopback.
+
+Resultados de N=500k e N=1M pendentes.

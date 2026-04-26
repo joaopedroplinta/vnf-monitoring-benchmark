@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 # run_multi.sh — executa múltiplos runs de um coletor
 #
 # Uso:

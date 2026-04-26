@@ -19,14 +19,14 @@ _METRICS_PATH = os.environ.get("WAF_METRICS_PATH", "/app/results/waf_metrics.jso
 _WRITE_EVERY  = 100  # grava a cada N inspeções
 
 _stats_lock = threading.Lock()
-_stats = {"count": 0, "total_ms": 0.0, "min_ms": float("inf"), "max_ms": 0.0}
+_stats = {"count": 0, "total_ms": 0.0, "min_ms": None, "max_ms": 0.0}
 
 
 def _record(elapsed_ms: float) -> None:
     with _stats_lock:
         _stats["count"]    += 1
         _stats["total_ms"] += elapsed_ms
-        if elapsed_ms < _stats["min_ms"]:
+        if _stats["min_ms"] is None or elapsed_ms < _stats["min_ms"]:
             _stats["min_ms"] = elapsed_ms
         if elapsed_ms > _stats["max_ms"]:
             _stats["max_ms"] = elapsed_ms
@@ -35,10 +35,12 @@ def _record(elapsed_ms: float) -> None:
 
 
 def _flush(s: dict) -> None:
+    if s["count"] == 0:
+        return
     data = {
         "inspect_count":  s["count"],
         "inspect_avg_ms": round(s["total_ms"] / s["count"], 6),
-        "inspect_min_ms": round(s["min_ms"], 6),
+        "inspect_min_ms": round(s["min_ms"] or 0.0, 6),
         "inspect_max_ms": round(s["max_ms"], 6),
     }
     try:

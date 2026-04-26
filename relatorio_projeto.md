@@ -300,9 +300,60 @@ probe.py: captura os campos no sample por iteração
 - Stats cumulativas: o `probe.py` usa o último sample, que reflete o estado mais completo do run
 - Caminho configurável via `WAF_METRICS_PATH` (padrão: `/app/results/waf_metrics.json`), que é o volume compartilhado entre os containers WAF e observador
 
+### Correções de robustez (26/04/2026)
+
+Revisão do código identificou três problemas que podiam comprometer a integridade dos dados coletados:
+
+| Componente | Problema | Correção |
+| ---------- | -------- | -------- |
+| `src/vnf/waf.py` | `min_ms` inicializado como `float("inf")` — valor não serializável em JSON padrão, que causaria `ValueError` no `json.dump` caso o flush fosse disparado sem nenhuma inspeção registrada | Valor inicial alterado para `None`; comparação em `_record()` ajustada para `if min_ms is None or elapsed < min_ms` |
+| `src/vnf/waf.py` | Divisão por zero em `_flush()`: `total_ms / count` sem guard — inacessível no fluxo normal (flush só dispara em múltiplos de 100), mas tornava o código frágil a qualquer refatoração futura | Adicionado `if s["count"] == 0: return` no início de `_flush()` |
+| `src/vnf/observador_sysstat.py`, `observador_prometheus.py` | Acesso direto a `parts[1]` e `parts[9]` no parse de `/proc/net/dev` sem verificar o comprimento do slice — `IndexError` silencioso em linha malformada ou kernel com formato diferente | Adicionado guard `if len(parts) > 9` antes do acesso |
+
+**O que não foi alterado:** o buffer de `recvfrom` no `probe.py` já estava em 65536 bytes (suficiente para qualquer resposta JSON do observador). O cache de `_find_waf()` em `get_waf_metrics()` já existia via `_waf_proc` global — o re-scan só ocorre quando o processo morre, não a cada query.
+
+### Robustez dos scripts de execução (26/04/2026)
+
+Melhorias aplicadas nos três scripts `run_*.sh` para evitar falhas silenciosas durante os benchmarks:
+
+| Mudança | Problema anterior | Efeito |
+| ------- | ----------------- | ------ |
+| `set -euo pipefail` adicionado ao início | Falhas em `docker compose build` ou `docker compose up` eram ignoradas — o script continuava e rodava o benchmark com a imagem antiga ou em estado inconsistente | Qualquer comando que falhe aborta o script imediatamente com código de saída não-zero |
+| Validação de `NUM_MESSAGES` via regex `^[1-9][0-9]*$` | Um valor não-numérico ou zero causava erro confuso no cálculo aritmético de `DURATION`, ou gerava `PAYLOADS_FILE` com nome inválido | O script falha com mensagem clara antes de qualquer operação |
+| `run_ebpf.sh` e `run_sysstat.sh`: captura de logs antes do `down` + verificação explícita do arquivo de resultado | Esses dois scripts usavam `cat ... 2>/dev/null` para exibir o resultado — arquivo ausente passava despercebido; logs do coletor eram perdidos após `docker compose down` | Comportamento agora idêntico ao `run_prometheus.sh`: logs salvos em `/tmp/collector_last_logs.txt` antes do `down`; se o JSON de resultado não existir, mensagem de erro é exibida e os logs são impressos |
+| Display do resultado via `python3 -c "... open(file)"` em vez de `cat file \| python3` | Com `pipefail` ativo, o pipe `cat \| python3` falharia se o arquivo não existisse, abortando o script no ponto errado | A verificação `[ -f "$RESULT_FILE" ]` controla o fluxo; o Python lê o arquivo diretamente |
+
+### Reorganização de resultados (26/04/2026)
+
+Os resultados dos testes preliminares (5 runs × 100k e 500k) foram movidos de `results/` para `results/pre_testes/`, liberando `results/` para os runs oficiais do TCC.
+
+Convenção adotada:
+
+| Pasta | Conteúdo |
+| ----- | -------- |
+| `results/pre_testes/` | Testes de validação e aquecimento (runs anteriores, 5 runs por ferramenta) |
+| `results/` | Dados oficiais do TCC (30 runs por ferramenta, por volume de mensagens) |
+
+### Plano de execução dos testes oficiais
+
+| N         | Runs | DURATION/run | Overhead/run | Tempo/run | Tempo total (3 ferramentas) | Status     |
+| --------- | ---- | ------------ | ------------ | --------- | --------------------------- | ---------- |
+| 100.000   | 30   | 43s          | ~35s         | ~80s      | ~2h                         | A executar |
+| 500.000   | 30   | 157s         | ~35s         | ~192s     | ~5h                         | A executar |
+| 1.000.000 | 30   | 300s         | ~35s         | ~335s     | ~8h30                       | A executar |
+
+> DURATION = `NUM_MESSAGES / 3500 + 15` (divisão inteira bash). Overhead inclui `docker compose down + build cacheado + up + shutdown`. Primeiro run de cada ferramenta tem build frio (~2-3 min extra).
+
+Comando para cada etapa (rodar uma ferramenta por vez para não perder resultados em caso de falha):
+```bash
+bash scripts/run_multi.sh ebpf       <N> 30
+bash scripts/run_multi.sh sysstat    <N> 30
+bash scripts/run_multi.sh prometheus <N> 30
+```
+
 ### Resultados disponíveis
 
-| N      | Ferramenta                | Runs | Localização |
-| ------ | ------------------------- | ---- | ----------- |
-| 100000 | eBPF, sysstat, Prometheus | 5    | `results/`  |
-| 500000 | eBPF, sysstat, Prometheus | 5    | `results/`  |
+| N      | Ferramenta                | Runs | Localização           |
+| ------ | ------------------------- | ---- | --------------------- |
+| 100000 | eBPF, sysstat, Prometheus | 5    | `results/pre_testes/` |
+| 500000 | eBPF, sysstat, Prometheus | 5    | `results/pre_testes/` |

@@ -6,3 +6,6 @@ CLAUDE.md
 # Python
 __pycache__/
 *.pyc
+
+# Payloads gerados (binários grandes, gerados localmente via gen_payloads.py)
+data/payloads/

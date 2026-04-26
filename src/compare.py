@@ -162,7 +162,6 @@ def compare_aggregate(n, num_runs):
         "observador_latency_stddev_ms",
         "observador_latency_max_ms",
         "observador_latency_min_ms",
-        "observador_samples",
         "cpu_avg_pct",
         "mem_avg_mb",
         "collector_cpu_avg_pct",

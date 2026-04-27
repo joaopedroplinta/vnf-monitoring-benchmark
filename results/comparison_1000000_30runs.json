@@ -25,9 +25,9 @@
       "sysstat": 1.3141,
       "sysstat_std": 0.1469,
       "sysstat_ci95": 0.0548,
-      "Prometheus": "",
-      "Prometheus_std": "",
-      "Prometheus_ci95": ""
+      "Prometheus": 1.2765,
+      "Prometheus_std": 0.0383,
+      "Prometheus_ci95": 0.0143
     },
     {
       "metrica": "Desvio padr\u00e3o (ms)",
@@ -37,9 +37,9 @@
       "sysstat": 0.8379,
       "sysstat_std": 0.1857,
       "sysstat_ci95": 0.0693,
-      "Prometheus": "",
-      "Prometheus_std": "",
-      "Prometheus_ci95": ""
+      "Prometheus": 0.7442,
+      "Prometheus_std": 0.093,
+      "Prometheus_ci95": 0.0347
     },
     {
       "metrica": "Lat\u00eancia m\u00e1x (ms)",
@@ -49,9 +49,9 @@
       "sysstat": 7.384,
       "sysstat_std": 2.386,
       "sysstat_ci95": 0.8908,
-      "Prometheus": "",
-      "Prometheus_std": "",
-      "Prometheus_ci95": ""
+      "Prometheus": 6.5889,
+      "Prometheus_std": 1.5887,
+      "Prometheus_ci95": 0.5932
     },
     {
       "metrica": "Lat\u00eancia m\u00edn (ms)",
@@ -61,9 +61,9 @@
       "sysstat": 0.3333,
       "sysstat_std": 0.08,
       "sysstat_ci95": 0.0299,
-      "Prometheus": "",
-      "Prometheus_std": "",
-      "Prometheus_ci95": ""
+      "Prometheus": 0.5218,
+      "Prometheus_std": 0.1234,
+      "Prometheus_ci95": 0.0461
     },
     {
       "metrica": "CPU m\u00e9dia WAF (%)",
@@ -73,9 +73,9 @@
       "sysstat": 65.894,
       "sysstat_std": 1.5649,
       "sysstat_ci95": 0.5843,
-      "Prometheus": "",
-      "Prometheus_std": "",
-      "Prometheus_ci95": ""
+      "Prometheus": 70.1823,
+      "Prometheus_std": 1.4265,
+      "Prometheus_ci95": 0.5326
     },
     {
       "metrica": "Mem\u00f3ria m\u00e9dia WAF (MB)",
@@ -85,9 +85,9 @@
       "sysstat": 12.239,
       "sysstat_std": 0.0723,
       "sysstat_ci95": 0.027,
-      "Prometheus": "",
-      "Prometheus_std": "",
-      "Prometheus_ci95": ""
+      "Prometheus": 12.2963,
+      "Prometheus_std": 0.0616,
+      "Prometheus_ci95": 0.023
     },
     {
       "metrica": "CPU m\u00e9dia observador (%)",
@@ -97,9 +97,9 @@
       "sysstat": 0.1693,
       "sysstat_std": 0.3931,
       "sysstat_ci95": 0.1468,
-      "Prometheus": "",
-      "Prometheus_std": "",
-      "Prometheus_ci95": ""
+      "Prometheus": 0.2753,
+      "Prometheus_std": 0.6592,
+      "Prometheus_ci95": 0.2461
     },
     {
       "metrica": "Mem\u00f3ria m\u00e9dia observador (MB)",
@@ -109,9 +109,9 @@
       "sysstat": 13.6733,
       "sysstat_std": 0.0976,
       "sysstat_ci95": 0.0364,
-      "Prometheus": "",
-      "Prometheus_std": "",
-      "Prometheus_ci95": ""
+      "Prometheus": 24.5493,
+      "Prometheus_std": 0.1324,
+      "Prometheus_ci95": 0.0494
     }
   ]
 }

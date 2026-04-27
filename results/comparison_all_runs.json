@@ -1,7 +1,8 @@
 {
   "runs": [
     100000,
-    500000
+    500000,
+    1000000
   ],
   "tools": [
     "ebpf",
@@ -58,6 +59,27 @@
       "prometheus_observador_samples": 157,
       "prometheus_cpu_avg_pct": 67.28,
       "prometheus_mem_avg_mb": 12.18
+    },
+    {
+      "n_messages": 1000000,
+      "ebpf_observador_latency_avg_ms": 1.1444,
+      "ebpf_observador_latency_stddev_ms": 0.7083,
+      "ebpf_observador_latency_max_ms": 5.703,
+      "ebpf_observador_samples": 300,
+      "ebpf_cpu_avg_pct": 66.87,
+      "ebpf_mem_avg_mb": 12.3,
+      "sysstat_observador_latency_avg_ms": 1.4391,
+      "sysstat_observador_latency_stddev_ms": 0.8688,
+      "sysstat_observador_latency_max_ms": 8.8593,
+      "sysstat_observador_samples": 299,
+      "sysstat_cpu_avg_pct": 68.18,
+      "sysstat_mem_avg_mb": 12.05,
+      "prometheus_observador_latency_avg_ms": 1.1861,
+      "prometheus_observador_latency_stddev_ms": 0.6664,
+      "prometheus_observador_latency_max_ms": 6.5776,
+      "prometheus_observador_samples": 300,
+      "prometheus_cpu_avg_pct": 66.61,
+      "prometheus_mem_avg_mb": 12.23
     }
   ]
 }

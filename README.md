@@ -215,4 +215,17 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 - **Memória do coletor**: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB. IC95 estreito confirma estabilidade entre runs.
 - **Bytes RX/TX** não são comparáveis entre eBPF e os demais: eBPF mede exclusivamente tráfego TCP do WAF (sport=8080); sysstat/Prometheus medem toda a interface loopback.
 
-Resultados de N=500k e N=1M pendentes.
+### N = 500.000 mensagens — 30 runs (27/04/2026)
+
+| Métrica | eBPF | sysstat | Prometheus |
+|---------|------|---------|------------|
+| Latência média (ms) | **1.3380 ± 0.0309** | 1.4053 ± 0.0267 | 1.4381 ± 0.0265 |
+| Desvio padrão (ms) | **0.9469 ± 0.0861** | 1.0322 ± 0.0748 | 1.0469 ± 0.0772 |
+| Latência máx (ms) | 7.7065 ± 1.0172 | 7.8964 ± 0.8772 | **7.7276 ± 0.9048** |
+| Latência mín (ms) | **0.4412 ± 0.0264** | 0.5098 ± 0.0118 | 0.5102 ± 0.0106 |
+| CPU média WAF (%) | 72.134 ± 0.176 | 68.301 ± 0.222 | **67.452 ± 0.225** |
+| Memória média WAF (MB) | **12.197 ± 0.025** | 12.198 ± 0.022 | 12.210 ± 0.018 |
+| CPU média coletor (%) | **0.709 ± 0.876** | 0.749 ± 0.942 | 0.978 ± 1.045 |
+| Memória média coletor (MB) | 196.712 ± 0.318 | **13.639 ± 0.024** | 24.606 ± 0.054 |
+
+Em N=500k o eBPF apresenta menor latência média com IC95 que não se sobrepõem aos demais — diferença estatisticamente significativa. Resultados de N=1M pendentes.

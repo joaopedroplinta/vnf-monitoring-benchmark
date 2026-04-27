@@ -1,0 +1,63 @@
+{
+  "runs": [
+    100000,
+    500000
+  ],
+  "tools": [
+    "ebpf",
+    "sysstat",
+    "prometheus"
+  ],
+  "metrics": [
+    "observador_latency_avg_ms",
+    "observador_latency_stddev_ms",
+    "observador_latency_max_ms",
+    "observador_samples",
+    "cpu_avg_pct",
+    "mem_avg_mb"
+  ],
+  "data": [
+    {
+      "n_messages": 100000,
+      "ebpf_observador_latency_avg_ms": 1.6961,
+      "ebpf_observador_latency_stddev_ms": 1.8161,
+      "ebpf_observador_latency_max_ms": 11.0312,
+      "ebpf_observador_samples": 43,
+      "ebpf_cpu_avg_pct": 68.83,
+      "ebpf_mem_avg_mb": 12.19,
+      "sysstat_observador_latency_avg_ms": 1.1977,
+      "sysstat_observador_latency_stddev_ms": 0.7188,
+      "sysstat_observador_latency_max_ms": 3.7573,
+      "sysstat_observador_samples": 43,
+      "sysstat_cpu_avg_pct": 71.68,
+      "sysstat_mem_avg_mb": 12.2,
+      "prometheus_observador_latency_avg_ms": 1.2495,
+      "prometheus_observador_latency_stddev_ms": 0.8431,
+      "prometheus_observador_latency_max_ms": 4.8568,
+      "prometheus_observador_samples": 43,
+      "prometheus_cpu_avg_pct": 66.11,
+      "prometheus_mem_avg_mb": 12.23
+    },
+    {
+      "n_messages": 500000,
+      "ebpf_observador_latency_avg_ms": 1.3145,
+      "ebpf_observador_latency_stddev_ms": 0.9511,
+      "ebpf_observador_latency_max_ms": 6.5739,
+      "ebpf_observador_samples": 157,
+      "ebpf_cpu_avg_pct": 72.82,
+      "ebpf_mem_avg_mb": 12.24,
+      "sysstat_observador_latency_avg_ms": 1.4278,
+      "sysstat_observador_latency_stddev_ms": 1.1255,
+      "sysstat_observador_latency_max_ms": 9.7551,
+      "sysstat_observador_samples": 157,
+      "sysstat_cpu_avg_pct": 68.21,
+      "sysstat_mem_avg_mb": 12.21,
+      "prometheus_observador_latency_avg_ms": 1.4572,
+      "prometheus_observador_latency_stddev_ms": 1.1016,
+      "prometheus_observador_latency_max_ms": 6.6307,
+      "prometheus_observador_samples": 157,
+      "prometheus_cpu_avg_pct": 67.28,
+      "prometheus_mem_avg_mb": 12.18
+    }
+  ]
+}

@@ -43,8 +43,8 @@ METRICS = [
     ("bytes_tx",                  "Bytes TX WAF"),
     ("cpu_avg_pct",               "CPU média WAF (%)"),
     ("mem_avg_mb",                "Memória média WAF (MB)"),
-    ("collector_cpu_avg_pct",     "CPU média coletor (%)"),
-    ("collector_mem_avg_mb",      "Memória média coletor (MB)"),
+    ("collector_cpu_avg_pct",     "CPU média observador (%)"),
+    ("collector_mem_avg_mb",      "Memória média observador (MB)"),
     ("duration_s",                "Duração (s)"),
 ]
 METRICS_LABEL = {key: label for key, label in METRICS}

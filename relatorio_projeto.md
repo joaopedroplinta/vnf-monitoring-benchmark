@@ -154,7 +154,7 @@ Variáveis de ambiente relevantes:
 | Latência média (ms)        | **0.8039 ± 0.043** | 0.8995 ± 0.118       | 1.0924 ± 0.160          |
 | Desvio padrão (ms)         | **0.3922 ± 0.160** | 0.5672 ± 0.324       | 0.7512 ± 0.297          |
 | CPU média WAF (%)          | 70.998 ± 0.611     | **66.828 ± 1.253**   | 78.182 ± 5.143          |
-| Memória média coletor (MB) | 196.458 ± 0.314    | **13.704 ± 0.050**   | 24.596 ± 0.162          |
+| Memória média observador (MB) | 196.458 ± 0.314    | **13.704 ± 0.050**   | 24.596 ± 0.162          |
 
 ### N = 500.000 mensagens
 
@@ -163,7 +163,7 @@ Variáveis de ambiente relevantes:
 | Latência média (ms)        | **0.7691 ± 0.037** | 0.8374 ± 0.016       | 0.9531 ± 0.069          |
 | Desvio padrão (ms)         | 0.5447 ± 0.140     | **0.5130 ± 0.093**   | 0.5694 ± 0.173          |
 | CPU média WAF (%)          | 51.758 ± 0.471     | **50.728 ± 0.378**   | 67.384 ± 8.324          |
-| Memória média coletor (MB) | 196.182 ± 0.325    | **13.504 ± 0.062**   | 24.502 ± 0.125          |
+| Memória média observador (MB) | 196.182 ± 0.325    | **13.504 ± 0.062**   | 24.502 ± 0.125          |
 
 ---
 
@@ -181,8 +181,8 @@ Variáveis de ambiente relevantes:
 | Latência mín (ms)          | 0.5307 ± 0.0148        | 0.5265 ± 0.0226         | **0.4997 ± 0.0332**       |
 | CPU média WAF (%)          | **66.311 ± 2.2258**    | 70.008 ± 0.1606         | 68.356 ± 3.2806           |
 | Memória média WAF (MB)     | 12.194 ± 0.0147        | **12.155 ± 0.0200**     | 12.220 ± 0.0206           |
-| CPU média coletor (%)      | 1.927 ± 2.6211         | 2.860 ± 4.2246          | **1.402 ± 1.8656**        |
-| Memória média coletor (MB) | 196.474 ± 0.2631       | **13.689 ± 0.0292**     | 24.559 ± 0.0563           |
+| CPU média observador (%)      | 1.927 ± 2.6211         | 2.860 ± 4.2246          | **1.402 ± 1.8656**        |
+| Memória média observador (MB) | 196.474 ± 0.2631       | **13.689 ± 0.0292**     | 24.559 ± 0.0563           |
 
 > DURATION = 100000/3500 + 15 = 43s → 43 amostras por run.
 
@@ -196,8 +196,8 @@ Variáveis de ambiente relevantes:
 | Latência mín (ms)          | **0.4412 ± 0.0264**    | 0.5098 ± 0.0118         | 0.5102 ± 0.0106           |
 | CPU média WAF (%)          | 72.1337 ± 0.1761       | 68.3013 ± 0.2223        | **67.4517 ± 0.2249**      |
 | Memória média WAF (MB)     | **12.197 ± 0.0245**    | 12.1983 ± 0.0222        | 12.2103 ± 0.0175          |
-| CPU média coletor (%)      | **0.709 ± 0.8764**     | 0.749 ± 0.9423          | 0.978 ± 1.0451            |
-| Memória média coletor (MB) | 196.712 ± 0.3179       | **13.639 ± 0.0242**     | 24.606 ± 0.0543           |
+| CPU média observador (%)      | **0.709 ± 0.8764**     | 0.749 ± 0.9423          | 0.978 ± 1.0451            |
+| Memória média observador (MB) | 196.712 ± 0.3179       | **13.639 ± 0.0242**     | 24.606 ± 0.0543           |
 
 > DURATION = 500000/3500 + 15 = 157s → 157 amostras por run.
 
@@ -362,6 +362,21 @@ Melhorias aplicadas nos três scripts `run_*.sh` para evitar falhas silenciosas 
 | `run_ebpf.sh` e `run_sysstat.sh`: captura de logs antes do `down` + verificação explícita do arquivo de resultado | Esses dois scripts usavam `cat ... 2>/dev/null` para exibir o resultado — arquivo ausente passava despercebido; logs do coletor eram perdidos após `docker compose down` | Comportamento agora idêntico ao `run_prometheus.sh`: logs salvos em `/tmp/collector_last_logs.txt` antes do `down`; se o JSON de resultado não existir, mensagem de erro é exibida e os logs são impressos |
 | Display do resultado via `python3 -c "... open(file)"` em vez de `cat file \| python3` | Com `pipefail` ativo, o pipe `cat \| python3` falharia se o arquivo não existisse, abortando o script no ponto errado | A verificação `[ -f "$RESULT_FILE" ]` controla o fluxo; o Python lê o arquivo diretamente |
 
+### Otimização de build no run_multi.sh (27/04/2026)
+
+O `run_multi.sh` chamava `run_<tool>.sh` N vezes, e cada chamada executava `docker compose build` — resultando em 30 builds idênticos para código que não mudava entre runs.
+
+**Correção aplicada:**
+
+| Componente | Antes | Depois |
+| ---------- | ----- | ------ |
+| `scripts/run_multi.sh` | Não fazia build; delegava inteiramente para `run_<tool>.sh` | Executa `docker compose build` uma vez antes do loop e exporta `SKIP_BUILD=1` |
+| `scripts/run_ebpf.sh`, `run_sysstat.sh`, `run_prometheus.sh` | Sempre executava `docker compose build` | Pula o build se `SKIP_BUILD=1`; comportamento inalterado quando chamado diretamente |
+
+Quando os scripts são executados individualmente (fora do `run_multi.sh`), o build continua ocorrendo normalmente — `SKIP_BUILD` só é definido pelo `run_multi.sh`.
+
+---
+
 ### Reorganização de resultados (26/04/2026)
 
 Os resultados dos testes preliminares (5 runs × 100k e 500k) foram movidos de `results/` para `results/pre_testes/`, liberando `results/` para os runs oficiais do TCC.
@@ -381,7 +396,7 @@ Convenção adotada:
 | 500.000   | 30   | 157s         | ~35s         | ~192s     | ~5h                         | ✅ Concluído (27/04/2026) |
 | 1.000.000 | 30   | 300s         | ~35s         | ~335s     | ~8h30                       | A executar               |
 
-> DURATION = `NUM_MESSAGES / 3500 + 15` (divisão inteira bash). Overhead inclui `docker compose down + build cacheado + up + shutdown`. Primeiro run de cada ferramenta tem build frio (~2-3 min extra).
+> DURATION = `NUM_MESSAGES / 3500 + 15` (divisão inteira bash). Overhead inclui `docker compose down + up + shutdown`. O build ocorre uma única vez antes do loop de runs (via `run_multi.sh`), não mais a cada run.
 
 Comando para cada etapa (rodar uma ferramenta por vez para não perder resultados em caso de falha):
 ```bash

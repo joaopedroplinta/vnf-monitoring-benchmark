@@ -104,7 +104,7 @@ python3 scripts/gen_payloads.py <count> [--ratio 60] [--seed 42] [--out FILE]
 
 ### Passo 2 — Executar os testes
 
-Cada script sobe a stack completa (WAF + observador + cliente + probe), aguarda o coletor finalizar via `docker wait` e exibe um resumo:
+Cada script sobe a stack completa (WAF + observador + cliente + probe), aguarda o probe finalizar via `docker wait` e exibe um resumo:
 
 ```bash
 NUM_MESSAGES=100000 bash scripts/run_ebpf.sh
@@ -161,8 +161,8 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 | `bytes_rx / bytes_tx` | observador | eBPF: kprobe sport=8080; sysstat/Prom: `/proc/net/dev` |
 | `cpu_avg_pct` | observador (psutil) | Uso médio de CPU do processo WAF |
 | `mem_avg_mb` | observador (psutil) | Uso médio de memória do processo WAF |
-| `collector_cpu_avg_pct` | observador (psutil) | Uso médio de CPU do próprio coletor |
-| `collector_mem_avg_mb` | observador (psutil) | Uso médio de memória do próprio coletor |
+| `collector_cpu_avg_pct` | observador (psutil) | Uso médio de CPU do próprio observador |
+| `collector_mem_avg_mb` | observador (psutil) | Uso médio de memória do próprio observador |
 | `inspect_count` | waf → observador | Total de payloads inspecionados no run |
 | `inspect_avg_ms` | waf → observador | Tempo médio de inspeção por payload (ms) |
 | `inspect_min_ms` | waf → observador | Tempo mínimo de inspeção (ms) |
@@ -206,13 +206,13 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 | Latência mín (ms) | 0.5307 ± 0.0148 | 0.5265 ± 0.0226 | **0.4997 ± 0.0332** |
 | CPU média WAF (%) | **66.311 ± 2.2258** | 70.008 ± 0.1606 | 68.356 ± 3.2806 |
 | Memória média WAF (MB) | 12.194 ± 0.0147 | **12.155 ± 0.0200** | 12.220 ± 0.0206 |
-| CPU média coletor (%) | 1.927 ± 2.6211 | 2.860 ± 4.2246 | **1.402 ± 1.8656** |
-| Memória média coletor (MB) | 196.474 ± 0.2631 | **13.689 ± 0.0292** | 24.559 ± 0.0563 |
+| CPU média observador (%) | 1.927 ± 2.6211 | 2.860 ± 4.2246 | **1.402 ± 1.8656** |
+| Memória média observador (MB) | 196.474 ± 0.2631 | **13.689 ± 0.0292** | 24.559 ± 0.0563 |
 
 **Observações:**
 - As três ferramentas apresentam latências muito próximas — os IC95 se sobrepõem, indicando que a diferença pode não ser estatisticamente significativa em N=100k.
-- **CPU do coletor** tem IC95 superior à média nas três ferramentas, refletindo alta variância em runs curtos (~43s).
-- **Memória do coletor**: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB. IC95 estreito confirma estabilidade entre runs.
+- **CPU do observador** tem IC95 superior à média nas três ferramentas, refletindo alta variância em runs curtos (~43s).
+- **Memória do observador**: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB. IC95 estreito confirma estabilidade entre runs.
 - **Bytes RX/TX** não são comparáveis entre eBPF e os demais: eBPF mede exclusivamente tráfego TCP do WAF (sport=8080); sysstat/Prometheus medem toda a interface loopback.
 
 ### N = 500.000 mensagens — 30 runs (27/04/2026)
@@ -225,7 +225,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 | Latência mín (ms) | **0.4412 ± 0.0264** | 0.5098 ± 0.0118 | 0.5102 ± 0.0106 |
 | CPU média WAF (%) | 72.134 ± 0.176 | 68.301 ± 0.222 | **67.452 ± 0.225** |
 | Memória média WAF (MB) | **12.197 ± 0.025** | 12.198 ± 0.022 | 12.210 ± 0.018 |
-| CPU média coletor (%) | **0.709 ± 0.876** | 0.749 ± 0.942 | 0.978 ± 1.045 |
-| Memória média coletor (MB) | 196.712 ± 0.318 | **13.639 ± 0.024** | 24.606 ± 0.054 |
+| CPU média observador (%) | **0.709 ± 0.876** | 0.749 ± 0.942 | 0.978 ± 1.045 |
+| Memória média observador (MB) | 196.712 ± 0.318 | **13.639 ± 0.024** | 24.606 ± 0.054 |
 
 Em N=500k o eBPF apresenta menor latência média com IC95 que não se sobrepõem aos demais — diferença estatisticamente significativa. Resultados de N=1M pendentes.

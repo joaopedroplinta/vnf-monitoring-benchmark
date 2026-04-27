@@ -42,7 +42,11 @@ docker compose -f $COMPOSE down --remove-orphans 2>/dev/null || true
 mkdir -p results
 
 echo "[2/3] Build..."
-docker compose -f $COMPOSE build
+if [ "${SKIP_BUILD:-0}" != "1" ]; then
+    docker compose -f $COMPOSE build
+else
+    echo "  (pulando build — SKIP_BUILD=1)"
+fi
 
 echo "[3/3] Subindo containers..."
 docker compose -f $COMPOSE up -d

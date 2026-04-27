@@ -39,6 +39,12 @@ echo "  Repetições : ${NUM_RUNS}"
 [ -n "$RESULTS_SUBDIR" ] && echo "  Destino    : results/${RESULTS_SUBDIR}/" || echo "  Destino    : results/"
 echo "========================================"
 
+echo ""
+echo "[build] Construindo imagens (uma vez)..."
+COMPOSE="docker-compose.${TOOL}.yml"
+docker compose -f "$COMPOSE" build
+export SKIP_BUILD=1
+
 for i in $(seq 1 $NUM_RUNS); do
     echo ""
     echo "▶ [${TOOL^^}] Run ${i}/${NUM_RUNS} — ${NUM_MESSAGES} msgs"

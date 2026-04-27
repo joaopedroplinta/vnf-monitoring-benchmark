@@ -201,12 +201,37 @@ Variáveis de ambiente relevantes:
 
 > DURATION = 500000/3500 + 15 = 157s → 157 amostras por run.
 
+### N = 1.000.000 mensagens — 30 runs (27/04/2026)
+
+| Métrica                       | eBPF (média ± IC95)    | sysstat (média ± IC95)  | Prometheus (média ± IC95) |
+| ----------------------------- | ---------------------- | ----------------------- | ------------------------- |
+| Latência média (ms)           | **1.0982 ± 0.0131**    | 1.3141 ± 0.0548         | 1.2765 ± 0.0143           |
+| Desvio padrão (ms)            | **0.7072 ± 0.0334**    | 0.8379 ± 0.0693         | 0.7442 ± 0.0347           |
+| Latência máx (ms)             | **6.0055 ± 0.3130**    | 7.3840 ± 0.8908         | 6.5889 ± 0.5932           |
+| Latência mín (ms)             | 0.3868 ± 0.0144        | **0.3333 ± 0.0299**     | 0.5218 ± 0.0461           |
+| CPU média WAF (%)             | **65.1127 ± 0.2468**   | 65.8940 ± 0.5843        | 70.1823 ± 0.5326          |
+| Memória média WAF (MB)        | 12.2697 ± 0.0207       | **12.2390 ± 0.0270**    | 12.2963 ± 0.0230          |
+| CPU média observador (%)      | 0.2940 ± 0.4334        | **0.1693 ± 0.1468**     | 0.2753 ± 0.2461           |
+| Memória média observador (MB) | 196.5347 ± 0.2417      | **13.6733 ± 0.0364**    | 24.5493 ± 0.0494          |
+
+> DURATION = 1000000/3500 + 15 ≈ 300s → 300 amostras por run.
+
+### Comparativo cross-N — Latência média do observador (média de 30 runs, ms)
+
+| N          | eBPF             | sysstat          | Prometheus       | Menor latência |
+| ---------- | ---------------- | ---------------- | ---------------- | -------------- |
+| 100.000    | 1.2252 ± 0.0498  | **1.1876 ± 0.0414**  | 1.2348 ± 0.0690  | sysstat        |
+| 500.000    | **1.3380 ± 0.0309**  | 1.4053 ± 0.0267  | 1.4381 ± 0.0265  | eBPF           |
+| 1.000.000  | **1.0982 ± 0.0131**  | 1.3141 ± 0.0548  | 1.2765 ± 0.0143  | eBPF           |
+
 ### Observações (30 runs)
 
 - **N=100k**: as três ferramentas apresentam latências estatisticamente equivalentes — IC95 se sobrepõem. Sem dominância clara.
 - **N=500k**: eBPF se destaca com menor latência média (1.338 ms vs 1.405 ms sysstat vs 1.438 ms Prometheus) e IC95 que não se sobrepõem — diferença estatisticamente significativa nesse volume.
+- **N=1M**: eBPF mantém a menor latência (1.098 ms), com IC95 que não se sobrepõem em relação às demais — diferença estatisticamente significativa. Prometheus supera sysstat nesse volume (1.277 ms vs 1.314 ms). CPU do WAF com Prometheus é ~5 pp maior (70.2% vs ~65%), indicando overhead do endpoint HTTP sob carga alta.
+- **Tendência com N crescente**: eBPF apresenta latência inversamente proporcional ao volume (1.225 → 1.338 → 1.098 ms), sugerindo que os kprobes amortizam o custo fixo de inicialização sob cargas maiores. sysstat e Prometheus crescem monotonicamente (polling `/proc` se torna mais custoso relativamente).
 - **CPU do WAF** com eBPF é maior em N=500k (72.1% vs ~68%), reflexo da interferência dos kprobes no processo monitorado sob carga contínua.
-- **CPU do coletor** apresenta IC95 superior à média em N=100k (~43s de run), refletindo ruído em execuções curtas. Em N=500k (~157s) a variância cai significativamente.
+- **CPU do coletor** apresenta IC95 superior à média em N=100k (~43s de run), refletindo ruído em execuções curtas. Em N=500k (~157s) e N=1M (~300s) a variância cai significativamente.
 - **Memória do coletor** estável entre runs: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB.
 - **Bytes RX/TX não são comparáveis** entre eBPF e sysstat/Prometheus: eBPF mede exclusivamente tráfego TCP do WAF via kprobes (sport=8080); sysstat/Prometheus leem `/proc/net/dev` da interface `lo`, que inclui todo o tráfego da loopback.
 

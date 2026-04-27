@@ -1,6 +1,6 @@
 # TCC — Gerenciamento e Monitoramento de Rede
 
-**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 23/04/2026 — rev 5)
+**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 27/04/2026 — rev 6)
 
 ---
 
@@ -186,13 +186,29 @@ Variáveis de ambiente relevantes:
 
 > DURATION = 100000/3500 + 15 = 43s → 43 amostras por run.
 
+### N = 500.000 mensagens — 30 runs (27/04/2026)
+
+| Métrica                    | eBPF (média ± IC95)    | sysstat (média ± IC95)  | Prometheus (média ± IC95) |
+| -------------------------- | ---------------------- | ----------------------- | ------------------------- |
+| Latência média (ms)        | **1.3380 ± 0.0309**    | 1.4053 ± 0.0267         | 1.4381 ± 0.0265           |
+| Desvio padrão (ms)         | **0.9469 ± 0.0861**    | 1.0322 ± 0.0748         | 1.0469 ± 0.0772           |
+| Latência máx (ms)          | 7.7065 ± 1.0172        | 7.8964 ± 0.8772         | **7.7276 ± 0.9048**       |
+| Latência mín (ms)          | **0.4412 ± 0.0264**    | 0.5098 ± 0.0118         | 0.5102 ± 0.0106           |
+| CPU média WAF (%)          | 72.1337 ± 0.1761       | 68.3013 ± 0.2223        | **67.4517 ± 0.2249**      |
+| Memória média WAF (MB)     | **12.197 ± 0.0245**    | 12.1983 ± 0.0222        | 12.2103 ± 0.0175          |
+| CPU média coletor (%)      | **0.709 ± 0.8764**     | 0.749 ± 0.9423          | 0.978 ± 1.0451            |
+| Memória média coletor (MB) | 196.712 ± 0.3179       | **13.639 ± 0.0242**     | 24.606 ± 0.0543           |
+
+> DURATION = 500000/3500 + 15 = 157s → 157 amostras por run.
+
 ### Observações (30 runs)
 
-- As três ferramentas apresentam latências muito próximas em N=100k — sysstat teve a menor média (1.1876 ms), diferente dos pré-testes onde eBPF era o menor. Com 30 runs e IC95, os intervalos se sobrepõem, indicando que a diferença pode não ser estatisticamente significativa nesse volume.
-- **CPU do coletor** apresenta IC95 superior à própria média nas três ferramentas (e.g., eBPF: 1.93 ± 2.62), refletindo alta variância entre runs — provavelmente ruído de processo do sistema operacional em execuções curtas (~43s).
-- **Memória do coletor** mantém o padrão esperado: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB. IC95 estreito confirma estabilidade entre runs.
-- **CPU do WAF** com eBPF apresenta IC95 mais largo (±2.23%) que sysstat (±0.16%), sugerindo maior interferência do kprobe na CPU do processo monitorado.
-- **Bytes RX/TX não são comparáveis** entre eBPF e sysstat/Prometheus: eBPF mede exclusivamente tráfego TCP do WAF via kprobes (sport=8080); sysstat/Prometheus leem `/proc/net/dev` da interface `lo`, que inclui todo o tráfego da loopback (probes UDP, etc.).
+- **N=100k**: as três ferramentas apresentam latências estatisticamente equivalentes — IC95 se sobrepõem. Sem dominância clara.
+- **N=500k**: eBPF se destaca com menor latência média (1.338 ms vs 1.405 ms sysstat vs 1.438 ms Prometheus) e IC95 que não se sobrepõem — diferença estatisticamente significativa nesse volume.
+- **CPU do WAF** com eBPF é maior em N=500k (72.1% vs ~68%), reflexo da interferência dos kprobes no processo monitorado sob carga contínua.
+- **CPU do coletor** apresenta IC95 superior à média em N=100k (~43s de run), refletindo ruído em execuções curtas. Em N=500k (~157s) a variância cai significativamente.
+- **Memória do coletor** estável entre runs: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB.
+- **Bytes RX/TX não são comparáveis** entre eBPF e sysstat/Prometheus: eBPF mede exclusivamente tráfego TCP do WAF via kprobes (sport=8080); sysstat/Prometheus leem `/proc/net/dev` da interface `lo`, que inclui todo o tráfego da loopback.
 
 ---
 
@@ -361,9 +377,9 @@ Convenção adotada:
 
 | N         | Runs | DURATION/run | Overhead/run | Tempo/run | Tempo total (3 ferramentas) | Status     |
 | --------- | ---- | ------------ | ------------ | --------- | --------------------------- | ---------- |
-| 100.000   | 30   | 43s          | ~35s         | ~80s      | ~2h                         | A executar |
-| 500.000   | 30   | 157s         | ~35s         | ~192s     | ~5h                         | A executar |
-| 1.000.000 | 30   | 300s         | ~35s         | ~335s     | ~8h30                       | A executar |
+| 100.000   | 30   | 43s          | ~35s         | ~80s      | ~2h                         | ✅ Concluído (26/04/2026) |
+| 500.000   | 30   | 157s         | ~35s         | ~192s     | ~5h                         | ✅ Concluído (27/04/2026) |
+| 1.000.000 | 30   | 300s         | ~35s         | ~335s     | ~8h30                       | A executar               |
 
 > DURATION = `NUM_MESSAGES / 3500 + 15` (divisão inteira bash). Overhead inclui `docker compose down + build cacheado + up + shutdown`. Primeiro run de cada ferramenta tem build frio (~2-3 min extra).
 

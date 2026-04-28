@@ -405,7 +405,7 @@ Convenção adotada:
 | --------- | ---- | ------------ | ------------ | --------- | --------------------------- | ---------- |
 | 100.000   | 30   | 43s          | ~35s         | ~80s      | ~2h                         | ✅ Concluído (26/04/2026) |
 | 500.000   | 30   | 157s         | ~35s         | ~192s     | ~5h                         | ✅ Concluído (27/04/2026) |
-| 1.000.000 | 30   | 300s         | ~35s         | ~335s     | ~8h30                       | A executar               |
+| 1.000.000 | 30   | 300s         | ~35s         | ~335s     | ~8h30                       | ✅ Concluído (27/04/2026) |
 
 > DURATION = `NUM_MESSAGES / 3500 + 15` (divisão inteira bash). Overhead inclui `docker compose down + up + shutdown`. O build ocorre uma única vez antes do loop de runs (via `run_multi.sh`), não mais a cada run.
 

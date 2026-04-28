@@ -61,7 +61,7 @@ echo "  Gerando agregação..."
 echo "========================================"
 
 if [ "$TOOL" = "ebpf-libbpf" ]; then
-    echo "  (aggregação automática não disponível para ebpf-libbpf — use compare.py manualmente)"
+    echo "  (agregação automática não disponível para ebpf-libbpf — use compare.py manualmente)"
 else
     python3 src/compare.py "$NUM_MESSAGES" "$NUM_RUNS"
 fi

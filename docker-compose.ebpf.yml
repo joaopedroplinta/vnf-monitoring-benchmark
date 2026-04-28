@@ -8,14 +8,14 @@ services:
     network_mode: "host"
     volumes:
       - ./src/vnf:/app/vnf
-      - results_vol:/app/results
-    command: python3 /app/vnf/waf.py
+      - ./results:/app/results
+    command: ["python3", "/app/vnf/waf.py"]
 
-  monitor-server:
+  observador:
     build:
       context: .
       dockerfile: configs/Dockerfile
-    container_name: monitor-server
+    container_name: observador
     network_mode: "host"
     pid: "host"
     privileged: true
@@ -25,8 +25,8 @@ services:
       - /lib/modules:/lib/modules:ro
       - /usr/src:/usr/src:ro
       - ./src/vnf:/app/vnf
-      - results_vol:/app/results
-    command: python3 /app/vnf/monitor_ebpf.py
+      - ./results:/app/results
+    command: ["python3", "/app/vnf/observador_ebpf.py"]
     depends_on:
       - waf
 
@@ -37,10 +37,12 @@ services:
     container_name: socket-client
     network_mode: "host"
     environment:
-      - NUM_MESSAGES=${NUM_MESSAGES:-100}
+      - PAYLOADS_FILE=${PAYLOADS_FILE}
+      - WORKERS=${WORKERS:-10}
     volumes:
       - ./src/client:/app
-    command: python3 /app/client.py
+      - ./data/payloads:/app/payloads:ro
+    command: ["python3", "/app/client.py"]
     depends_on:
       - waf
 
@@ -52,19 +54,12 @@ services:
     network_mode: "host"
     environment:
       - COLLECTOR=ebpf
-      - RESULTS_PATH=/app/results/ebpf_results.json
+      - RESULTS_PATH=${RESULTS_PREFIX_CONT:-/app/results}/ebpf_${NUM_MESSAGES:-100}_run${RUN_ID:-1}_results.json
       - DURATION=${DURATION:-100}
     volumes:
       - ./src:/app/src
-      - results_vol:/app/results
-    command: python3 /app/src/probe.py
+      - ./results:/app/results
+    command: ["python3", "/app/src/probe.py"]
     depends_on:
-      - monitor-server
+      - observador
 
-volumes:
-  results_vol:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/results

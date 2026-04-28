@@ -1,0 +1,10 @@
+metrica,eBPF,eBPF_std,sysstat,sysstat_std,Prometheus,Prometheus_std
+Latência média (ms),0.8039,0.0428,0.8995,0.1183,1.0924,0.1603
+Desvio padrão (ms),0.3922,0.1596,0.5672,0.3235,0.7512,0.2965
+Latência máx (ms),2.4065,1.2432,3.1361,1.7965,4.465,1.5262
+Latência mín (ms),0.4033,0.0557,0.2755,0.0607,0.489,0.124
+Amostras coletadas,43.0,0.0,43.0,0.0,43.0,0.0
+CPU média WAF (%),70.998,0.6111,66.828,1.2528,78.182,5.1433
+Memória média WAF (MB),11.738,0.0228,11.648,0.0657,11.808,0.0661
+CPU média coletor (%),0.104,0.0932,0.108,0.0965,0.088,0.0349
+Memória média coletor (MB),196.458,0.3142,13.704,0.0503,24.596,0.162

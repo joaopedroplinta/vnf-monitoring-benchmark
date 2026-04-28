@@ -13,6 +13,24 @@ services:
     volumes:
       - ./server:/app
 
+  # ── VNF: Observador UDP :9999 ───────────────────────────────────────────────────
+  # ATENÇÃO: cada ferramenta tem seu próprio observador (observador_ebpf/sysstat/prometheus.py).
+  # Use os composes específicos: docker-compose.ebpf.yml / sysstat / prometheus.
+  # Este compose genérico não pode rodar as 3 ferramentas simultaneamente (conflito porta 9999).
+  observador:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: observador
+    network_mode: "host"
+    volumes:
+      - ./src/vnf:/app/vnf
+      - results_vol:/app/results
+    command: python3 /app/vnf/observador_ebpf.py
+    depends_on:
+      - waf
+
+  # ── Cliente TCP → bombardeia o WAF ──────────────────────────────────────────
   client:
     build:
       context: .
@@ -38,8 +56,66 @@ services:
       - /sys/fs/bpf:/sys/fs/bpf:rw
       - /lib/modules:/lib/modules:ro
       - /usr/src:/usr/src:ro
-    command: python3 /ebpf/monitor_bcc.py
+      - ./src:/app/src
+      - results_vol:/app/results
+    command: python3 /app/src/probe.py
+    depends_on:
+      - observador
 
-networks:
-  socket-net:
-    driver: bridge
+  # ── Coletor sysstat ──────────────────────────────────────────────────────────
+  sysstat-collector:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: sysstat-collector
+    network_mode: "host"
+    volumes:
+      - ./src:/app/src
+      - results_vol:/app/results
+    command: python3 /app/src/probe.py
+    depends_on:
+      - observador
+
+  # ── Coletor Prometheus ───────────────────────────────────────────────────────
+  prometheus-collector:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: prometheus-collector
+    network_mode: "host"
+    volumes:
+      - ./src:/app/src
+      - results_vol:/app/results
+    command: python3 /app/src/probe.py
+    depends_on:
+      - observador
+
+  # ── Comparador ───────────────────────────────────────────────────────────────
+  comparator:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: comparator
+    network_mode: "host"
+    volumes:
+      - ./src:/app/src
+      - results_vol:/app/results
+    command: >
+      sh -c "
+        echo '⏳ Aguardando coletores...' &&
+        sleep 480 &&
+        echo '📊 Gerando relatório...' &&
+        python3 /app/src/compare.py
+      "
+    depends_on:
+      - ebpf-collector
+      - sysstat-collector
+      - prometheus-collector
+
+volumes:
+  results_vol:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/results

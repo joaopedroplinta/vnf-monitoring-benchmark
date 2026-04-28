@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="510" viewBox="0 0 700 510">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="white"/>
+    </marker>
+    <marker id="arr-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#555"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="700" height="510" fill="#0d0d0d"/>
+
+  <!-- ═══════════════════════════════════════════
+       VNF  (left, orange)
+       Ordem de cima pra baixo:
+         1. eBPF / sysstat / prom  (topo)
+         2. Monitor Server          (meio)
+         3. WAF                     (baixo — alinhado com Client)
+  ═══════════════════════════════════════════ -->
+  <rect x="27" y="27" width="228" height="458" rx="4" fill="#3d1500"/>
+  <rect x="19" y="19" width="228" height="458" rx="4" fill="#221000" stroke="#cc7700" stroke-width="2"/>
+  <text x="31" y="45" font-family="monospace" font-size="17" font-weight="bold"
+        fill="white" text-decoration="underline">VNF</text>
+
+  <!-- 1. eBPF / sysstat / prometheus  (y 57–147) -->
+  <rect x="46" y="64"  width="170" height="82" rx="2" fill="#1a1a1a"/>
+  <rect x="39" y="57"  width="170" height="82" rx="2" fill="#131313" stroke="#555" stroke-width="1"/>
+  <rect x="49" y="75"  width="15"  height="8"  rx="1" fill="none" stroke="#888" stroke-width="1"/>
+  <rect x="49" y="88"  width="15"  height="8"  rx="1" fill="none" stroke="#888" stroke-width="1"/>
+  <line x1="56" y1="75"  x2="56" y2="70"  stroke="#888" stroke-width="1"/>
+  <line x1="56" y1="96"  x2="56" y2="101" stroke="#888" stroke-width="1"/>
+  <text x="74" y="79"  font-family="monospace" font-size="11" fill="#999">Kernel / /proc</text>
+  <text x="74" y="95"  font-family="monospace" font-size="12" fill="white"><tspan font-weight="bold">eBPF</tspan> kprobes</text>
+  <text x="74" y="111" font-family="monospace" font-size="10" fill="#666">sysstat | prometheus</text>
+  <text x="74" y="128" font-family="monospace" font-size="9"  fill="#555">coleta bytes RX/TX + CPU/mem</text>
+
+  <!-- seta interna: eBPF observa WAF (vertical, lado direito do VNF) -->
+  <line x1="195" y1="139" x2="195" y2="305"
+        stroke="#555" stroke-width="1" stroke-dasharray="3,2"
+        marker-end="url(#arr-gray)"/>
+  <text x="198" y="228" font-family="monospace" font-size="9" fill="#555"
+        writing-mode="tb" glyph-orientation-vertical="0"
+        transform="rotate(90,203,228)">observa</text>
+
+  <!-- 2. Monitor Server  (y 167–247) -->
+  <rect x="46" y="174" width="170" height="70" rx="2" fill="#1a1a1a"/>
+  <rect x="39" y="167" width="170" height="70" rx="2" fill="#131313" stroke="#555" stroke-width="1"/>
+  <rect x="49" y="183" width="15"  height="8"  rx="1" fill="none" stroke="#888" stroke-width="1"/>
+  <rect x="49" y="196" width="15"  height="8"  rx="1" fill="none" stroke="#888" stroke-width="1"/>
+  <line x1="56" y1="183" x2="56" y2="178" stroke="#888" stroke-width="1"/>
+  <line x1="56" y1="204" x2="56" y2="209" stroke="#888" stroke-width="1"/>
+  <text x="74" y="194" font-family="monospace" font-size="11" fill="#999">UDP Socket</text>
+  <text x="74" y="210" font-family="monospace" font-size="12" fill="white">Monitor <tspan font-weight="bold">Server</tspan></text>
+  <rect x="172" y="166" width="38" height="14" rx="3" fill="#cc7700"/>
+  <text x="191" y="177" font-family="monospace" font-size="9" fill="white" text-anchor="middle">:9999</text>
+
+  <!-- 3. WAF  (y 307–387 — alinhado com Client à direita) -->
+  <rect x="46" y="314" width="170" height="70" rx="2" fill="#1a1a1a"/>
+  <rect x="39" y="307" width="170" height="70" rx="2" fill="#131313" stroke="#555" stroke-width="1"/>
+  <rect x="49" y="323" width="15"  height="8"  rx="1" fill="none" stroke="#888" stroke-width="1"/>
+  <rect x="49" y="336" width="15"  height="8"  rx="1" fill="none" stroke="#888" stroke-width="1"/>
+  <line x1="56" y1="323" x2="56" y2="318" stroke="#888" stroke-width="1"/>
+  <line x1="56" y1="344" x2="56" y2="349" stroke="#888" stroke-width="1"/>
+  <text x="74" y="334" font-family="monospace" font-size="11" fill="#999">TCP Socket</text>
+  <text x="74" y="350" font-family="monospace" font-size="12" fill="white">WAF <tspan font-weight="bold">Server</tspan></text>
+  <rect x="172" y="306" width="38" height="14" rx="3" fill="#cc7700"/>
+  <text x="191" y="317" font-family="monospace" font-size="9" fill="white" text-anchor="middle">:8080</text>
+
+  <!-- ═══════════════════════════════════════════
+       Collector  (right top, green)
+       Alinhado verticalmente com Monitor Server
+  ═══════════════════════════════════════════ -->
+  <rect x="457" y="27"  width="222" height="220" rx="4" fill="#073d1a"/>
+  <rect x="449" y="19"  width="222" height="220" rx="4" fill="#041a0a" stroke="#00aa44" stroke-width="2"/>
+  <text x="461" y="45" font-family="monospace" font-size="17" font-weight="bold"
+        fill="white" text-decoration="underline">Collector</text>
+
+  <!-- probe.py -->
+  <rect x="475" y="64"  width="170" height="70" rx="2" fill="#0a200a"/>
+  <rect x="468" y="57"  width="170" height="70" rx="2" fill="#131313" stroke="#555" stroke-width="1"/>
+  <rect x="478" y="73"  width="15"  height="8"  rx="1" fill="none" stroke="#888" stroke-width="1"/>
+  <rect x="478" y="86"  width="15"  height="8"  rx="1" fill="none" stroke="#888" stroke-width="1"/>
+  <line x1="485" y1="73" x2="485" y2="68"  stroke="#888" stroke-width="1"/>
+  <line x1="485" y1="94" x2="485" y2="99"  stroke="#888" stroke-width="1"/>
+  <text x="503" y="84"  font-family="monospace" font-size="11" fill="#999">UDP Socket</text>
+  <text x="503" y="100" font-family="monospace" font-size="12" fill="white"><tspan font-weight="bold">probe.py</tspan>  1 req/s</text>
+
+  <!-- results -->
+  <rect x="475" y="153" width="170" height="62" rx="2" fill="#0a200a"/>
+  <rect x="468" y="146" width="170" height="62" rx="2" fill="#131313" stroke="#555" stroke-width="1"/>
+  <text x="483" y="163" font-family="monospace" font-size="10" fill="#888">saída</text>
+  <text x="483" y="179" font-family="monospace" font-size="11" fill="white">→ <tspan font-weight="bold">*_N_results.json</tspan></text>
+  <text x="483" y="198" font-family="monospace" font-size="9"  fill="#555">RTT medido a cada probe</text>
+
+  <!-- ═══════════════════════════════════════════
+       Client  (right bottom, blue)
+       Alinhado verticalmente com WAF
+  ═══════════════════════════════════════════ -->
+  <rect x="457" y="277" width="222" height="200" rx="4" fill="#071428"/>
+  <rect x="449" y="269" width="222" height="200" rx="4" fill="#040d1a" stroke="#2266cc" stroke-width="2"/>
+  <text x="461" y="295" font-family="monospace" font-size="17" font-weight="bold"
+        fill="white" text-decoration="underline">Client</text>
+
+  <!-- client.py -->
+  <rect x="475" y="314" width="170" height="70" rx="2" fill="#071428"/>
+  <rect x="468" y="307" width="170" height="70" rx="2" fill="#131313" stroke="#555" stroke-width="1"/>
+  <rect x="478" y="323" width="15"  height="8"  rx="1" fill="none" stroke="#888" stroke-width="1"/>
+  <rect x="478" y="336" width="15"  height="8"  rx="1" fill="none" stroke="#888" stroke-width="1"/>
+  <line x1="485" y1="323" x2="485" y2="318" stroke="#888" stroke-width="1"/>
+  <line x1="485" y1="344" x2="485" y2="349" stroke="#888" stroke-width="1"/>
+  <text x="503" y="333" font-family="monospace" font-size="11" fill="#999">TCP Socket</text>
+  <text x="503" y="349" font-family="monospace" font-size="12" fill="white"><tspan font-weight="bold">client.py</tspan></text>
+
+  <!-- payload note -->
+  <rect x="475" y="396" width="170" height="42" rx="2" fill="#071428"/>
+  <rect x="468" y="389" width="170" height="42" rx="2" fill="#131313" stroke="#555" stroke-width="1"/>
+  <text x="483" y="406" font-family="monospace" font-size="9" fill="#777">60% benigno / 40% malicioso</text>
+  <text x="483" y="421" font-family="monospace" font-size="9" fill="#777">seed fixa — reprodutível</text>
+
+  <!-- ═══════════════════════════════════════════
+       ARROWS  (sem cruzamento)
+  ═══════════════════════════════════════════ -->
+
+  <!-- 1. Probe → Monitor Server  (Proactive Probe) -->
+  <line x1="468" y1="188" x2="209" y2="193"
+        stroke="white" stroke-width="1.5" stroke-dasharray="6,3"
+        marker-end="url(#arr)"/>
+  <text x="338" y="172" font-family="monospace" font-size="11" fill="white" text-anchor="middle">Proactive Probe</text>
+  <text x="338" y="186" font-family="monospace" font-size="10" fill="#aaa"  text-anchor="middle">UDP GET (1/s)</text>
+
+  <!-- 2. Monitor Server → Probe  (Reactive Response) -->
+  <line x1="209" y1="215" x2="468" y2="210"
+        stroke="white" stroke-width="1.5" stroke-dasharray="6,3"
+        marker-end="url(#arr)"/>
+  <text x="338" y="232" font-family="monospace" font-size="11" fill="white" text-anchor="middle">Reactive Response</text>
+  <text x="338" y="246" font-family="monospace" font-size="10" fill="#aaa"  text-anchor="middle">Metrics JSON</text>
+
+  <!-- 3. Client → WAF  (TCP Traffic) -->
+  <line x1="468" y1="342" x2="209" y2="342"
+        stroke="white" stroke-width="1.5" stroke-dasharray="6,3"
+        marker-end="url(#arr)"/>
+  <text x="338" y="326" font-family="monospace" font-size="11" fill="white" text-anchor="middle">TCP Traffic</text>
+  <text x="338" y="340" font-family="monospace" font-size="10" fill="#aaa"  text-anchor="middle">porta 8080</text>
+</svg>

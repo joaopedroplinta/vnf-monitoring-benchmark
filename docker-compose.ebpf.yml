@@ -14,7 +14,7 @@ services:
   observador:
     build:
       context: .
-      dockerfile: configs/Dockerfile
+      dockerfile: configs/Dockerfile.ebpf-libbpf
     container_name: observador
     network_mode: "host"
     pid: "host"
@@ -22,11 +22,10 @@ services:
     volumes:
       - /sys/kernel/debug:/sys/kernel/debug:rw
       - /sys/fs/bpf:/sys/fs/bpf:rw
-      - /lib/modules:/lib/modules:ro
-      - /usr/src:/usr/src:ro
+      - /sys/kernel/btf:/sys/kernel/btf:ro
       - ./src/vnf:/app/vnf
       - ./results:/app/results
-    command: ["python3", "/app/vnf/observador_ebpf.py"]
+    command: ["bash", "/app/vnf/ebpf_entrypoint.sh"]
     depends_on:
       - waf
 

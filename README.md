@@ -228,4 +228,24 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 | CPU média observador (%) | **0.709 ± 0.876** | 0.749 ± 0.942 | 0.978 ± 1.045 |
 | Memória média observador (MB) | 196.712 ± 0.318 | **13.639 ± 0.024** | 24.606 ± 0.054 |
 
-Em N=500k o eBPF apresenta menor latência média com IC95 que não se sobrepõem aos demais — diferença estatisticamente significativa. Resultados de N=1M pendentes.
+Em N=500k o eBPF apresenta menor latência média com IC95 que não se sobrepõem aos demais — diferença estatisticamente significativa.
+
+### N = 1.000.000 mensagens — 30 runs (27/04/2026)
+
+| Métrica | eBPF | sysstat | Prometheus |
+|---------|------|---------|------------|
+| Latência média (ms) | **1.0982 ± 0.0131** | 1.3141 ± 0.0548 | 1.2765 ± 0.0143 |
+| Desvio padrão (ms) | **0.7072 ± 0.0334** | 0.8379 ± 0.0693 | 0.7442 ± 0.0347 |
+| Latência máx (ms) | **6.0055 ± 0.3130** | 7.3840 ± 0.8908 | 6.5889 ± 0.5932 |
+| Latência mín (ms) | 0.3868 ± 0.0144 | **0.3333 ± 0.0299** | 0.5218 ± 0.0461 |
+| CPU média WAF (%) | **65.1127 ± 0.2468** | 65.894 ± 0.5843 | 70.1823 ± 0.5326 |
+| Memória média WAF (MB) | 12.2697 ± 0.0207 | **12.239 ± 0.0270** | 12.2963 ± 0.0230 |
+| CPU média observador (%) | 0.294 ± 0.4334 | **0.1693 ± 0.1468** | 0.2753 ± 0.2461 |
+| Memória média observador (MB) | 196.5347 ± 0.2417 | **13.6733 ± 0.0364** | 24.5493 ± 0.0494 |
+
+**Observações:**
+- Em N=1M o eBPF confirma menor latência média (1.098 ms vs. 1.276–1.314 ms) com IC95 sem sobreposição — vantagem estatisticamente significativa.
+- **Desvio padrão e latência máx** também menores no eBPF, indicando menor variabilidade além da média.
+- **Latência mínima**: sysstat apresenta o menor valor (0.333 ms), mas com IC95 mais amplo que o eBPF.
+- **CPU do WAF**: Prometheus consome significativamente mais CPU (~70%) enquanto eBPF e sysstat ficam próximos (~65%).
+- **Memória do observador**: padrão consistente com N menores — eBPF ~196 MB (BCC runtime), sysstat ~13 MB, Prometheus ~24 MB.

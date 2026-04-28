@@ -161,10 +161,7 @@ def plot_memoria_observador():
         means, cis = [], []
         for n in NS:
             d = load_30runs(n)
-            row = find_row(d["data"], "memória média")
-            # busca linha do observador/coletor (não do WAF)
-            row = find_row(d["data"], "observador") or find_row(d["data"], "coletor")
-            # filtra para pegar a linha de memória do observador especificamente
+            row = {}
             for r in d["data"]:
                 label = r.get("metrica", "").lower()
                 if "memória" in label and ("observador" in label or "coletor" in label):

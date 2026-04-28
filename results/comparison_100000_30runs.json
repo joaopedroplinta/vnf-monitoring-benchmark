@@ -90,7 +90,7 @@
       "Prometheus_ci95": 0.0206
     },
     {
-      "metrica": "CPU m\u00e9dia coletor (%)",
+      "metrica": "CPU m\u00e9dia observador (%)",
       "eBPF": 1.9267,
       "eBPF_std": 7.0202,
       "eBPF_ci95": 2.6211,
@@ -102,7 +102,7 @@
       "Prometheus_ci95": 1.8656
     },
     {
-      "metrica": "Mem\u00f3ria m\u00e9dia coletor (MB)",
+      "metrica": "Mem\u00f3ria m\u00e9dia observador (MB)",
       "eBPF": 196.4737,
       "eBPF_std": 0.7048,
       "eBPF_ci95": 0.2631,

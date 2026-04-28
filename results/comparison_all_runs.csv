@@ -1,4 +1,4 @@
 n_messages,ebpf_observador_latency_avg_ms,ebpf_observador_latency_stddev_ms,ebpf_observador_latency_max_ms,ebpf_observador_samples,ebpf_cpu_avg_pct,ebpf_mem_avg_mb,sysstat_observador_latency_avg_ms,sysstat_observador_latency_stddev_ms,sysstat_observador_latency_max_ms,sysstat_observador_samples,sysstat_cpu_avg_pct,sysstat_mem_avg_mb,prometheus_observador_latency_avg_ms,prometheus_observador_latency_stddev_ms,prometheus_observador_latency_max_ms,prometheus_observador_samples,prometheus_cpu_avg_pct,prometheus_mem_avg_mb
 100000,1.2252,0.9003,5.5523,43.0,66.311,12.194,1.1876,0.8323,5.2487,43.0,70.0083,12.1553,1.2348,0.8647,5.0872,43.0,68.356,12.2197
 500000,1.338,0.9469,7.7065,157.0,72.1337,12.197,1.4053,1.0322,7.8964,157.0,68.3013,12.1983,1.4381,1.0469,7.7276,157.0,67.4517,12.2103
-1000000,1.0982,0.7072,6.0055,300.0,65.1127,12.2697,1.3141,0.8379,7.384,299.7667,65.894,12.239,1.2765,0.7442,6.5889,300.0,70.1823,12.2963
+1000000,1.1016,0.7118,6.0817,300.0,65.1473,12.2693,1.3141,0.8379,7.384,299.7667,65.894,12.239,1.2765,0.7442,6.5889,300.0,70.1823,12.2963

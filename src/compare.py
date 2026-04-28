@@ -90,7 +90,7 @@ def compare_single(n):
               f"{str(row.get('sysstat','')):>12} {str(row.get('prometheus','')):>12}")
     print(f"\n✅ Salvo em {out_csv} e {out_json}")
 
-def discover_runs():
+def discover_ns():
     """Retorna lista ordenada dos valores de N disponíveis nos results/."""
     ns = set()
     for fname in os.listdir(RESULTS_DIR):
@@ -99,14 +99,22 @@ def discover_runs():
             ns.add(int(m.group(1)))
     return sorted(ns)
 
+def discover_num_runs(tool, n):
+    """Retorna quantos run files existem para uma dada ferramenta e N."""
+    count = 0
+    for fname in os.listdir(RESULTS_DIR):
+        if re.match(rf"{tool}_{n}_run\d+_results\.json", fname):
+            count += 1
+    return count
+
 def compare_all_runs():
-    """Compara as 3 ferramentas em todos os runs disponíveis."""
-    runs = discover_runs()
-    if not runs:
+    """Compara as 3 ferramentas em todos os N disponíveis, usando média de todos os runs."""
+    ns = discover_ns()
+    if not ns:
         print("⚠️  Nenhum resultado encontrado em results/")
         return
 
-    # Métricas relevantes para comparação cross-run
+    # Métricas relevantes para comparação cross-N
     cross_metrics = [
         "observador_latency_avg_ms",
         "observador_latency_stddev_ms",
@@ -117,13 +125,21 @@ def compare_all_runs():
     ]
 
     rows = []
-    for n in runs:
+    for n in ns:
         row = {"n_messages": n}
         for tool in TOOLS:
-            path = os.path.join(RESULTS_DIR, f"{tool}_{n}_run1_results.json")
-            data = load(path)
+            num_runs = discover_num_runs(tool, n)
+            values = {metric: [] for metric in cross_metrics}
+            for run_id in range(1, num_runs + 1):
+                path = os.path.join(RESULTS_DIR, f"{tool}_{n}_run{run_id}_results.json")
+                data = load(path)
+                for metric in cross_metrics:
+                    val = data.get(metric)
+                    if val != "" and val is not None:
+                        values[metric].append(float(val))
             for metric in cross_metrics:
-                row[f"{tool}_{metric}"] = data.get(metric, "")
+                vals = values[metric]
+                row[f"{tool}_{metric}"] = round(statistics.mean(vals), 4) if vals else ""
         rows.append(row)
 
     fieldnames = ["n_messages"] + [f"{tool}_{m}" for tool in TOOLS for m in cross_metrics]
@@ -136,9 +152,9 @@ def compare_all_runs():
         w.writerows(rows)
 
     with open(out_json, "w") as f:
-        json.dump({"runs": runs, "tools": TOOLS, "metrics": cross_metrics, "data": rows}, f, indent=2)
+        json.dump({"ns": ns, "tools": TOOLS, "metrics": cross_metrics, "data": rows}, f, indent=2)
 
-    print(f"\n📊 Comparação cross-runs ({len(runs)} runs: {runs}):\n")
+    print(f"\n📊 Comparação cross-N ({len(ns)} valores: {ns}):\n")
     header = f"{'N':>6}  {'eBPF avg':>10} {'sys avg':>10} {'prom avg':>10}  {'eBPF std':>10} {'sys std':>10} {'prom std':>10}"
     print(header)
     print("-" * len(header))

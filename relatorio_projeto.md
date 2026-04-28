@@ -1,6 +1,6 @@
 # TCC — Gerenciamento e Monitoramento de Rede
 
-**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 27/04/2026 — rev 6)
+**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 28/04/2026 — rev 7)
 
 ---
 
@@ -422,3 +422,44 @@ bash scripts/run_multi.sh prometheus <N> 30
 | ------ | ------------------------- | ---- | --------------------- |
 | 100000 | eBPF, sysstat, Prometheus | 5    | `results/pre_testes/` |
 | 500000 | eBPF, sysstat, Prometheus | 5    | `results/pre_testes/` |
+
+---
+
+### Correções e implementações (28/04/2026)
+
+#### Correção: `compare_all_runs` usava run1 em vez das médias agregadas
+
+O modo sem argumentos de `compare.py` (`python3 src/compare.py`) gerava `comparison_all_runs.csv/.json` carregando apenas o `run1_results.json` de cada ferramenta/N, ignorando os outros 29 runs.
+
+**Correção aplicada:**
+
+| Componente | Antes | Depois |
+| ---------- | ----- | ------ |
+| `src/compare.py` — `compare_all_runs()` | Carregava fixo `<tool>_<N>_run1_results.json` | Descobre quantos runs existem por ferramenta/N via `discover_num_runs()` e calcula a média de todos |
+| `discover_runs()` | Retornava lista de N disponíveis | Renomeada para `discover_ns()` para evitar ambiguidade com "número de runs" |
+| `comparison_all_runs.json` | Valores do run1 (ruidosos) | Valores de média das 30 runs — coerentes com os `comparison_<N>_30runs.json` |
+
+Os valores corrigidos para latência média (ms):
+
+| N       | eBPF   | sysstat | Prometheus |
+| ------- | ------ | ------- | ---------- |
+| 100k    | 1.2252 | 1.1876  | 1.2348     |
+| 500k    | 1.3380 | 1.4053  | 1.4381     |
+| 1M      | 1.0982 | 1.3141  | 1.2765     |
+
+#### Novo script: `scripts/plot_results.py`
+
+Script para geração de gráficos a partir dos dados de benchmark. Salva em `results/plots/`.
+
+| Gráfico | Arquivo | Descrição |
+| ------- | ------- | --------- |
+| Latência média por N | `latencia_por_n.png` | Barras agrupadas (eBPF/sysstat/Prometheus × N=100k/500k/1M) com IC95% |
+| Distribuição de latência | `boxplot_latencia.png` | Boxplot das 30 runs por ferramenta, um painel por N |
+| Memória do observador | `memoria_observador.png` | Barras agrupadas por N com IC95% — evidencia diferença eBPF (~196 MB) vs sysstat (~13 MB) vs Prometheus (~24 MB) |
+| CPU do WAF | `cpu_waf.png` | Barras agrupadas por N com IC95% |
+
+Uso: `python3 scripts/plot_results.py`
+
+#### Correção: nota incorreta sobre bytes RX/TX removida do README
+
+A observação "Bytes RX/TX não são comparáveis entre eBPF e os demais" foi removida da seção de resultados N=100k do README. Os bytes RX/TX são coletados e gravados nos JSONs de resultado pelos três observadores — a nota estava incorreta ao tratá-los como não comparáveis sem evidência.

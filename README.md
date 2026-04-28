@@ -62,13 +62,20 @@ tcc_gerenciamento_rede/
 │       └── payloads_1000000_6040.bin
 ├── scripts/
 │   ├── gen_payloads.py            # Gera arquivos de payloads (executar antes dos testes)
+│   ├── plot_results.py            # Gera gráficos em results/plots/
 │   ├── run_ebpf.sh                # Executa o teste completo com eBPF
 │   ├── run_sysstat.sh             # Executa o teste completo com sysstat
 │   ├── run_prometheus.sh          # Executa o teste completo com Prometheus
 │   └── run_multi.sh               # Executa N repetições sequenciais de uma ferramenta
 ├── docs/
-│   └── architecture.md            # Documentação de arquitetura
+│   ├── architecture.md            # Documentação de arquitetura
+│   ├── arquitetura_c4.svg         # Diagrama C4 da arquitetura
+│   ├── main.tex                   # Documento LaTeX do TCC
+│   ├── ifpr-pinhais.cls           # Classe LaTeX IFPR Pinhais
+│   └── referencias.bib            # Referências bibliográficas
 ├── results/                       # Resultados (*_<N>_run<ID>_results.json, .csv, .json)
+│   ├── plots/                     # Gráficos gerados por plot_results.py
+│   └── pre_testes/                # Runs preliminares de validação
 ├── docker-compose.ebpf.yml
 ├── docker-compose.sysstat.yml
 └── docker-compose.prometheus.yml
@@ -248,3 +255,23 @@ Em N=500k o eBPF apresenta menor latência média com IC95 que não se sobrepõe
 - **Latência mínima**: sysstat apresenta o menor valor (0.333 ms), mas com IC95 mais amplo que o eBPF.
 - **CPU do WAF**: Prometheus consome significativamente mais CPU (~70%) enquanto eBPF e sysstat ficam próximos (~65%).
 - **Memória do observador**: padrão consistente com N menores — eBPF ~196 MB (BCC runtime), sysstat ~13 MB, Prometheus ~24 MB.
+
+### Gráficos (28/04/2026)
+
+> Gerados por `scripts/plot_results.py` a partir das médias de 30 runs. Salvos em `results/plots/`.
+
+**Latência média do observador por N** — evidencia que eBPF se destaca em N=500k e N=1M com IC95 sem sobreposição:
+
+![Latência média por N](results/plots/latencia_por_n.png)
+
+**Distribuição de latência por run** — boxplot das 30 runs mostra que eBPF tem menor variabilidade em N=1M:
+
+![Boxplot de latência](results/plots/boxplot_latencia.png)
+
+**Memória do observador** — diferença estrutural: eBPF carrega o runtime BCC (~196 MB) enquanto sysstat (~13 MB) e Prometheus (~24 MB) são muito mais leves:
+
+![Memória do observador](results/plots/memoria_observador.png)
+
+**CPU média do WAF** — Prometheus apresenta maior CPU do WAF em N=1M (~70%), reflexo do overhead do endpoint HTTP sob carga contínua:
+
+![CPU do WAF](results/plots/cpu_waf.png)

@@ -1,6 +1,6 @@
 # TCC — Gerenciamento e Monitoramento de Rede
 
-**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 28/04/2026 — rev 7)
+**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 28/04/2026 — rev 8)
 
 ---
 
@@ -475,3 +475,40 @@ Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_resul
 #### Correção: código redundante em `plot_results.py`
 
 `plot_memoria_observador()` tinha duas chamadas `find_row()` no início do loop interno que eram imediatamente sobrescritas pelo `for` seguinte. As chamadas redundantes foram removidas — comportamento inalterado.
+
+---
+
+### Investigação: redução de memória eBPF — BCC → libbpf+CO-RE (28/04/2026)
+
+**Contexto:** O observador eBPF original usa BCC (`python3-bpfcc`), que carrega LLVM/Clang no processo Python em tempo de execução para compilar o programa BPF. Isso resulta em ~196 MB de RSS — significativamente acima dos ~13 MB (sysstat) e ~24 MB (Prometheus).
+
+**Hipótese:** Pré-compilar o programa BPF com `clang` no entrypoint do container e carregá-lo em Python via `ctypes + libbpf.so.1` (sem BCC) deveria eliminar a pegada de LLVM do processo principal.
+
+**Implementação (branch `feat/ebpf-libbpf-memory`, Issue #26):**
+
+| Arquivo | Descrição |
+| ------- | --------- |
+| `src/vnf/ebpf_kern.c` | Programa BPF CO-RE com `BPF_KPROBE` + `BPF_CORE_READ` e mapa `BPF_MAP_TYPE_ARRAY` |
+| `src/vnf/ebpf_entrypoint.sh` | Gera `vmlinux.h` via bpftool (BTF do kernel), compila com `clang -D__TARGET_ARCH_x86`, executa o Python |
+| `src/vnf/observador_ebpf_libbpf.py` | Carrega o `.o` via `ctypes + libbpf.so.1`; mesma lógica UDP/waf_metrics do observador original |
+| `configs/Dockerfile.ebpf-libbpf` | Ubuntu 24.04 **sem** `bpfcc-tools`/`python3-bpfcc`; instala apenas `libbpf1 libbpf-dev clang linux-tools-generic` |
+| `docker-compose.ebpf-libbpf.yml` | Stack independente para a variante libbpf |
+| `scripts/run_ebpf_libbpf.sh` | Script de benchmark equivalente ao `run_ebpf.sh` |
+
+**Dificuldades encontradas durante a implementação:**
+
+- O wrapper `/usr/sbin/bpftool` no Ubuntu 24.04 verifica `uname -r` e falha em kernels não-Ubuntu (ex: Manjaro 6.12). Solução: o entrypoint usa `find /usr/lib/linux-tools -name bpftool | head -1` para obter o binário real.
+- A flag de arquitetura BPF deve ser `-D__TARGET_ARCH_x86` (não `x86_64`) para targets x86_64.
+
+**Resultado do primeiro teste (N=100.000, run de validação):**
+
+| Métrica | BCC (original) | libbpf (novo) | Variação |
+| ------- | -------------- | ------------- | -------- |
+| Memória observador (MB) | ~196 | **14,98** | −92% |
+| Latência avg (ms) | ~1,18 | 1,20 | +1,7% |
+| CPU avg (%) | ~0,1 | 0,09 | — |
+| inspect_count | 53.500 | 53.500 | igual |
+
+**Conclusão preliminar:** A variante libbpf+CO-RE reduz o consumo de memória do observador eBPF em ~93%, de ~196 MB para ~15 MB, sem degradação mensurável de latência ou CPU. O consumo passa a ser comparável ao de sysstat (~13 MB).
+
+**Próximos passos:** Executar 30 runs para N=100k/500k/1M com `run_multi.sh` adaptado para a variante `ebpf-libbpf` e comparar estatisticamente com as três ferramentas originais.

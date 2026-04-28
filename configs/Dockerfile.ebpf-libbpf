@@ -1,0 +1,23 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# clang/bpftool: usados apenas no entrypoint (subprocess que sai antes do observador rodar)
+# libbpf1: biblioteca compartilhada usada pelo observador Python via ctypes
+# NÃO instala bpfcc-tools / python3-bpfcc → sem LLVM no processo Python
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    clang \
+    llvm \
+    libbpf-dev \
+    libbpf1 \
+    linux-tools-generic \
+    iproute2 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --no-cache-dir --break-system-packages psutil
+
+WORKDIR /app
+
+CMD ["/bin/bash"]

@@ -205,14 +205,14 @@ Variáveis de ambiente relevantes:
 
 | Métrica                       | eBPF (média ± IC95)    | sysstat (média ± IC95)  | Prometheus (média ± IC95) |
 | ----------------------------- | ---------------------- | ----------------------- | ------------------------- |
-| Latência média (ms)           | **1.0982 ± 0.0131**    | 1.3141 ± 0.0548         | 1.2765 ± 0.0143           |
-| Desvio padrão (ms)            | **0.7072 ± 0.0334**    | 0.8379 ± 0.0693         | 0.7442 ± 0.0347           |
-| Latência máx (ms)             | **6.0055 ± 0.3130**    | 7.3840 ± 0.8908         | 6.5889 ± 0.5932           |
-| Latência mín (ms)             | 0.3868 ± 0.0144        | **0.3333 ± 0.0299**     | 0.5218 ± 0.0461           |
-| CPU média WAF (%)             | **65.1127 ± 0.2468**   | 65.8940 ± 0.5843        | 70.1823 ± 0.5326          |
-| Memória média WAF (MB)        | 12.2697 ± 0.0207       | **12.2390 ± 0.0270**    | 12.2963 ± 0.0230          |
-| CPU média observador (%)      | 0.2940 ± 0.4334        | **0.1693 ± 0.1468**     | 0.2753 ± 0.2461           |
-| Memória média observador (MB) | 196.5347 ± 0.2417      | **13.6733 ± 0.0364**    | 24.5493 ± 0.0494          |
+| Latência média (ms)           | **1.1016 ± 0.0140**    | 1.3141 ± 0.0548         | 1.2765 ± 0.0143           |
+| Desvio padrão (ms)            | **0.7118 ± 0.0324**    | 0.8379 ± 0.0693         | 0.7442 ± 0.0347           |
+| Latência máx (ms)             | **6.0817 ± 0.2919**    | 7.3840 ± 0.8908         | 6.5889 ± 0.5932           |
+| Latência mín (ms)             | 0.3854 ± 0.0140        | **0.3333 ± 0.0299**     | 0.5218 ± 0.0461           |
+| CPU média WAF (%)             | **65.1473 ± 0.2609**   | 65.8940 ± 0.5843        | 70.1823 ± 0.5326          |
+| Memória média WAF (MB)        | 12.2693 ± 0.0206       | **12.2390 ± 0.0270**    | 12.2963 ± 0.0230          |
+| CPU média observador (%)      | 0.2943 ± 0.4334        | **0.1693 ± 0.1468**     | 0.2753 ± 0.2461           |
+| Memória média observador (MB) | 196.5243 ± 0.2452      | **13.6733 ± 0.0364**    | 24.5493 ± 0.0494          |
 
 > DURATION = 1000000/3500 + 15 ≈ 300s → 300 amostras por run.
 
@@ -222,7 +222,7 @@ Variáveis de ambiente relevantes:
 | ---------- | ---------------- | ---------------- | ---------------- | -------------- |
 | 100.000    | 1.2252 ± 0.0498  | **1.1876 ± 0.0414**  | 1.2348 ± 0.0690  | sysstat        |
 | 500.000    | **1.3380 ± 0.0309**  | 1.4053 ± 0.0267  | 1.4381 ± 0.0265  | eBPF           |
-| 1.000.000  | **1.0982 ± 0.0131**  | 1.3141 ± 0.0548  | 1.2765 ± 0.0143  | eBPF           |
+| 1.000.000  | **1.1016 ± 0.0140**  | 1.3141 ± 0.0548  | 1.2765 ± 0.0143  | eBPF           |
 
 ### Observações (30 runs)
 
@@ -233,7 +233,7 @@ Variáveis de ambiente relevantes:
 - **CPU do WAF** com eBPF é maior em N=500k (72.1% vs ~68%), reflexo da interferência dos kprobes no processo monitorado sob carga contínua.
 - **CPU do coletor** apresenta IC95 superior à média em N=100k (~43s de run), refletindo ruído em execuções curtas. Em N=500k (~157s) e N=1M (~300s) a variância cai significativamente.
 - **Memória do coletor** estável entre runs: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB.
-- **Bytes RX/TX não são comparáveis** entre eBPF e sysstat/Prometheus: eBPF mede exclusivamente tráfego TCP do WAF via kprobes (sport=8080); sysstat/Prometheus leem `/proc/net/dev` da interface `lo`, que inclui todo o tráfego da loopback.
+- **`ebpf_1000000_run9`** (corrigido em 28/04/2026): run original tinha `inspect_count=0` — o WAF não gravou `waf_metrics.json` nessa execução (falha pontual de volume Docker). Run foi re-executado; novo resultado: 300 amostras, latência 1.1767ms, `inspect_count=274700`. Comparativo regenerado.
 
 ---
 
@@ -460,6 +460,18 @@ Script para geração de gráficos a partir dos dados de benchmark. Salva em `re
 
 Uso: `python3 scripts/plot_results.py`
 
-#### Correção: nota incorreta sobre bytes RX/TX removida do README
+#### Correção: nota incorreta sobre bytes RX/TX removida do README e do relatório
 
-A observação "Bytes RX/TX não são comparáveis entre eBPF e os demais" foi removida da seção de resultados N=100k do README. Os bytes RX/TX são coletados e gravados nos JSONs de resultado pelos três observadores — a nota estava incorreta ao tratá-los como não comparáveis sem evidência.
+A observação "Bytes RX/TX não são comparáveis entre eBPF e os demais" foi removida do README e da seção de Observações gerais do relatório. Os bytes RX/TX são coletados e gravados nos JSONs de resultado pelos três observadores — a nota estava incorreta ao tratá-los como não comparáveis sem evidência.
+
+#### Correção: labels inconsistentes nos `comparison_<N>_30runs.json`
+
+Os JSONs de N=100k e N=500k foram gerados antes do rename `coletor → observador` e usavam os labels `"CPU média coletor (%)"` / `"Memória média coletor (MB)"`, enquanto o JSON de N=1M já usava `"observador"`. Os dois arquivos foram regenerados com `python3 src/compare.py <N> 30` para garantir consistência entre os três N.
+
+#### Documentação: run anômalo `ebpf_1000000_run9`
+
+Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_results.json` tem `inspect_count=0` e `inspect_avg_ms=0`. O run foi executado normalmente (300 amostras, latência média 1.0758 ms, duração 300s), mas o WAF não gravou `waf_metrics.json` nesse run — provavelmente race condition na inicialização. Dados de latência, CPU e memória são válidos e entram nas agregações normalmente; apenas métricas de inspeção desse run devem ser desconsideradas.
+
+#### Correção: código redundante em `plot_results.py`
+
+`plot_memoria_observador()` tinha duas chamadas `find_row()` no início do loop interno que eram imediatamente sobrescritas pelo `for` seguinte. As chamadas redundantes foram removidas — comportamento inalterado.

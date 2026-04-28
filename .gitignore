@@ -9,3 +9,13 @@ __pycache__/
 
 # Payloads gerados (binários grandes, gerados localmente via gen_payloads.py)
 data/payloads/
+
+# Arquivo de runtime do WAF (sobrescrito a cada teste, não é dado de resultado)
+results/waf_metrics.json
+
+# Logs temporários dos scripts de execução
+/tmp/collector_last_logs.txt
+
+# Variáveis de ambiente locais
+.env
+*.env

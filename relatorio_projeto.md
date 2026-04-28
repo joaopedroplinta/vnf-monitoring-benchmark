@@ -511,4 +511,17 @@ Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_resul
 
 **Conclusão preliminar:** A variante libbpf+CO-RE reduz o consumo de memória do observador eBPF em ~93%, de ~196 MB para ~15 MB, sem degradação mensurável de latência ou CPU. O consumo passa a ser comparável ao de sysstat (~13 MB).
 
-**Próximos passos:** Executar 30 runs para N=100k/500k/1M com `run_multi.sh` adaptado para a variante `ebpf-libbpf` e comparar estatisticamente com as três ferramentas originais.
+**Decisão (Opção C):** Substituir o observador BCC pelo libbpf no stack principal (`docker-compose.ebpf.yml`) e re-executar todos os 90 runs (30×3 N) para manter o dataset consistente sob uma única implementação.
+
+- `docker-compose.ebpf.yml` atualizado: observador usa `Dockerfile.ebpf-libbpf` + `ebpf_entrypoint.sh`; volumes `/lib/modules` e `/usr/src` removidos; `/sys/kernel/btf` adicionado.
+- N=100k re-executado: 30 runs concluídos com libbpf em 28/04/2026.
+- N=500k e N=1M: re-execução pendente.
+
+**Resultado N=100k (30 runs libbpf, 28/04/2026):**
+
+| Métrica | eBPF (libbpf) | sysstat | Prometheus |
+| ------- | ------------- | ------- | ---------- |
+| Latência média (ms) | **1.1435 ± 0.0272** | 1.1876 ± 0.0414 | 1.2348 ± 0.0690 |
+| Memória observador (MB) | 15.050 ± 0.036 | **13.689 ± 0.029** | 24.559 ± 0.056 |
+
+eBPF libbpf passa a ter memória comparável ao sysstat (~15 MB vs ~14 MB), eliminando a desvantagem estrutural dos ~196 MB do BCC.

@@ -213,7 +213,6 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 - As três ferramentas apresentam latências muito próximas — os IC95 se sobrepõem, indicando que a diferença pode não ser estatisticamente significativa em N=100k.
 - **CPU do observador** tem IC95 superior à média nas três ferramentas, refletindo alta variância em runs curtos (~43s).
 - **Memória do observador**: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB. IC95 estreito confirma estabilidade entre runs.
-- **Bytes RX/TX** não são comparáveis entre eBPF e os demais: eBPF mede exclusivamente tráfego TCP do WAF (sport=8080); sysstat/Prometheus medem toda a interface loopback.
 
 ### N = 500.000 mensagens — 30 runs (27/04/2026)
 

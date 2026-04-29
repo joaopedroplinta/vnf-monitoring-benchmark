@@ -12,7 +12,7 @@ if ! [[ "${NUM_MESSAGES}" =~ ^[1-9][0-9]*$ ]]; then
 fi
 RUN_ID=${RUN_ID:-1}
 WORKERS=${WORKERS:-10}
-DURATION=$(( (NUM_MESSAGES / 3500) + 15 )) # estimativa: ~3500 msg/s (10 workers) + 15s margem
+DURATION=$(( (NUM_MESSAGES / 8000) + 20 )) # estimativa: ~8000 msg/s (asyncio + 200 workers) + 20s margem
 SLEEP=$((DURATION + 30))                    # +30s para startup/shutdown dos containers
 
 # Arquivo de payloads pré-gerado (host → container via volume ./data/payloads:/app/payloads)

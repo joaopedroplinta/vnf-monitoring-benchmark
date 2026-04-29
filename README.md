@@ -31,7 +31,7 @@ Cliente TCP ──► WAF (porta 8080)
          comparison_<N>_<RUNS>runs.csv/.json
 ```
 
-- O **WAF** inspeciona cada payload (SQLi, XSS, PathTraversal, RCE, NullByte), registra o tempo de inspeção e responde ao cliente.
+- O **WAF** inspeciona cada payload (SQLi, XSS, PathTraversal, RCE, NullByte) via `asyncio` + `ThreadPoolExecutor`, registra o tempo de inspeção e responde ao cliente. Protocolo: framing com 4 bytes de comprimento por mensagem (conexões persistentes).
 - O **observador** coleta métricas do WAF usando a ferramenta correspondente e responde a qualquer request UDP com um JSON de métricas.
 - O **probe** envia requests UDP a cada 1s e mede o tempo de roundtrip — essa latência é a métrica principal de comparação.
 - A ferramenta muda entre os testes; o probe é o mesmo script (`probe.py`) nos três casos.
@@ -53,7 +53,7 @@ tcc_gerenciamento_rede/
 │   │   ├── observador_sysstat.py  # Observador sysstat: /proc/net/dev + psutil WAF
 │   │   └── observador_prometheus.py # Observador Prometheus: /proc/net/dev + psutil WAF + HTTP :8000
 │   ├── client/
-│   │   └── client.py              # Envia payloads pré-gerados ao WAF (PAYLOADS_FILE)
+│   │   └── client.py              # Envia payloads pré-gerados ao WAF (asyncio, conexões persistentes)
 │   └── compare.py                 # Consolida resultados em CSV e JSON (3 modos)
 ├── configs/
 │   ├── Dockerfile                 # Imagem base Ubuntu 24.04 + BCC (legado)
@@ -131,9 +131,9 @@ Variáveis de ambiente:
 | Variável | Padrão | Descrição |
 |---|---|---|
 | `NUM_MESSAGES` | 100000 | Quantidade de mensagens — usada para DURATION e nomenclatura dos resultados |
-| `DURATION` | `NUM_MESSAGES/3500 + 15` | Duração da coleta (segundos) |
+| `DURATION` | `NUM_MESSAGES/8000 + 20` | Duração da coleta (segundos) |
 | `RUN_ID` | 1 | Identificador do run |
-| `WORKERS` | 10 | Threads concorrentes do cliente |
+| `WORKERS` | 200 | Conexões assíncronas do cliente (coroutines asyncio) |
 | `PAYLOADS_FILE_HOST` | `data/payloads/payloads_<N>_6040.bin` | Caminho do arquivo de payloads no host (sobrescreve o padrão) |
 
 ### Passo 3 — Múltiplas repetições

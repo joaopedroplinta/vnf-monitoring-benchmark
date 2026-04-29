@@ -2,36 +2,29 @@
 """
 WAF TCP — TCC Gerenciamento de Rede
 Porta: 8080
+Protocolo: framing com 4 bytes big-endian de comprimento por mensagem.
 Inspeciona cada payload com regras de segurança (SQLi, XSS, Path Traversal, RCE)
-antes de responder ao cliente.
+antes de responder ao cliente. Usa asyncio + ThreadPoolExecutor para alta concorrência.
 """
-import socket
-import threading
+import asyncio
+import concurrent.futures
+import struct
 import re
 import json
 import os
 import time
-from datetime import datetime
+import threading
 
-HOST = '0.0.0.0'
-PORT = 8080
-_METRICS_PATH = os.environ.get("WAF_METRICS_PATH", "/app/results/waf_metrics.json")
-_WRITE_EVERY  = 100  # grava a cada N inspeções
+HOST             = '0.0.0.0'
+PORT             = 8080
+_METRICS_PATH    = os.environ.get("WAF_METRICS_PATH", "/app/results/waf_metrics.json")
+_WRITE_EVERY     = 100
+_INSPECT_WORKERS = int(os.environ.get("WAF_INSPECT_WORKERS", os.cpu_count() or 4))
 
 _stats_lock = threading.Lock()
 _stats = {"count": 0, "total_ms": 0.0, "min_ms": None, "max_ms": 0.0}
 
-
-def _record(elapsed_ms: float) -> None:
-    with _stats_lock:
-        _stats["count"]    += 1
-        _stats["total_ms"] += elapsed_ms
-        if _stats["min_ms"] is None or elapsed_ms < _stats["min_ms"]:
-            _stats["min_ms"] = elapsed_ms
-        if elapsed_ms > _stats["max_ms"]:
-            _stats["max_ms"] = elapsed_ms
-        if _stats["count"] % _WRITE_EVERY == 0:
-            _flush(_stats.copy())
+_executor = concurrent.futures.ThreadPoolExecutor(max_workers=_INSPECT_WORKERS)
 
 
 def _flush(s: dict) -> None:
@@ -49,6 +42,19 @@ def _flush(s: dict) -> None:
     except Exception as e:
         print(f"[WARN] waf_metrics: {e}")
 
+
+def _record(elapsed_ms: float) -> None:
+    with _stats_lock:
+        _stats["count"]    += 1
+        _stats["total_ms"] += elapsed_ms
+        if _stats["min_ms"] is None or elapsed_ms < _stats["min_ms"]:
+            _stats["min_ms"] = elapsed_ms
+        if elapsed_ms > _stats["max_ms"]:
+            _stats["max_ms"] = elapsed_ms
+        if _stats["count"] % _WRITE_EVERY == 0:
+            _flush(_stats.copy())
+
+
 # ── Regras WAF ────────────────────────────────────────────────────────────────
 WAF_RULES = [
     (re.compile(r"(\b(union|select|insert|update|delete|drop|truncate|exec|execute)\b)", re.I), "SQLi"),
@@ -58,59 +64,62 @@ WAF_RULES = [
     (re.compile(r"(\x00|\x1a|%00)", re.I), "NullByte"),
 ]
 
-def inspect(payload: bytes) -> tuple[bool, str]:
-    """Retorna (bloqueado, motivo). False = permitido."""
+def inspect_and_record(payload: bytes) -> tuple[bool, str]:
+    """Inspeção + contabilização (executada no thread pool)."""
     text = payload.decode("utf-8", errors="replace")
+    t0 = time.perf_counter()
     for pattern, name in WAF_RULES:
         if pattern.search(text):
+            _record((time.perf_counter() - t0) * 1000)
             return True, name
+    _record((time.perf_counter() - t0) * 1000)
     return False, "OK"
 
-def handle_client(conn, addr):
-    with conn:
+
+async def handle_connection(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    """Lida com uma conexão persistente: múltiplas mensagens com framing 4-byte."""
+    loop = asyncio.get_event_loop()
+    try:
+        while True:
+            header = await reader.readexactly(4)
+            length = struct.unpack(">I", header)[0]
+            payload = await reader.readexactly(length)
+
+            blocked, reason = await loop.run_in_executor(
+                _executor, inspect_and_record, payload
+            )
+
+            response = f"BLOCKED:{reason}\n".encode() if blocked else b"ALLOWED:OK\n"
+            writer.write(response)
+            await writer.drain()
+    except asyncio.IncompleteReadError:
+        pass  # cliente fechou a conexão normalmente
+    except Exception as e:
+        print(f"[ERRO] {writer.get_extra_info('peername')}: {e}")
+    finally:
         try:
-            conn.settimeout(5)
-            chunks = []
-            while True:
-                chunk = conn.recv(65536)
-                if not chunk:
-                    break
-                chunks.append(chunk)
-            data = b"".join(chunks)
-
-            t0 = time.perf_counter()
-            blocked, reason = inspect(data)
-            _record((time.perf_counter() - t0) * 1000)
-
-            if blocked:
-                response = f"BLOCKED:{reason}\n".encode()
-            else:
-                response = b"ALLOWED:OK\n"
-
-            conn.sendall(response)
-
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] {addr} | "
-                  f"{len(data)}B | {'BLOCK:'+reason if blocked else 'ALLOW'}")
-        except socket.timeout:
+            writer.close()
+            await writer.wait_closed()
+        except Exception:
             pass
-        except Exception as e:
-            print(f"[ERRO] {addr}: {e}")
+
+
+async def main_async() -> None:
+    server = await asyncio.start_server(handle_connection, HOST, PORT, reuse_port=True)
+    addrs = [s.getsockname() for s in server.sockets]
+    print(f"✅ WAF asyncio escutando em {addrs} | inspect_workers={_INSPECT_WORKERS}", flush=True)
+    async with server:
+        await server.serve_forever()
+
 
 def main():
     print("=" * 50)
     print(f"  WAF TCP — porta {PORT}")
     print(f"  Regras: SQLi, XSS, PathTraversal, RCE, NullByte")
+    print(f"  Modo: asyncio + ThreadPoolExecutor({_INSPECT_WORKERS})")
     print("=" * 50)
+    asyncio.run(main_async())
 
-    srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    srv.bind((HOST, PORT))
-    srv.listen(100)
-    print(f"✅ WAF escutando em {HOST}:{PORT}", flush=True)
-
-    while True:
-        conn, addr = srv.accept()
-        threading.Thread(target=handle_client, args=(conn, addr), daemon=True).start()
 
 if __name__ == "__main__":
     main()

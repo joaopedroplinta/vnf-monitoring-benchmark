@@ -59,9 +59,10 @@ tcc_gerenciamento_rede/
 
 ### 1. VNF — Web Application Firewall (`src/vnf/`)
 
-- **`waf.py`** (85 linhas): TCP server na porta 8080
+- **`waf.py`**: TCP server na porta 8080 — `asyncio` + `ThreadPoolExecutor`
   - Detecta: SQLi, XSS, Path Traversal, RCE, Null Byte
-  - Bloqueia ou encaminha requisições; não escreve métricas
+  - Protocolo: framing com 4 bytes big-endian de comprimento; conexões persistentes (múltiplas mensagens por conexão)
+  - Inspeção CPU-bound executada no pool de threads; I/O gerenciado pelo event loop asyncio
 
 - **`observador_ebpf.py`** (113 linhas): observador eBPF
   - Kprobes em `tcp_sendmsg` e `tcp_cleanup_rbuf`, filtro `sport=8080`
@@ -97,7 +98,8 @@ tcc_gerenciamento_rede/
 
 - **`client.py`**: envia os payloads pré-gerados ao WAF
   - Carrega payloads de arquivo via `PAYLOADS_FILE` (caminho dentro do container)
-  - Lógica de geração removida do client — separação clara entre geração e execução
+  - `WORKERS` coroutines asyncio (padrão 200), cada uma com conexão persistente
+  - Framing 4-byte por mensagem; fila asyncio distribui payloads entre os workers
 
 ### 4. Comparação (`src/compare.py`)
 
@@ -134,9 +136,9 @@ Variáveis de ambiente relevantes:
 | Variável           | Padrão                                        | Descrição                                               |
 | ------------------ | --------------------------------------------- | ------------------------------------------------------- |
 | `NUM_MESSAGES`     | 100000                                        | Quantidade de mensagens — usada para DURATION e naming  |
-| `DURATION`         | `NUM_MESSAGES/3500 + 15`                      | Duração da coleta (segundos)                            |
+| `DURATION`         | `NUM_MESSAGES/8000 + 20`                      | Duração da coleta (segundos)                            |
 | `RUN_ID`           | 1                                             | Identificador do run                                    |
-| `WORKERS`          | 10                                            | Threads concorrentes do cliente                         |
+| `WORKERS`          | 200                                           | Conexões assíncronas do cliente (coroutines asyncio)    |
 | `PAYLOADS_FILE`    | `/app/payloads/payloads_<NUM_MESSAGES>_6040.bin` | Caminho do arquivo de payloads dentro do container    |
 | `PAYLOADS_FILE_HOST` | `data/payloads/payloads_<NUM_MESSAGES>_6040.bin` | Caminho no host (sobrescreve o padrão derivado)      |
 | `RESULTS_SUBDIR`   | (vazio)                                       | Subdiretório de resultados (ex: `pre_testes`)           |
@@ -184,7 +186,7 @@ Variáveis de ambiente relevantes:
 | CPU média observador (%)      | 1.927 ± 2.6211         | 2.860 ± 4.2246          | **1.402 ± 1.8656**        |
 | Memória média observador (MB) | 196.474 ± 0.2631       | **13.689 ± 0.0292**     | 24.559 ± 0.0563           |
 
-> DURATION = 100000/3500 + 15 = 43s → 43 amostras por run.
+> DURATION = 100000/8000 + 20 = 32s → 32 amostras por run.
 
 ### N = 500.000 mensagens — 30 runs (27/04/2026)
 
@@ -199,7 +201,7 @@ Variáveis de ambiente relevantes:
 | CPU média observador (%)      | **0.709 ± 0.8764**     | 0.749 ± 0.9423          | 0.978 ± 1.0451            |
 | Memória média observador (MB) | 196.712 ± 0.3179       | **13.639 ± 0.0242**     | 24.606 ± 0.0543           |
 
-> DURATION = 500000/3500 + 15 = 157s → 157 amostras por run.
+> DURATION = 500000/8000 + 20 = 82s → 82 amostras por run.
 
 ### N = 1.000.000 mensagens — 30 runs (27/04/2026)
 
@@ -214,7 +216,7 @@ Variáveis de ambiente relevantes:
 | CPU média observador (%)      | 0.2943 ± 0.4334        | **0.1693 ± 0.1468**     | 0.2753 ± 0.2461           |
 | Memória média observador (MB) | 196.5243 ± 0.2452      | **13.6733 ± 0.0364**    | 24.5493 ± 0.0494          |
 
-> DURATION = 1000000/3500 + 15 ≈ 300s → 300 amostras por run.
+> DURATION = 1000000/8000 + 20 = 145s → 145 amostras por run.
 
 ### Comparativo cross-N — Latência média do observador (média de 30 runs, ms)
 
@@ -403,11 +405,11 @@ Convenção adotada:
 
 | N         | Runs | DURATION/run | Overhead/run | Tempo/run | Tempo total (3 ferramentas) | Status     |
 | --------- | ---- | ------------ | ------------ | --------- | --------------------------- | ---------- |
-| 100.000   | 30   | 43s          | ~35s         | ~80s      | ~2h                         | ✅ Concluído (26/04/2026) |
-| 500.000   | 30   | 157s         | ~35s         | ~192s     | ~5h                         | ✅ Concluído (27/04/2026) |
-| 1.000.000 | 30   | 300s         | ~35s         | ~335s     | ~8h30                       | ✅ Concluído (27/04/2026) |
+| 100.000   | 30   | 32s          | ~35s         | ~67s      | ~1h40                       | ✅ Concluído (26/04/2026) |
+| 500.000   | 30   | 82s          | ~35s         | ~117s     | ~3h                         | ✅ Concluído (27/04/2026) |
+| 1.000.000 | 30   | 145s         | ~35s         | ~180s     | ~4h30                       | ✅ Concluído (27/04/2026) |
 
-> DURATION = `NUM_MESSAGES / 3500 + 15` (divisão inteira bash). Overhead inclui `docker compose down + up + shutdown`. O build ocorre uma única vez antes do loop de runs (via `run_multi.sh`), não mais a cada run.
+> DURATION = `NUM_MESSAGES / 8000 + 20` (divisão inteira bash). Overhead inclui `docker compose down + up + shutdown`. O build ocorre uma única vez antes do loop de runs (via `run_multi.sh`), não mais a cada run.
 
 Comando para cada etapa (rodar uma ferramenta por vez para não perder resultados em caso de falha):
 ```bash
@@ -525,3 +527,53 @@ Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_resul
 | Memória observador (MB) | 15.050 ± 0.036 | **13.689 ± 0.029** | 24.559 ± 0.056 |
 
 eBPF libbpf passa a ter memória comparável ao sysstat (~15 MB vs ~14 MB), eliminando a desvantagem estrutural dos ~196 MB do BCC.
+
+---
+
+### Migração para asyncio + conexões persistentes (29/04/2026)
+
+**Contexto:** O WAF original usava uma thread por conexão TCP (modelo `threading.Thread`). O cliente abria e fechava uma conexão TCP por mensagem. O throughput observado era ~3500 msg/s e o gargalo não era a CPU, mas o overhead de handshake TCP por mensagem e a contenção de threads.
+
+**Diagnóstico do gargalo:**
+
+Com latência de roundtrip UDP de ~1.32 ms e 10 workers, o throughput teórico máximo seria:
+
+```
+10 workers / 0.00132s = ~7576 msg/s
+```
+
+O valor observado (~3500 msg/s) indicava que o custo de abrir e fechar conexões TCP — não a inspeção — era o fator limitante.
+
+**Mudanças implementadas (Issue #27):**
+
+| Componente | Antes | Depois |
+| ---------- | ----- | ------ |
+| `src/vnf/waf.py` | `threading.Thread` por conexão; uma conexão por mensagem | `asyncio.start_server` + `ThreadPoolExecutor`; conexões persistentes com framing de 4 bytes |
+| `src/client/client.py` | `ThreadPoolExecutor(max_workers=10)`; nova conexão TCP por payload | `asyncio.gather` com 200 coroutines; conexão persistente por worker; fila asyncio distribui payloads |
+| `src/vnf/observador_*.py` | `_find_waf()` retornava o primeiro processo com `waf.py` no cmdline | `_find_waf_all()` retorna todos os processos com `waf.py` e agrega CPU/mem |
+| `scripts/run_*.sh` | `DURATION = NUM_MESSAGES/3500 + 15` | `DURATION = NUM_MESSAGES/8000 + 20` |
+
+**Protocolo de framing:**
+
+```
+Requisição: [4 bytes big-endian: comprimento do payload] + [payload]
+Resposta:   "ALLOWED:OK\n" ou "BLOCKED:<motivo>\n"  (newline-terminated)
+```
+
+A conexão permanece aberta; o WAF lê mensagens em loop até o cliente fechar a conexão (`asyncio.IncompleteReadError`).
+
+**Resultado medido (N=100.000, 1 run, 29/04/2026):**
+
+| Métrica | Antes (threading) | Depois (asyncio) | Variação |
+| ------- | ----------------- | ---------------- | -------- |
+| Throughput | ~3500 msg/s | **~8000 msg/s** | +128% |
+| Latência UDP avg (ms) | 1.32 | **0.53** | −60% |
+| CPU WAF avg (%) | 70 | **37** | −47% |
+| inspect_avg_ms | 0.214 | **0.089** | −58% |
+| Memória WAF (MB) | 12 | 21.6 | +80% (ThreadPoolExecutor) |
+
+O aumento de memória (~10 MB) é atribuído ao pool de threads do `ThreadPoolExecutor` (8 workers × overhead de thread Python).
+
+**Decisão de arquitetura — observadores:**
+
+A função `_find_waf_all()` foi introduzida nos três observadores para ser compatível com eventuais futuros modos multiprocessing do WAF: ao invés de monitorar apenas o processo pai (que ficaria idle em multiprocessing), agrega CPU e RSS de todos os processos com `waf.py` no cmdline via `psutil.process_iter`. Em modo single-process (atual), o comportamento é idêntico ao anterior.

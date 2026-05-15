@@ -1,112 +1,153 @@
 #!/usr/bin/env python3
 """
 Observador eBPF — TCC Gerenciamento de Rede
-Coleta bytes RX/TX via kprobes BCC (sport=8080) + CPU/mem do processo WAF via psutil.
-Serve métricas via UDP :9999.
-Requer: privileged=true, pid=host.
+
+Carrega programa BPF pré-compilado (ebpf_kern.o) via ctypes + libbpf.so.
+Sem BCC nem LLVM no processo Python (~15 MB RSS).
+
+Requer:
+  - /tmp/ebpf_kern.o compilado pelo ebpf_entrypoint.sh
+  - libbpf.so.1 instalado (libbpf1 no Ubuntu 24.04)
+  - privileged: true, pid: host
 """
-from bcc import BPF
-import ctypes as ct
-import socket, json, os
+import ctypes
+import struct
+import socket
+import json
+import os
+import sys
 import psutil
 
-HOST = '0.0.0.0'
-PORT = 9999
+BPF_OBJ    = os.environ.get("BPF_OBJ_PATH", "/tmp/ebpf_kern.o")
+HOST       = "0.0.0.0"
+PORT       = 9999
 _WAF_METRICS_PATH = os.environ.get("WAF_METRICS_PATH", "/app/results/waf_metrics.json")
 
+# ── Carrega libbpf ────────────────────────────────────────────────────────────
 
-def _read_waf_metrics() -> dict:
+try:
+    _lib = ctypes.CDLL("libbpf.so.1", use_errno=True)
+except OSError as e:
+    print(f"[ERRO] Não foi possível carregar libbpf.so.1: {e}", flush=True)
+    sys.exit(1)
+
+# Declarações de tipos e assinaturas da API libbpf
+_lib.bpf_object__open.restype  = ctypes.c_void_p
+_lib.bpf_object__open.argtypes = [ctypes.c_char_p]
+
+_lib.bpf_object__load.restype  = ctypes.c_int
+_lib.bpf_object__load.argtypes = [ctypes.c_void_p]
+
+_lib.bpf_object__find_program_by_name.restype  = ctypes.c_void_p
+_lib.bpf_object__find_program_by_name.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+
+_lib.bpf_program__attach.restype  = ctypes.c_void_p
+_lib.bpf_program__attach.argtypes = [ctypes.c_void_p]
+
+_lib.bpf_object__find_map_by_name.restype  = ctypes.c_void_p
+_lib.bpf_object__find_map_by_name.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+
+_lib.bpf_map__fd.restype  = ctypes.c_int
+_lib.bpf_map__fd.argtypes = [ctypes.c_void_p]
+
+_lib.bpf_map_lookup_elem.restype  = ctypes.c_int
+_lib.bpf_map_lookup_elem.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_void_p]
+
+# ── Setup BPF ────────────────────────────────────────────────────────────────
+
+def _setup_bpf():
+    obj = _lib.bpf_object__open(BPF_OBJ.encode())
+    if not obj:
+        print(f"[ERRO] bpf_object__open({BPF_OBJ}) falhou", flush=True)
+        sys.exit(1)
+
+    ret = _lib.bpf_object__load(obj)
+    if ret < 0:
+        print(f"[ERRO] bpf_object__load falhou: {ret}", flush=True)
+        sys.exit(1)
+
+    links = []
+    for prog_name in (b"kprobe_tcp_sendmsg", b"kprobe_tcp_cleanup_rbuf"):
+        prog = _lib.bpf_object__find_program_by_name(obj, prog_name)
+        if not prog:
+            print(f"[ERRO] programa BPF '{prog_name.decode()}' não encontrado", flush=True)
+            sys.exit(1)
+        link = _lib.bpf_program__attach(prog)
+        if not link:
+            print(f"[ERRO] attach de '{prog_name.decode()}' falhou", flush=True)
+            sys.exit(1)
+        links.append(link)
+
+    bpf_map = _lib.bpf_object__find_map_by_name(obj, b"net_stats")
+    if not bpf_map:
+        print("[ERRO] mapa 'net_stats' não encontrado", flush=True)
+        sys.exit(1)
+
+    map_fd = _lib.bpf_map__fd(bpf_map)
+    if map_fd < 0:
+        print(f"[ERRO] bpf_map__fd retornou {map_fd}", flush=True)
+        sys.exit(1)
+
+    return map_fd, links  # links mantidos em memória para evitar detach
+
+def _map_lookup(map_fd, key_int):
+    """Lê um valor u64 de um BPF ARRAY map por chave u32."""
+    key_buf = ctypes.create_string_buffer(struct.pack("I", key_int))
+    val_buf = ctypes.create_string_buffer(8)
+    ret = _lib.bpf_map_lookup_elem(map_fd, key_buf, val_buf)
+    if ret < 0:
+        return 0
+    return struct.unpack("Q", val_buf.raw)[0]
+
+# ── Psutil helpers ────────────────────────────────────────────────────────────
+
+_self_proc = psutil.Process()
+_waf_proc  = None
+
+def _find_waf():
+    for proc in psutil.process_iter(["pid", "cmdline"]):
+        try:
+            if "waf.py" in " ".join(proc.info["cmdline"] or []):
+                return proc
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+    return None
+
+def _get_waf_metrics():
+    global _waf_proc
+    try:
+        if _waf_proc is None or not _waf_proc.is_running():
+            _waf_proc = _find_waf()
+        if _waf_proc:
+            return (
+                round(_waf_proc.cpu_percent(interval=None), 2),
+                round(_waf_proc.memory_info().rss / 1024 / 1024, 2),
+            )
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        _waf_proc = None
+    return 0.0, 0.0
+
+def _read_waf_metrics():
     try:
         with open(_WAF_METRICS_PATH) as f:
             return json.load(f)
     except Exception:
         return {}
 
-bpf_program = """
-/* Forward declaration para contornar erro struct bpf_wq em kernels 6.10+ */
-struct bpf_wq {
-    unsigned long long :64;
-    unsigned long long :64;
-} __attribute__((aligned(8)));
-
-#include <uapi/linux/ptrace.h>
-#include <net/sock.h>
-#include <bcc/proto.h>
-#include <linux/tcp.h>
-
-BPF_ARRAY(net_stats, u64, 2); // 0: RX, 1: TX
-
-// WAF TX: WAF enviando resposta ao cliente (socket do servidor, sport=8080)
-int kprobe__tcp_sendmsg(struct pt_regs *ctx, struct sock *sk, struct msghdr *msg, size_t size) {
-    u16 sport = sk->__sk_common.skc_num;
-    if (sport == 8080) {
-        u32 key = 1;
-        u64 *val = net_stats.lookup(&key);
-        if (val) *val += size;
-    }
-    return 0;
-}
-
-// WAF RX: WAF lendo requisição do cliente (socket do servidor, sport=8080)
-int kprobe__tcp_cleanup_rbuf(struct pt_regs *ctx, struct sock *sk, int copied) {
-    if (copied <= 0) return 0;
-    u16 sport = sk->__sk_common.skc_num;
-    if (sport == 8080) {
-        u32 key = 0;
-        u64 *val = net_stats.lookup(&key);
-        if (val) *val += (u64)copied;
-    }
-    return 0;
-}
-"""
-
-_self_proc = psutil.Process()
-_waf_procs = []
-
-def _find_waf_all():
-    procs = []
-    for proc in psutil.process_iter(['pid', 'cmdline']):
-        try:
-            if 'waf.py' in ' '.join(proc.info['cmdline'] or []):
-                procs.append(proc)
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            pass
-    return procs
-
-def get_waf_metrics():
-    global _waf_procs
-    try:
-        live = [p for p in _waf_procs if p.is_running()]
-        if not live:
-            live = _find_waf_all()
-            for p in live:
-                try:
-                    p.cpu_percent(interval=None)  # warmup
-                except (psutil.NoSuchProcess, psutil.AccessDenied):
-                    pass
-            _waf_procs = live
-        if live:
-            cpu = sum(p.cpu_percent(interval=None) for p in live)
-            mem = sum(p.memory_info().rss for p in live) / 1024 / 1024
-            return round(cpu, 2), round(mem, 2)
-    except (psutil.NoSuchProcess, psutil.AccessDenied):
-        _waf_procs = []
-    return 0.0, 0.0
+# ── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
     print("=" * 55)
-    print("  Observador eBPF — kprobes sport=8080 + psutil WAF")
+    print("  Observador eBPF (libbpf) — kprobes sport=8080")
     print("=" * 55)
 
-    b = BPF(text=bpf_program)
-    print("BPF carregado. Monitorando sport=8080.", flush=True)
+    map_fd, _links = _setup_bpf()
+    print(f"BPF carregado. map_fd={map_fd}. Monitorando sport=8080.", flush=True)
 
-    # Warm-up: primeira chamada cpu_percent sempre retorna 0
-    for p in _find_waf_all():
-        try:
-            p.cpu_percent(interval=None)
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            pass
+    # Warm-up psutil
+    _waf_proc_local = _find_waf()
+    if _waf_proc_local:
+        _waf_proc_local.cpu_percent(interval=None)
     _self_proc.cpu_percent(interval=None)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -116,10 +157,10 @@ def main():
     while True:
         try:
             _, addr = sock.recvfrom(256)
-            rx = b["net_stats"][ct.c_uint32(0)].value
-            tx = b["net_stats"][ct.c_uint32(1)].value
-            cpu, mem = get_waf_metrics()
-            wm = _read_waf_metrics()
+            rx  = _map_lookup(map_fd, 0)
+            tx  = _map_lookup(map_fd, 1)
+            cpu, mem = _get_waf_metrics()
+            wm  = _read_waf_metrics()
             resp = json.dumps({
                 "bytes_rx":          rx,
                 "bytes_tx":          tx,
@@ -134,7 +175,7 @@ def main():
             }).encode("utf-8")
             sock.sendto(resp, addr)
         except Exception as e:
-            print(f"[ERRO] {e}")
+            print(f"[ERRO] {e}", flush=True)
 
 if __name__ == "__main__":
     main()

@@ -8,11 +8,11 @@
 
 Projeto de TCC que compara 3 abordagens de monitoramento de rede aplicadas a uma VNF (Web Application Firewall):
 
-| Abordagem      | Mecanismo                                            |
-| -------------- | ---------------------------------------------------- |
-| **eBPF (BCC)** | Instrumentação em nível de kernel via kprobes        |
-| **Sysstat**    | Polling tradicional em userspace via `/proc`         |
-| **Prometheus** | Mesma coleta do sysstat + exposição HTTP de métricas |
+| Abordagem              | Mecanismo                                            |
+| ---------------------- | ---------------------------------------------------- |
+| **eBPF (libbpf+CO-RE)** | Instrumentação em nível de kernel via kprobes       |
+| **Sysstat**            | Polling tradicional em userspace via `/proc`         |
+| **Prometheus**         | Mesma coleta do sysstat + exposição HTTP de métricas |
 
 ---
 
@@ -24,7 +24,7 @@ tcc_gerenciamento_rede/
 │   ├── probe.py                   # Probe UDP único (configurado por env vars)
 │   ├── vnf/
 │   │   ├── waf.py                 # WAF TCP porta 8080
-│   │   ├── observador_ebpf.py        # Observador eBPF: kprobes sport=8080 + psutil
+│   │   ├── observador_ebpf.py        # Observador eBPF (libbpf+CO-RE): kprobes sport=8080 + psutil (~15 MB RSS)
 │   │   ├── observador_sysstat.py     # Observador sysstat: /proc/net/dev + psutil
 │   │   └── observador_prometheus.py  # Observador Prometheus: /proc/net/dev + psutil + HTTP :8000
 │   ├── client/
@@ -64,7 +64,8 @@ tcc_gerenciamento_rede/
   - Protocolo: framing com 4 bytes big-endian de comprimento; conexões persistentes (múltiplas mensagens por conexão)
   - Inspeção CPU-bound executada no pool de threads; I/O gerenciado pelo event loop asyncio
 
-- **`observador_ebpf.py`** (113 linhas): observador eBPF
+- **`observador_ebpf.py`** (181 linhas): observador eBPF (libbpf+CO-RE)
+  - Carrega `ebpf_kern.o` pré-compilado via `ctypes + libbpf.so.1` — sem BCC/LLVM em memória (~15 MB RSS)
   - Kprobes em `tcp_sendmsg` e `tcp_cleanup_rbuf`, filtro `sport=8080`
   - Coleta bytes RX/TX + CPU/mem do WAF via psutil
   - Responde a probes UDP na porta 9999 com JSON de métricas
@@ -596,7 +597,7 @@ Criada estrutura de agentes e skills do Claude Code em `.claude/` para automatiz
 | `tcc-writer` | Gera texto acadêmico em português formal (ABNT) a partir dos dados de resultado |
 | `metrics-comparator` | Comparação dimensão a dimensão entre as três ferramentas com veredicto e placar |
 
-**Skills** (`.claude/skills/`) — comandos `/skill` disponíveis na sessão do Claude Code:
+**Slash commands** (`.claude/commands/`) — comandos disponíveis na sessão do Claude Code:
 
 | Comando | Ação |
 | ------- | ---- |
@@ -672,3 +673,32 @@ N=2.000.000 definido como próximo ponto de dados após a migração de hardware
 **Número de runs**
 
 30 runs por ferramenta por N mantidos conforme definição do orientador.
+
+---
+
+### Consolidação eBPF + reorganização Claude Code (15/05/2026)
+
+#### Consolidação: libbpf como implementação única do observador eBPF
+
+Com a migração para libbpf+CO-RE já validada (N=100k, 30 runs) e a decisão de re-coletar todos os dados no desktop, os arquivos duplicados da variante libbpf foram removidos e a implementação passou a ser única:
+
+| Ação | Detalhe |
+| ---- | ------- |
+| `observador_ebpf_libbpf.py` → `observador_ebpf.py` | libbpf passa a ser a implementação canônica; versão BCC removida |
+| `docker-compose.ebpf-libbpf.yml` removido | Redundante — `docker-compose.ebpf.yml` já usava `Dockerfile.ebpf-libbpf` desde a Opção C |
+| `scripts/run_ebpf-libbpf.sh` removido | Redundante com `run_ebpf.sh` |
+| `run_multi.sh` | Opção `ebpf-libbpf` removida; ferramentas válidas: `ebpf`, `sysstat`, `prometheus` |
+| `ebpf_entrypoint.sh` | Última linha atualizada para `observador_ebpf.py`; labels de log simplificados |
+
+#### Reorganização dos slash commands do Claude Code
+
+Descoberta e correção: o diretório correto para slash commands no Claude Code é `.claude/commands/`, não `.claude/skills/`. A pasta foi renomeada e o CLAUDE.md atualizado.
+
+#### Novos agentes criados
+
+| Agente | Responsabilidade |
+| ------ | ---------------- |
+| `sysstat-specialist` | Debug do observador sysstat — `/proc/net/dev`, psutil, WAF metrics |
+| `prometheus-specialist` | Debug do observador Prometheus — endpoint HTTP `:8000`, Gauges, port 8000 |
+| `pr-opener` | Monta e abre PRs via `gh pr create`, sempre com confirmação antes de executar |
+| `pr-reviewer` | Lê diff completo, emite veredicto estruturado (APROVADO / MUDANÇAS / BLOQUEADO), não submete sem confirmação |

@@ -9,20 +9,18 @@ set -euo pipefail
 #   bash scripts/run_multi.sh ebpf         100000 5
 #   bash scripts/run_multi.sh sysstat      100000 5
 #   bash scripts/run_multi.sh prometheus   100000 5
-#   bash scripts/run_multi.sh ebpf-libbpf  100000 5
-
 TOOL=${1}
 NUM_MESSAGES=${2:-100000}
 NUM_RUNS=${3:-5}
 PRE_ARG="${4:-}"
 
 if [ -z "$TOOL" ]; then
-    echo "Uso: bash scripts/run_multi.sh <ebpf|sysstat|prometheus|ebpf-libbpf> <num_messages> <num_runs> [--pre]"
+    echo "Uso: bash scripts/run_multi.sh <ebpf|sysstat|prometheus> <num_messages> <num_runs> [--pre]"
     exit 1
 fi
 
 if [ ! -f "$(dirname "$0")/run_${TOOL}.sh" ]; then
-    echo "Ferramenta inválida: '${TOOL}'. Use ebpf, sysstat, prometheus ou ebpf-libbpf."
+    echo "Ferramenta inválida: '${TOOL}'. Use ebpf, sysstat ou prometheus."
     exit 1
 fi
 
@@ -60,8 +58,4 @@ echo "  ${NUM_RUNS} runs concluídos!"
 echo "  Gerando agregação..."
 echo "========================================"
 
-if [ "$TOOL" = "ebpf-libbpf" ]; then
-    echo "  (agregação automática não disponível para ebpf-libbpf — use compare.py manualmente)"
-else
-    python3 src/compare.py "$NUM_MESSAGES" "$NUM_RUNS"
-fi
+python3 src/compare.py "$NUM_MESSAGES" "$NUM_RUNS"

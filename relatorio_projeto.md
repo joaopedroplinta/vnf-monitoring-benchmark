@@ -1,6 +1,6 @@
 # TCC — Gerenciamento e Monitoramento de Rede
 
-**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 28/04/2026 — rev 8)
+**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 14/05/2026 — rev 9)
 
 ---
 
@@ -577,3 +577,98 @@ O aumento de memória (~10 MB) é atribuído ao pool de threads do `ThreadPoolEx
 **Decisão de arquitetura — observadores:**
 
 A função `_find_waf_all()` foi introduzida nos três observadores para ser compatível com eventuais futuros modos multiprocessing do WAF: ao invés de monitorar apenas o processo pai (que ficaria idle em multiprocessing), agrega CPU e RSS de todos os processos com `waf.py` no cmdline via `psutil.process_iter`. Em modo single-process (atual), o comportamento é idêntico ao anterior.
+
+---
+
+### Orquestração com Claude Code — agentes e skills (14/05/2026)
+
+Criada estrutura de agentes e skills do Claude Code em `.claude/` para automatizar e padronizar o fluxo de trabalho do projeto.
+
+**Agentes** (`.claude/agents/`) — sub-agentes especializados invocados pelo Claude Code:
+
+| Agente | Responsabilidade |
+| ------ | ---------------- |
+| `experiment-orchestrator` | Orquestra a bateria de testes: sobe docker compose por ferramenta, aguarda conclusão, derruba e consolida |
+| `results-analyst` | Lê os JSONs de resultado e gera análise estatística comparativa |
+| `ebpf-specialist` | Debug de problemas eBPF/BCC/kprobes — latência zero, kretprobes em WSL2, erros de compilação BPF |
+| `docker-debugger` | Investiga falhas de container — portas, redes, volumes, healthcheck |
+| `anomaly-investigator` | Detecta e classifica anomalias nos dados coletados (EXPECTED / ANOMALY / CRITICAL) |
+| `tcc-writer` | Gera texto acadêmico em português formal (ABNT) a partir dos dados de resultado |
+| `metrics-comparator` | Comparação dimensão a dimensão entre as três ferramentas com veredicto e placar |
+
+**Skills** (`.claude/skills/`) — comandos `/skill` disponíveis na sessão do Claude Code:
+
+| Comando | Ação |
+| ------- | ---- |
+| `/validate-env` | Verifica Docker, kernel headers, BCC, portas 8080/9999 antes de rodar testes |
+| `/run-experiment <tool>` | Executa um coletor específico (ebpf / sysstat / prometheus) |
+| `/run-all [duration]` | Executa os três coletores em sequência e gera comparativo |
+| `/check-results` | Exibe resumo rápido dos JSONs de resultado disponíveis |
+| `/generate-report` | Roda `compare.py` e formata a saída |
+| `/analyze-anomalies` | Investigação profunda de anomalias nos dados coletados |
+| `/write-section <seção>` | Gera seção acadêmica do TCC (metodologia / resultados / discussao / conclusao / resumo) |
+
+---
+
+### Atualização de branches e sincronização (14/05/2026)
+
+Branches sincronizadas com o repositório remoto:
+
+| Branch | Situação |
+| ------ | -------- |
+| `main` | Pull de origin/main — 107+ commits integrados |
+| `dev/joao` | Pull de origin/dev/joao — 107 commits atualizados |
+| `dev/rafael` | Pull de origin/dev/rafael — 109 commits atualizados |
+| `feat/ebpf-libbpf-memory` | Branch criada localmente a partir de origin — merge no main pendente |
+
+**Pendências identificadas:**
+
+- Merge de `feat/ebpf-libbpf-memory` no `main` — inclui libbpf+CO-RE como stack principal do eBPF e WAF asyncio
+- Re-coleta de N=500k e N=1M com o stack libbpf (N=100k já concluído na branch)
+
+---
+
+### Streaming de payloads no cliente (14/05/2026)
+
+**Motivação:** o cliente carregava todos os N payloads em memória antes de iniciar o envio (`load_payloads()` retornava uma lista completa). Para N=1M isso representava ~1,2 GB de RAM, tornando N=2M+ inviável por restrições de memória.
+
+**Mudança implementada em `src/client/client.py`:**
+
+| Componente | Antes | Depois |
+| ---------- | ----- | ------ |
+| Carregamento de payloads | `load_payloads()` — lista completa em memória; RAM = O(N) | `payload_producer()` — producer assíncrono via `asyncio.Queue(maxsize=QUEUE_SIZE)`; RAM = O(QUEUE_SIZE) |
+| Leitura do arquivo | Feita integralmente antes do envio | Lazy: um payload por vez via `run_in_executor`, bloqueando quando a queue enche (backpressure automático) |
+| Encerramento dos workers | `queue.get_nowait()` + `except QueueEmpty` | `await queue.get()` + sentinela `None` por worker |
+| Variável de ambiente nova | — | `QUEUE_SIZE` (padrão: 2000) — controla o buffer em memória |
+
+**Impacto no uso de memória:**
+
+| N | RAM antes | RAM depois |
+| - | --------- | ---------- |
+| 1M | ~1,2 GB | ~2,6 MB |
+| 5M | ~6,0 GB | ~2,6 MB |
+| 10M | ~12 GB | ~2,6 MB |
+
+A RAM do cliente agora é constante independente de N. O único limite para N passa a ser o espaço em disco para o arquivo `.bin` de payloads.
+
+---
+
+### Decisões estratégicas (14/05/2026)
+
+**Hardware para coleta dos dados definitivos**
+
+Os dados existentes (N=100k, 500k, 1M — 30 runs cada) foram coletados em notebook com Intel Core i5 11ª geração, sujeito a throttling térmico em runs longos. Os dados definitivos do TCC serão coletados em desktop com AMD Ryzen 5 5500 (6 cores físicos / 12 threads) rodando Ubuntu nativo, pelos seguintes motivos:
+
+- Ausência de throttling térmico — desempenho sustentado e consistente entre runs
+- Mais cores disponíveis para `WAF_INSPECT_WORKERS` — maior throughput (~15.000–20.000 msg/s estimado vs ~8.000 msg/s no notebook)
+- eBPF sem limitações de WSL2 — kretprobes estáveis, latência real medida
+
+**Consequência:** todos os 270 runs (30 × 3 ferramentas × 3 valores de N) serão re-coletados no desktop para garantir consistência do dataset.
+
+**Próximo valor de N**
+
+N=2.000.000 definido como próximo ponto de dados após a migração de hardware. Com throughput estimado de ~15.000 msg/s, cada run leva ~150s, resultando em ~11h para 90 runs (30 × 3 ferramentas) — viável em execução noturna.
+
+**Número de runs**
+
+30 runs por ferramenta por N mantidos conforme definição do orientador.

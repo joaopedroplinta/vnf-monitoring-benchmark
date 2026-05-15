@@ -4,6 +4,8 @@ Cliente TCP — TCC Gerenciamento de Rede
 Bombardeia o WAF (porta 8080) com payloads pré-gerados.
 Protocolo: framing com 4 bytes big-endian de comprimento por mensagem.
 Cada worker é uma coroutine asyncio com conexão persistente — sem limite de concorrência.
+Payloads são lidos em streaming (lazy) via asyncio.Queue para manter RAM constante
+independente do número total de mensagens (N=5M, 10M, etc.).
 """
 import asyncio
 import struct
@@ -14,17 +16,43 @@ WAF_HOST      = 'localhost'
 WAF_PORT      = 8080
 WORKERS       = int(os.environ.get("WORKERS", 200))
 PAYLOADS_FILE = os.environ.get("PAYLOADS_FILE", "")
+QUEUE_SIZE    = int(os.environ.get("QUEUE_SIZE", 2000))
 
 
-def load_payloads(path: str) -> list[bytes]:
-    """Lê arquivo binário gerado por gen_payloads.py."""
+def _read_payload(f) -> bytes | None:
+    """Lê um payload do arquivo binário aberto. Retorna None no EOF."""
+    header = f.read(4)
+    if len(header) < 4:
+        return None
+    (length,) = struct.unpack(">I", header)
+    return f.read(length)
+
+
+async def payload_producer(path: str, queue: asyncio.Queue, num_workers: int) -> int:
+    """
+    Coroutine produtora: lê payloads do arquivo binário de forma lazy e os coloca
+    na queue. Ao terminar, enfileira `num_workers` sentinelas None para sinalizar
+    fim a cada worker. Retorna o count lido do header do arquivo.
+    """
+    loop = asyncio.get_event_loop()
+
     with open(path, "rb") as f:
-        (count,) = struct.unpack(">I", f.read(4))
-        payloads = []
+        # Lê o header (count total) no executor para não bloquear o event loop
+        header_bytes = await loop.run_in_executor(None, f.read, 4)
+        (count,) = struct.unpack(">I", header_bytes)
+
         for _ in range(count):
-            (length,) = struct.unpack(">I", f.read(4))
-            payloads.append(f.read(length))
-    return payloads
+            payload = await loop.run_in_executor(None, _read_payload, f)
+            if payload is None:
+                break
+            await queue.put(payload)
+
+    # Enfileira sentinelas para encerrar cada worker
+    for _ in range(num_workers):
+        await queue.put(None)
+
+    return count
+
 
 async def wait_for_server(host, port, max_attempts=30) -> bool:
     for attempt in range(1, max_attempts + 1):
@@ -40,12 +68,12 @@ async def wait_for_server(host, port, max_attempts=30) -> bool:
     return False
 
 async def connection_worker(payload_queue: asyncio.Queue, counters: dict) -> None:
-    """Coroutine: conexão persistente, drena a fila até esvaziar."""
+    """Coroutine: conexão persistente, consome a fila até receber sentinela None."""
     reader, writer = None, None
     while True:
-        try:
-            payload = payload_queue.get_nowait()
-        except asyncio.QueueEmpty:
+        payload = await payload_queue.get()
+        if payload is None:
+            # Sentinela: encerra este worker
             break
 
         # Conecta (ou reconecta após erro)
@@ -81,28 +109,32 @@ async def connection_worker(payload_queue: asyncio.Queue, counters: dict) -> Non
         except Exception:
             pass
 
-async def main_async(payloads: list[bytes]) -> None:
+async def main_async() -> None:
     if not await wait_for_server(WAF_HOST, WAF_PORT):
         print("❌ WAF não respondeu. Encerrando.")
         return
 
-    payload_queue: asyncio.Queue = asyncio.Queue()
-    for p in payloads:
-        payload_queue.put_nowait(p)
-
+    payload_queue: asyncio.Queue = asyncio.Queue(maxsize=QUEUE_SIZE)
     counters = {"allowed": 0, "blocked": 0, "errors": 0}
 
     print(f"\n🚀 Iniciando envio...")
     t_start = time.time()
 
-    await asyncio.gather(*[
-        connection_worker(payload_queue, counters)
+    # Inicia produtor e workers concorrentemente
+    producer_task = asyncio.create_task(
+        payload_producer(PAYLOADS_FILE, payload_queue, WORKERS)
+    )
+    worker_tasks = [
+        asyncio.create_task(connection_worker(payload_queue, counters))
         for _ in range(WORKERS)
-    ])
+    ]
+
+    # Aguarda produtor terminar e depois todos os workers drenarem
+    count = await producer_task
+    await asyncio.gather(*worker_tasks)
 
     elapsed = round(time.time() - t_start, 2)
-    n = len(payloads)
-    rate = round(n / elapsed, 1) if elapsed > 0 else 0
+    rate = round(count / elapsed, 1) if elapsed > 0 else 0
     print(f"\n✅ Concluído em {elapsed}s (~{rate} msg/s) — "
           f"ALLOW:{counters['allowed']} BLOCK:{counters['blocked']} ERRO:{counters['errors']}")
 
@@ -115,13 +147,15 @@ def main():
 
     print("=" * 50)
     print(f"  Cliente TCP — WAF {WAF_HOST}:{WAF_PORT}")
-    print(f"  Arquivo: {PAYLOADS_FILE} | Workers: {WORKERS} | asyncio + conexões persistentes")
+    print(f"  Arquivo: {PAYLOADS_FILE} | Workers: {WORKERS} | Queue: {QUEUE_SIZE} | asyncio + conexões persistentes")
     print("=" * 50)
 
-    payloads = load_payloads(PAYLOADS_FILE)
-    print(f"  {len(payloads):,} payloads carregados.")
+    # Lê apenas o header para exibir o count sem carregar tudo na memória
+    with open(PAYLOADS_FILE, "rb") as f:
+        (count,) = struct.unpack(">I", f.read(4))
+    print(f"  {count:,} payloads no arquivo (streaming, RAM ~ QUEUE_SIZE={QUEUE_SIZE}).")
 
-    asyncio.run(main_async(payloads))
+    asyncio.run(main_async())
 
 if __name__ == "__main__":
     main()

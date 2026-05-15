@@ -143,6 +143,8 @@ This project has custom agents (`.claude/agents/`) and slash commands (`.claude/
 | `metrics-comparator` | Dimension-by-dimension tool comparison with verdicts |
 | `sysstat-specialist` | `/proc/net/dev` parsing, psutil tracking, WAF metrics debugging |
 | `prometheus-specialist` | Prometheus HTTP endpoint, Gauge anomalies, port 8000 conflicts |
+| `pr-opener` | Monta e abre PRs via gh CLI (pede confirmação antes de criar) |
+| `pr-reviewer` | Revisa PR com veredicto estruturado (não aprova sem confirmação do usuário) |
 
 | Command | Usage |
 |---|---|

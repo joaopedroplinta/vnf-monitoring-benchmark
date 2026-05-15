@@ -130,7 +130,7 @@ Key fields in each result JSON:
 
 ## Claude Code Agents & Skills
 
-This project has custom agents (`.claude/agents/`) and skills (`.claude/skills/`):
+This project has custom agents (`.claude/agents/`) and slash commands (`.claude/commands/`):
 
 | Agent | Purpose |
 |---|---|
@@ -142,7 +142,7 @@ This project has custom agents (`.claude/agents/`) and skills (`.claude/skills/`
 | `tcc-writer` | Generates academic Portuguese text from results |
 | `metrics-comparator` | Dimension-by-dimension tool comparison with verdicts |
 
-| Skill | Usage |
+| Command | Usage |
 |---|---|
 | `/validate-env` | Check Docker, kernel, ports before running |
 | `/run-experiment <tool>` | Run a single collector |

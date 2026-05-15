@@ -61,29 +61,36 @@ int kprobe__tcp_cleanup_rbuf(struct pt_regs *ctx, struct sock *sk, int copied) {
 """
 
 _self_proc = psutil.Process()
-_waf_proc = None
+_waf_procs = []
 
-def _find_waf():
+def _find_waf_all():
+    procs = []
     for proc in psutil.process_iter(['pid', 'cmdline']):
         try:
             if 'waf.py' in ' '.join(proc.info['cmdline'] or []):
-                return proc
+                procs.append(proc)
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass
-    return None
+    return procs
 
 def get_waf_metrics():
-    global _waf_proc
+    global _waf_procs
     try:
-        if _waf_proc is None or not _waf_proc.is_running():
-            _waf_proc = _find_waf()
-        if _waf_proc:
-            return (
-                round(_waf_proc.cpu_percent(interval=None), 2),
-                round(_waf_proc.memory_info().rss / 1024 / 1024, 2),
-            )
+        live = [p for p in _waf_procs if p.is_running()]
+        if not live:
+            live = _find_waf_all()
+            for p in live:
+                try:
+                    p.cpu_percent(interval=None)  # warmup
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+            _waf_procs = live
+        if live:
+            cpu = sum(p.cpu_percent(interval=None) for p in live)
+            mem = sum(p.memory_info().rss for p in live) / 1024 / 1024
+            return round(cpu, 2), round(mem, 2)
     except (psutil.NoSuchProcess, psutil.AccessDenied):
-        _waf_proc = None
+        _waf_procs = []
     return 0.0, 0.0
 
 def main():
@@ -95,9 +102,11 @@ def main():
     print("BPF carregado. Monitorando sport=8080.", flush=True)
 
     # Warm-up: primeira chamada cpu_percent sempre retorna 0
-    _waf_proc = _find_waf()
-    if _waf_proc:
-        _waf_proc.cpu_percent(interval=None)
+    for p in _find_waf_all():
+        try:
+            p.cpu_percent(interval=None)
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
     _self_proc.cpu_percent(interval=None)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

@@ -1,6 +1,6 @@
 # TCC — Gerenciamento e Monitoramento de Rede
 
-**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 28/04/2026 — rev 7)
+**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 14/05/2026 — rev 9)
 
 ---
 
@@ -59,9 +59,10 @@ tcc_gerenciamento_rede/
 
 ### 1. VNF — Web Application Firewall (`src/vnf/`)
 
-- **`waf.py`** (85 linhas): TCP server na porta 8080
+- **`waf.py`**: TCP server na porta 8080 — `asyncio` + `ThreadPoolExecutor`
   - Detecta: SQLi, XSS, Path Traversal, RCE, Null Byte
-  - Bloqueia ou encaminha requisições; não escreve métricas
+  - Protocolo: framing com 4 bytes big-endian de comprimento; conexões persistentes (múltiplas mensagens por conexão)
+  - Inspeção CPU-bound executada no pool de threads; I/O gerenciado pelo event loop asyncio
 
 - **`observador_ebpf.py`** (113 linhas): observador eBPF
   - Kprobes em `tcp_sendmsg` e `tcp_cleanup_rbuf`, filtro `sport=8080`
@@ -97,7 +98,8 @@ tcc_gerenciamento_rede/
 
 - **`client.py`**: envia os payloads pré-gerados ao WAF
   - Carrega payloads de arquivo via `PAYLOADS_FILE` (caminho dentro do container)
-  - Lógica de geração removida do client — separação clara entre geração e execução
+  - `WORKERS` coroutines asyncio (padrão 200), cada uma com conexão persistente
+  - Framing 4-byte por mensagem; fila asyncio distribui payloads entre os workers
 
 ### 4. Comparação (`src/compare.py`)
 
@@ -134,9 +136,9 @@ Variáveis de ambiente relevantes:
 | Variável           | Padrão                                        | Descrição                                               |
 | ------------------ | --------------------------------------------- | ------------------------------------------------------- |
 | `NUM_MESSAGES`     | 100000                                        | Quantidade de mensagens — usada para DURATION e naming  |
-| `DURATION`         | `NUM_MESSAGES/3500 + 15`                      | Duração da coleta (segundos)                            |
+| `DURATION`         | `NUM_MESSAGES/8000 + 20`                      | Duração da coleta (segundos)                            |
 | `RUN_ID`           | 1                                             | Identificador do run                                    |
-| `WORKERS`          | 10                                            | Threads concorrentes do cliente                         |
+| `WORKERS`          | 200                                           | Conexões assíncronas do cliente (coroutines asyncio)    |
 | `PAYLOADS_FILE`    | `/app/payloads/payloads_<NUM_MESSAGES>_6040.bin` | Caminho do arquivo de payloads dentro do container    |
 | `PAYLOADS_FILE_HOST` | `data/payloads/payloads_<NUM_MESSAGES>_6040.bin` | Caminho no host (sobrescreve o padrão derivado)      |
 | `RESULTS_SUBDIR`   | (vazio)                                       | Subdiretório de resultados (ex: `pre_testes`)           |
@@ -184,7 +186,7 @@ Variáveis de ambiente relevantes:
 | CPU média observador (%)      | 1.927 ± 2.6211         | 2.860 ± 4.2246          | **1.402 ± 1.8656**        |
 | Memória média observador (MB) | 196.474 ± 0.2631       | **13.689 ± 0.0292**     | 24.559 ± 0.0563           |
 
-> DURATION = 100000/3500 + 15 = 43s → 43 amostras por run.
+> DURATION = 100000/8000 + 20 = 32s → 32 amostras por run.
 
 ### N = 500.000 mensagens — 30 runs (27/04/2026)
 
@@ -199,7 +201,7 @@ Variáveis de ambiente relevantes:
 | CPU média observador (%)      | **0.709 ± 0.8764**     | 0.749 ± 0.9423          | 0.978 ± 1.0451            |
 | Memória média observador (MB) | 196.712 ± 0.3179       | **13.639 ± 0.0242**     | 24.606 ± 0.0543           |
 
-> DURATION = 500000/3500 + 15 = 157s → 157 amostras por run.
+> DURATION = 500000/8000 + 20 = 82s → 82 amostras por run.
 
 ### N = 1.000.000 mensagens — 30 runs (27/04/2026)
 
@@ -214,7 +216,7 @@ Variáveis de ambiente relevantes:
 | CPU média observador (%)      | 0.2943 ± 0.4334        | **0.1693 ± 0.1468**     | 0.2753 ± 0.2461           |
 | Memória média observador (MB) | 196.5243 ± 0.2452      | **13.6733 ± 0.0364**    | 24.5493 ± 0.0494          |
 
-> DURATION = 1000000/3500 + 15 ≈ 300s → 300 amostras por run.
+> DURATION = 1000000/8000 + 20 = 145s → 145 amostras por run.
 
 ### Comparativo cross-N — Latência média do observador (média de 30 runs, ms)
 
@@ -403,11 +405,11 @@ Convenção adotada:
 
 | N         | Runs | DURATION/run | Overhead/run | Tempo/run | Tempo total (3 ferramentas) | Status     |
 | --------- | ---- | ------------ | ------------ | --------- | --------------------------- | ---------- |
-| 100.000   | 30   | 43s          | ~35s         | ~80s      | ~2h                         | ✅ Concluído (26/04/2026) |
-| 500.000   | 30   | 157s         | ~35s         | ~192s     | ~5h                         | ✅ Concluído (27/04/2026) |
-| 1.000.000 | 30   | 300s         | ~35s         | ~335s     | ~8h30                       | ✅ Concluído (27/04/2026) |
+| 100.000   | 30   | 32s          | ~35s         | ~67s      | ~1h40                       | ✅ Concluído (26/04/2026) |
+| 500.000   | 30   | 82s          | ~35s         | ~117s     | ~3h                         | ✅ Concluído (27/04/2026) |
+| 1.000.000 | 30   | 145s         | ~35s         | ~180s     | ~4h30                       | ✅ Concluído (27/04/2026) |
 
-> DURATION = `NUM_MESSAGES / 3500 + 15` (divisão inteira bash). Overhead inclui `docker compose down + up + shutdown`. O build ocorre uma única vez antes do loop de runs (via `run_multi.sh`), não mais a cada run.
+> DURATION = `NUM_MESSAGES / 8000 + 20` (divisão inteira bash). Overhead inclui `docker compose down + up + shutdown`. O build ocorre uma única vez antes do loop de runs (via `run_multi.sh`), não mais a cada run.
 
 Comando para cada etapa (rodar uma ferramenta por vez para não perder resultados em caso de falha):
 ```bash
@@ -475,3 +477,198 @@ Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_resul
 #### Correção: código redundante em `plot_results.py`
 
 `plot_memoria_observador()` tinha duas chamadas `find_row()` no início do loop interno que eram imediatamente sobrescritas pelo `for` seguinte. As chamadas redundantes foram removidas — comportamento inalterado.
+
+---
+
+### Investigação: redução de memória eBPF — BCC → libbpf+CO-RE (28/04/2026)
+
+**Contexto:** O observador eBPF original usa BCC (`python3-bpfcc`), que carrega LLVM/Clang no processo Python em tempo de execução para compilar o programa BPF. Isso resulta em ~196 MB de RSS — significativamente acima dos ~13 MB (sysstat) e ~24 MB (Prometheus).
+
+**Hipótese:** Pré-compilar o programa BPF com `clang` no entrypoint do container e carregá-lo em Python via `ctypes + libbpf.so.1` (sem BCC) deveria eliminar a pegada de LLVM do processo principal.
+
+**Implementação (branch `feat/ebpf-libbpf-memory`, Issue #26):**
+
+| Arquivo | Descrição |
+| ------- | --------- |
+| `src/vnf/ebpf_kern.c` | Programa BPF CO-RE com `BPF_KPROBE` + `BPF_CORE_READ` e mapa `BPF_MAP_TYPE_ARRAY` |
+| `src/vnf/ebpf_entrypoint.sh` | Gera `vmlinux.h` via bpftool (BTF do kernel), compila com `clang -D__TARGET_ARCH_x86`, executa o Python |
+| `src/vnf/observador_ebpf_libbpf.py` | Carrega o `.o` via `ctypes + libbpf.so.1`; mesma lógica UDP/waf_metrics do observador original |
+| `configs/Dockerfile.ebpf-libbpf` | Ubuntu 24.04 **sem** `bpfcc-tools`/`python3-bpfcc`; instala apenas `libbpf1 libbpf-dev clang linux-tools-generic` |
+| `docker-compose.ebpf-libbpf.yml` | Stack independente para a variante libbpf |
+| `scripts/run_ebpf_libbpf.sh` | Script de benchmark equivalente ao `run_ebpf.sh` |
+
+**Dificuldades encontradas durante a implementação:**
+
+- O wrapper `/usr/sbin/bpftool` no Ubuntu 24.04 verifica `uname -r` e falha em kernels não-Ubuntu (ex: Manjaro 6.12). Solução: o entrypoint usa `find /usr/lib/linux-tools -name bpftool | head -1` para obter o binário real.
+- A flag de arquitetura BPF deve ser `-D__TARGET_ARCH_x86` (não `x86_64`) para targets x86_64.
+
+**Resultado do primeiro teste (N=100.000, run de validação):**
+
+| Métrica | BCC (original) | libbpf (novo) | Variação |
+| ------- | -------------- | ------------- | -------- |
+| Memória observador (MB) | ~196 | **14,98** | −92% |
+| Latência avg (ms) | ~1,18 | 1,20 | +1,7% |
+| CPU avg (%) | ~0,1 | 0,09 | — |
+| inspect_count | 53.500 | 53.500 | igual |
+
+**Conclusão preliminar:** A variante libbpf+CO-RE reduz o consumo de memória do observador eBPF em ~93%, de ~196 MB para ~15 MB, sem degradação mensurável de latência ou CPU. O consumo passa a ser comparável ao de sysstat (~13 MB).
+
+**Decisão (Opção C):** Substituir o observador BCC pelo libbpf no stack principal (`docker-compose.ebpf.yml`) e re-executar todos os 90 runs (30×3 N) para manter o dataset consistente sob uma única implementação.
+
+- `docker-compose.ebpf.yml` atualizado: observador usa `Dockerfile.ebpf-libbpf` + `ebpf_entrypoint.sh`; volumes `/lib/modules` e `/usr/src` removidos; `/sys/kernel/btf` adicionado.
+- N=100k re-executado: 30 runs concluídos com libbpf em 28/04/2026.
+- N=500k e N=1M: re-execução pendente.
+
+**Resultado N=100k (30 runs libbpf, 28/04/2026):**
+
+| Métrica | eBPF (libbpf) | sysstat | Prometheus |
+| ------- | ------------- | ------- | ---------- |
+| Latência média (ms) | **1.1435 ± 0.0272** | 1.1876 ± 0.0414 | 1.2348 ± 0.0690 |
+| Memória observador (MB) | 15.050 ± 0.036 | **13.689 ± 0.029** | 24.559 ± 0.056 |
+
+eBPF libbpf passa a ter memória comparável ao sysstat (~15 MB vs ~14 MB), eliminando a desvantagem estrutural dos ~196 MB do BCC.
+
+---
+
+### Migração para asyncio + conexões persistentes (29/04/2026)
+
+**Contexto:** O WAF original usava uma thread por conexão TCP (modelo `threading.Thread`). O cliente abria e fechava uma conexão TCP por mensagem. O throughput observado era ~3500 msg/s e o gargalo não era a CPU, mas o overhead de handshake TCP por mensagem e a contenção de threads.
+
+**Diagnóstico do gargalo:**
+
+Com latência de roundtrip UDP de ~1.32 ms e 10 workers, o throughput teórico máximo seria:
+
+```
+10 workers / 0.00132s = ~7576 msg/s
+```
+
+O valor observado (~3500 msg/s) indicava que o custo de abrir e fechar conexões TCP — não a inspeção — era o fator limitante.
+
+**Mudanças implementadas (Issue #27):**
+
+| Componente | Antes | Depois |
+| ---------- | ----- | ------ |
+| `src/vnf/waf.py` | `threading.Thread` por conexão; uma conexão por mensagem | `asyncio.start_server` + `ThreadPoolExecutor`; conexões persistentes com framing de 4 bytes |
+| `src/client/client.py` | `ThreadPoolExecutor(max_workers=10)`; nova conexão TCP por payload | `asyncio.gather` com 200 coroutines; conexão persistente por worker; fila asyncio distribui payloads |
+| `src/vnf/observador_*.py` | `_find_waf()` retornava o primeiro processo com `waf.py` no cmdline | `_find_waf_all()` retorna todos os processos com `waf.py` e agrega CPU/mem |
+| `scripts/run_*.sh` | `DURATION = NUM_MESSAGES/3500 + 15` | `DURATION = NUM_MESSAGES/8000 + 20` |
+
+**Protocolo de framing:**
+
+```
+Requisição: [4 bytes big-endian: comprimento do payload] + [payload]
+Resposta:   "ALLOWED:OK\n" ou "BLOCKED:<motivo>\n"  (newline-terminated)
+```
+
+A conexão permanece aberta; o WAF lê mensagens em loop até o cliente fechar a conexão (`asyncio.IncompleteReadError`).
+
+**Resultado medido (N=100.000, 1 run, 29/04/2026):**
+
+| Métrica | Antes (threading) | Depois (asyncio) | Variação |
+| ------- | ----------------- | ---------------- | -------- |
+| Throughput | ~3500 msg/s | **~8000 msg/s** | +128% |
+| Latência UDP avg (ms) | 1.32 | **0.53** | −60% |
+| CPU WAF avg (%) | 70 | **37** | −47% |
+| inspect_avg_ms | 0.214 | **0.089** | −58% |
+| Memória WAF (MB) | 12 | 21.6 | +80% (ThreadPoolExecutor) |
+
+O aumento de memória (~10 MB) é atribuído ao pool de threads do `ThreadPoolExecutor` (8 workers × overhead de thread Python).
+
+**Decisão de arquitetura — observadores:**
+
+A função `_find_waf_all()` foi introduzida nos três observadores para ser compatível com eventuais futuros modos multiprocessing do WAF: ao invés de monitorar apenas o processo pai (que ficaria idle em multiprocessing), agrega CPU e RSS de todos os processos com `waf.py` no cmdline via `psutil.process_iter`. Em modo single-process (atual), o comportamento é idêntico ao anterior.
+
+---
+
+### Orquestração com Claude Code — agentes e skills (14/05/2026)
+
+Criada estrutura de agentes e skills do Claude Code em `.claude/` para automatizar e padronizar o fluxo de trabalho do projeto.
+
+**Agentes** (`.claude/agents/`) — sub-agentes especializados invocados pelo Claude Code:
+
+| Agente | Responsabilidade |
+| ------ | ---------------- |
+| `experiment-orchestrator` | Orquestra a bateria de testes: sobe docker compose por ferramenta, aguarda conclusão, derruba e consolida |
+| `results-analyst` | Lê os JSONs de resultado e gera análise estatística comparativa |
+| `ebpf-specialist` | Debug de problemas eBPF/BCC/kprobes — latência zero, kretprobes em WSL2, erros de compilação BPF |
+| `docker-debugger` | Investiga falhas de container — portas, redes, volumes, healthcheck |
+| `anomaly-investigator` | Detecta e classifica anomalias nos dados coletados (EXPECTED / ANOMALY / CRITICAL) |
+| `tcc-writer` | Gera texto acadêmico em português formal (ABNT) a partir dos dados de resultado |
+| `metrics-comparator` | Comparação dimensão a dimensão entre as três ferramentas com veredicto e placar |
+
+**Skills** (`.claude/skills/`) — comandos `/skill` disponíveis na sessão do Claude Code:
+
+| Comando | Ação |
+| ------- | ---- |
+| `/validate-env` | Verifica Docker, kernel headers, BCC, portas 8080/9999 antes de rodar testes |
+| `/run-experiment <tool>` | Executa um coletor específico (ebpf / sysstat / prometheus) |
+| `/run-all [duration]` | Executa os três coletores em sequência e gera comparativo |
+| `/check-results` | Exibe resumo rápido dos JSONs de resultado disponíveis |
+| `/generate-report` | Roda `compare.py` e formata a saída |
+| `/analyze-anomalies` | Investigação profunda de anomalias nos dados coletados |
+| `/write-section <seção>` | Gera seção acadêmica do TCC (metodologia / resultados / discussao / conclusao / resumo) |
+
+---
+
+### Atualização de branches e sincronização (14/05/2026)
+
+Branches sincronizadas com o repositório remoto:
+
+| Branch | Situação |
+| ------ | -------- |
+| `main` | Pull de origin/main — 107+ commits integrados |
+| `dev/joao` | Pull de origin/dev/joao — 107 commits atualizados |
+| `dev/rafael` | Pull de origin/dev/rafael — 109 commits atualizados |
+| `feat/ebpf-libbpf-memory` | Branch criada localmente a partir de origin — merge no main pendente |
+
+**Pendências identificadas:**
+
+- Merge de `feat/ebpf-libbpf-memory` no `main` — inclui libbpf+CO-RE como stack principal do eBPF e WAF asyncio
+- Re-coleta de N=500k e N=1M com o stack libbpf (N=100k já concluído na branch)
+
+---
+
+### Streaming de payloads no cliente (14/05/2026)
+
+**Motivação:** o cliente carregava todos os N payloads em memória antes de iniciar o envio (`load_payloads()` retornava uma lista completa). Para N=1M isso representava ~1,2 GB de RAM, tornando N=2M+ inviável por restrições de memória.
+
+**Mudança implementada em `src/client/client.py`:**
+
+| Componente | Antes | Depois |
+| ---------- | ----- | ------ |
+| Carregamento de payloads | `load_payloads()` — lista completa em memória; RAM = O(N) | `payload_producer()` — producer assíncrono via `asyncio.Queue(maxsize=QUEUE_SIZE)`; RAM = O(QUEUE_SIZE) |
+| Leitura do arquivo | Feita integralmente antes do envio | Lazy: um payload por vez via `run_in_executor`, bloqueando quando a queue enche (backpressure automático) |
+| Encerramento dos workers | `queue.get_nowait()` + `except QueueEmpty` | `await queue.get()` + sentinela `None` por worker |
+| Variável de ambiente nova | — | `QUEUE_SIZE` (padrão: 2000) — controla o buffer em memória |
+
+**Impacto no uso de memória:**
+
+| N | RAM antes | RAM depois |
+| - | --------- | ---------- |
+| 1M | ~1,2 GB | ~2,6 MB |
+| 5M | ~6,0 GB | ~2,6 MB |
+| 10M | ~12 GB | ~2,6 MB |
+
+A RAM do cliente agora é constante independente de N. O único limite para N passa a ser o espaço em disco para o arquivo `.bin` de payloads.
+
+---
+
+### Decisões estratégicas (14/05/2026)
+
+**Hardware para coleta dos dados definitivos**
+
+Os dados existentes (N=100k, 500k, 1M — 30 runs cada) foram coletados em notebook com Intel Core i5 11ª geração, sujeito a throttling térmico em runs longos. Os dados definitivos do TCC serão coletados em desktop com AMD Ryzen 5 5500 (6 cores físicos / 12 threads) rodando Ubuntu nativo, pelos seguintes motivos:
+
+- Ausência de throttling térmico — desempenho sustentado e consistente entre runs
+- Mais cores disponíveis para `WAF_INSPECT_WORKERS` — maior throughput (~15.000–20.000 msg/s estimado vs ~8.000 msg/s no notebook)
+- eBPF sem limitações de WSL2 — kretprobes estáveis, latência real medida
+
+**Consequência:** todos os 270 runs (30 × 3 ferramentas × 3 valores de N) serão re-coletados no desktop para garantir consistência do dataset.
+
+**Próximo valor de N**
+
+N=2.000.000 definido como próximo ponto de dados após a migração de hardware. Com throughput estimado de ~15.000 msg/s, cada run leva ~150s, resultando em ~11h para 90 runs (30 × 3 ferramentas) — viável em execução noturna.
+
+**Número de runs**
+
+30 runs por ferramenta por N mantidos conforme definição do orientador.

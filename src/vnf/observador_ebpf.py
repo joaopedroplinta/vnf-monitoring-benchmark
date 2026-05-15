@@ -152,7 +152,7 @@ def main():
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((HOST, PORT))
-    print(f"Observador eBPF-libbpf UDP escutando em {HOST}:{PORT}", flush=True)
+    print(f"Observador eBPF UDP escutando em {HOST}:{PORT}", flush=True)
 
     while True:
         try:

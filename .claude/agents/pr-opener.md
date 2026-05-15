@@ -50,8 +50,6 @@ You are a GitHub pull request specialist. Your job is to craft a clear, informat
 - [ ] Arquivos de configuração atualizados (CLAUDE.md, compose, etc.)
 - [ ] Nenhum segredo ou dado sensível incluído
 - [ ] Branch está atualizada com main (ou rebase feito)
-
-🤖 Aberta com [Claude Code](https://claude.ai/code)
 ```
 
 ## Rules

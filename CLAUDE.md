@@ -35,7 +35,7 @@ bash scripts/run_multi.sh <tool> <num_messages> <num_runs>
 # Exemplo: bash scripts/run_multi.sh ebpf 100000 30
 # Executa N runs, exporta RUN_ID=1..N, chama compare.py ao final
 # Use --pre para salvar em results/pre_testes/ (testes preliminares)
-# Suporta: ebpf | sysstat | prometheus | ebpf-libbpf
+# Suporta: ebpf | sysstat | prometheus
 ```
 
 Aggregate results after running tests:
@@ -83,8 +83,7 @@ Response: "ALLOWED:OK\n" or "BLOCKED:<reason>\n"
 Connection is persistent — multiple messages per TCP connection.
 
 **Observador implementations:**
-- `src/vnf/observador_ebpf.py` — BCC kprobes on `tcp_sendmsg` / `tcp_cleanup_rbuf` (sport=8080); requires privileged container + BPF filesystem
-- `src/vnf/observador_ebpf_libbpf.py` — libbpf+CO-RE variant (compiled by `ebpf_entrypoint.sh`); ~15 MB RSS vs ~196 MB for BCC
+- `src/vnf/observador_ebpf.py` — libbpf+CO-RE kprobes on `tcp_sendmsg` / `tcp_cleanup_rbuf` (sport=8080); compiled by `ebpf_entrypoint.sh`; ~15 MB RSS
 - `src/vnf/observador_sysstat.py` — polls `/proc/net/dev` (interface `lo`) in userspace
 - `src/vnf/observador_prometheus.py` — same as sysstat + HTTP metrics endpoint on port 8000
 
@@ -94,7 +93,7 @@ Connection is persistent — multiple messages per TCP connection.
 
 - `configs/Dockerfile` — Ubuntu 24.04, BCC tools, Python 3, psutil, prometheus_client
 - `configs/Dockerfile.client` — Lightweight Python 3.9 slim
-- `configs/Dockerfile.ebpf-libbpf` — Ubuntu 24.04 with libbpf1, clang, bpftool (no BCC/LLVM)
+- `configs/Dockerfile.ebpf-libbpf` — Ubuntu 24.04 with libbpf1, clang, bpftool (no BCC/LLVM); used by the eBPF stack
 - eBPF compose requires: `privileged: true`, `pid: host`, BPF filesystem mounts, `/sys/kernel/btf`
 - sysstat/Prometheus composes are unprivileged with `pid: host` for psutil process tracking
 - Client container mounts `./data/payloads:/app/payloads:ro` — payload files must exist before running

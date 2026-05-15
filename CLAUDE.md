@@ -141,6 +141,8 @@ This project has custom agents (`.claude/agents/`) and slash commands (`.claude/
 | `anomaly-investigator` | Detects anomalies in collected data |
 | `tcc-writer` | Generates academic Portuguese text from results |
 | `metrics-comparator` | Dimension-by-dimension tool comparison with verdicts |
+| `sysstat-specialist` | `/proc/net/dev` parsing, psutil tracking, WAF metrics debugging |
+| `prometheus-specialist` | Prometheus HTTP endpoint, Gauge anomalies, port 8000 conflicts |
 
 | Command | Usage |
 |---|---|

@@ -702,3 +702,17 @@ Descoberta e correção: o diretório correto para slash commands no Claude Code
 | `prometheus-specialist` | Debug do observador Prometheus — endpoint HTTP `:8000`, Gauges, port 8000 |
 | `pr-opener` | Monta e abre PRs via `gh pr create`, sempre com confirmação antes de executar |
 | `pr-reviewer` | Lê diff completo, emite veredicto estruturado (APROVADO / MUDANÇAS / BLOQUEADO), não submete sem confirmação |
+
+---
+
+### Correção crítica no cliente — incompatibilidade Python 3.9 (16/05/2026)
+
+**Bug:** `src/client/client.py` usava `bytes | None` na assinatura de `_read_payload` (PEP 604, Python 3.10+). O `Dockerfile.client` usa Python 3.9 slim, que não suporta essa sintaxe — o container crashava com `TypeError` na importação, antes de enviar qualquer mensagem ao WAF.
+
+**Impacto:** todos os 30 runs iniciais de N=100k coletados no desktop foram inválidos: `inspect_count=0`, `bytes_rx/tx=0`, `cpu_avg_pct=0`. O problema ficou mascarado porque o probe UDP (`src/probe.py`) opera independentemente do cliente e continuava a registrar latências, dando falsa impressão de experimento concluído.
+
+**Detecção:** análise cruzada de `inspect_count` e ausência de `results/waf_metrics.json` após os runs.
+
+**Correção:** substituir `bytes | None` por `Optional[bytes]` com `from typing import Optional`.
+
+**Consequência:** os 30 runs de N=100k foram descartados e recoletados após o fix.

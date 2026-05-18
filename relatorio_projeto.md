@@ -835,6 +835,18 @@ Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inco
 
 O tempo de resposta do eBPF aumentou de N=1M para N=2M (+0.040ms, +8.2%), enquanto o sysstat permaneceu praticamente estável (+0.002ms, +0.3%). Isso ocorre porque os kprobes (`tcp_sendmsg`, `tcp_cleanup_rbuf`) disparam por pacote — com 2× o tráfego, há 2× as interrupções no kernel. O sysstat lê `/proc/net/dev` uma vez por segundo, independente do volume. A vantagem do eBPF em tempo de resposta encolheu de 85µs (N=1M) para 47µs (N=2M).
 
+#### Anomalias documentadas: runs com inspect_count=0
+
+5 runs apresentaram `inspect_count=0` e `inspect_avg_ms=0` devido a race condition na leitura de `waf_metrics.json` (probe encerrou antes de o WAF gravar o arquivo pela primeira vez). O tempo de resposta UDP nesses runs é válido e entra nas agregações normalmente; apenas as métricas de inspeção devem ser desconsiderados.
+
+| Run | inspect_count |
+|-----|---------------|
+| `sysstat_500000_run4_results.json` | 0 |
+| `sysstat_500000_run14_results.json` | 0 |
+| `sysstat_1000000_run27_results.json` | 0 |
+| `sysstat_2000000_run26_results.json` | 0 |
+| `prometheus_2000000_run25_results.json` | 0 |
+
 #### Correções de documentação (17/05/2026)
 
 - **`docs/arquitetura_c4.svg`:** reformulação do diagrama C4 — fusão dos dois boxes do Observador (eBPF/sysstat/prom + UDP server) em um único contêiner, corrigindo a incoerência arquitetural do C4 Level 2; labels das setas traduzidos para português; label "C4 — Container Diagram (Nível 2)" adicionado; correção do `writing-mode` na seta interna

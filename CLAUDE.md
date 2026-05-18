@@ -50,7 +50,7 @@ python3 src/compare.py            # → results/comparison_all_runs.csv/.json
 | Variable | Default | Description |
 |---|---|---|
 | `NUM_MESSAGES` | 100000 | Used for DURATION calculation and result file naming |
-| `DURATION` | `NUM_MESSAGES/8000 + 20` | How long collectors run (seconds) |
+| `DURATION` | `NUM_MESSAGES/15000 + 20` | How long collectors run (seconds) |
 | `RUN_ID` | 1 | Run identifier appended to result filenames |
 | `WORKERS` | 200 | Concurrent asyncio coroutines in client (persistent connections) |
 | `QUEUE_SIZE` | 2000 | Client payload queue size — controls RAM usage (O(QUEUE_SIZE), not O(N)) |

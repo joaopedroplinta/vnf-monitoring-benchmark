@@ -86,8 +86,8 @@ def compare_single(n):
     print(header)
     print("-" * len(header))
     for row in rows:
-        print(f"{row['metrica']:<35} {str(row.get('ebpf','')):>12} "
-              f"{str(row.get('sysstat','')):>12} {str(row.get('prometheus','')):>12}")
+        print(f"{row['metrica']:<35} {str(row.get('eBPF','')):>12} "
+              f"{str(row.get('sysstat','')):>12} {str(row.get('Prometheus','')):>12}")
     print(f"\n✅ Salvo em {out_csv} e {out_json}")
 
 def discover_ns():

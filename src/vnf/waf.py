@@ -44,6 +44,7 @@ def _flush(s: dict) -> None:
 
 
 def _record(elapsed_ms: float) -> None:
+    snapshot = None
     with _stats_lock:
         _stats["count"]    += 1
         _stats["total_ms"] += elapsed_ms
@@ -52,7 +53,9 @@ def _record(elapsed_ms: float) -> None:
         if elapsed_ms > _stats["max_ms"]:
             _stats["max_ms"] = elapsed_ms
         if _stats["count"] % _WRITE_EVERY == 0:
-            _flush(_stats.copy())
+            snapshot = _stats.copy()
+    if snapshot is not None:
+        _flush(snapshot)
 
 
 # ── Regras WAF ────────────────────────────────────────────────────────────────

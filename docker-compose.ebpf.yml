@@ -37,7 +37,7 @@ services:
     network_mode: "host"
     environment:
       - PAYLOADS_FILE=${PAYLOADS_FILE}
-      - WORKERS=${WORKERS:-10}
+      - WORKERS=${WORKERS:-200}
     volumes:
       - ./src/client:/app
       - ./data/payloads:/app/payloads:ro

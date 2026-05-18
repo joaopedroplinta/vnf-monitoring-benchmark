@@ -29,18 +29,17 @@ tcc_gerenciamento_rede/
 │   ├── probe.py                   # Probe UDP único (configurado por variáveis de ambiente)
 │   ├── vnf/
 │   │   ├── waf.py                 # WAF TCP (porta 8080) — SQLi, XSS, PathTraversal, RCE, NullByte
-│   │   ├── observador_ebpf_libbpf.py # Observador eBPF (libbpf+CO-RE): carrega .o via ctypes, sem BCC
+│   │   ├── observador_ebpf.py     # Observador eBPF (libbpf+CO-RE): kprobes sport=8080, ~15 MB RSS
 │   │   ├── ebpf_kern.c            # Programa BPF CO-RE (kprobes tcp_sendmsg/tcp_cleanup_rbuf)
 │   │   ├── ebpf_entrypoint.sh     # Gera vmlinux.h, compila com clang, exec Python
-│   │   ├── observador_ebpf.py     # Observador eBPF legado (BCC) — substituído por libbpf
 │   │   ├── observador_sysstat.py  # Observador sysstat: /proc/net/dev + psutil WAF
 │   │   └── observador_prometheus.py # Observador Prometheus: /proc/net/dev + psutil WAF + HTTP :8000
 │   ├── client/
 │   │   └── client.py              # Envia payloads pré-gerados ao WAF (asyncio, conexões persistentes)
 │   └── compare.py                 # Consolida resultados em CSV e JSON (3 modos)
 ├── configs/
-│   ├── Dockerfile                 # Imagem base Ubuntu 24.04 + BCC (legado)
-│   ├── Dockerfile.ebpf-libbpf     # Imagem eBPF sem BCC: libbpf1 + clang (usada pelo stack ebpf)
+│   ├── Dockerfile                 # Imagem base Ubuntu 24.04 + Python 3
+│   ├── Dockerfile.ebpf-libbpf     # Imagem eBPF: libbpf1 + clang (usada pelo stack ebpf)
 │   └── Dockerfile.client          # Imagem para o cliente de tráfego
 ├── data/
 │   └── payloads/                  # Arquivos binários de payloads pré-gerados
@@ -53,7 +52,7 @@ tcc_gerenciamento_rede/
 │   ├── run_ebpf.sh                # Executa o teste completo com eBPF (libbpf)
 │   ├── run_sysstat.sh             # Executa o teste completo com sysstat
 │   ├── run_prometheus.sh          # Executa o teste completo com Prometheus
-│   └── run_multi.sh               # Executa N repetições sequenciais de uma ferramenta (ebpf|sysstat|prometheus|ebpf-libbpf)
+│   └── run_multi.sh               # Executa N repetições sequenciais de uma ferramenta (ebpf|sysstat|prometheus)
 ├── docs/
 │   ├── architecture.md            # Documentação de arquitetura
 │   ├── arquitetura_c4.svg         # Diagrama C4 da arquitetura
@@ -63,8 +62,7 @@ tcc_gerenciamento_rede/
 ├── results/                       # Resultados (*_<N>_run<ID>_results.json, .csv, .json)
 │   ├── plots/                     # Gráficos gerados por plot_results.py
 │   └── pre_testes/                # Runs preliminares de validação
-├── docker-compose.ebpf.yml            # Stack eBPF principal (libbpf+CO-RE)
-├── docker-compose.ebpf-libbpf.yml    # Stack eBPF libbpf standalone (para testes isolados)
+├── docker-compose.ebpf.yml        # Stack eBPF (libbpf+CO-RE)
 ├── docker-compose.sysstat.yml
 └── docker-compose.prometheus.yml
 ```
@@ -167,7 +165,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 ## Detalhes dos Observadores
 
-### eBPF (`observador_ebpf_libbpf.py` + `ebpf_kern.c`)
+### eBPF (`observador_ebpf.py` + `ebpf_kern.c`)
 - Programa BPF CO-RE pré-compilado com `clang` no entrypoint do container (`ebpf_entrypoint.sh`).
 - Carregado em Python via `ctypes + libbpf.so.1` — sem BCC/LLVM no processo.
 - `kprobe/tcp_sendmsg`: acumula bytes TX quando `sport == 8080` (respostas do WAF).

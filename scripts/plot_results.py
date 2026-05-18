@@ -31,8 +31,8 @@ os.makedirs(PLOTS_DIR, exist_ok=True)
 TOOLS       = ["ebpf", "sysstat", "prometheus"]
 TOOL_LABELS = {"ebpf": "eBPF", "sysstat": "sysstat", "prometheus": "Prometheus"}
 COLORS      = {"ebpf": "#2196F3", "sysstat": "#FF9800", "prometheus": "#4CAF50"}
-NS          = [100_000, 500_000, 1_000_000]
-NS_LABELS   = {100_000: "100k", 500_000: "500k", 1_000_000: "1M"}
+NS          = [100_000, 500_000, 1_000_000, 2_000_000]
+NS_LABELS   = {100_000: "100k", 500_000: "500k", 1_000_000: "1M", 2_000_000: "2M"}
 
 plt.rcParams.update({
     "font.family":  "DejaVu Sans",
@@ -73,7 +73,7 @@ def load_individual_runs(tool, n):
 def plot_latencia_por_n():
     fig, ax = plt.subplots(figsize=(7, 4.5))
 
-    x = np.array([1, 2, 3])
+    x = np.arange(1, len(NS) + 1)
     x_labels = [NS_LABELS[n] for n in NS]
     width = 0.22
     offsets = {"ebpf": -width, "sysstat": 0, "prometheus": width}
@@ -113,7 +113,7 @@ def plot_latencia_por_n():
 # ── Gráfico 2: Boxplot de latência por ferramenta × N ────────────────────────
 
 def plot_boxplot_latencia():
-    fig, axes = plt.subplots(1, 3, figsize=(12, 5), sharey=True)
+    fig, axes = plt.subplots(1, len(NS), figsize=(4 * len(NS), 5), sharey=True)
 
     for ax, n in zip(axes, NS):
         data_per_tool = []
@@ -152,7 +152,7 @@ def plot_boxplot_latencia():
 def plot_memoria_observador():
     fig, ax = plt.subplots(figsize=(7, 4.5))
 
-    x = np.array([1, 2, 3])
+    x = np.arange(1, len(NS) + 1)
     x_labels = [NS_LABELS[n] for n in NS]
     width = 0.22
     offsets = {"ebpf": -width, "sysstat": 0, "prometheus": width}
@@ -199,7 +199,7 @@ def plot_memoria_observador():
 def plot_cpu_waf():
     fig, ax = plt.subplots(figsize=(7, 4.5))
 
-    x = np.array([1, 2, 3])
+    x = np.arange(1, len(NS) + 1)
     x_labels = [NS_LABELS[n] for n in NS]
     width = 0.22
     offsets = {"ebpf": -width, "sysstat": 0, "prometheus": width}

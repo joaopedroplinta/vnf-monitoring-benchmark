@@ -785,3 +785,58 @@ Usuário `pinguas` adicionado ao grupo `docker` (`sudo usermod -aG docker pingua
 - **Sysstat tem menor footprint de memória** do observador (~13.9 MB vs 15.2 MB eBPF vs 24.8 MB Prometheus)
 - **CPU do observador eBPF** praticamente zero em N=100k (0.051%) — confirma vantagem de overhead do kernel space
 - **PR #30** aberto em `dev/joao → main` com os 180 runs válidos e correções de config
+
+### Recoleta N=1M e coleta N=2M (17/05/2026)
+
+#### Descarte dos dados antigos de N=1M
+
+Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inconsistência de configuração: runs 1–12 tinham 86 samples (config antiga com DURATION menor), run 13 travou, e runs 14–30 tinham 300 samples (config nova). Dados incomparáveis para cálculo de média ± IC95%.
+
+#### Resultados oficiais recoletados — N=1.000.000 (17/05/2026)
+
+> DURATION = 1000000/15000 + 20 ≈ 87s → 86 amostras por run. Config: WORKERS=200, libbpf+CO-RE.
+
+| Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
+| ------- | ------------------- | ---------------------- | ------------------------- |
+| Latência média (ms) | **0.4885 ± 0.0039** | 0.5725 ± 0.0053 | 0.5682 ± 0.0026 |
+| Desvio padrão (ms) | 0.0547 ± 0.0084 | 0.0760 ± 0.0187 | **0.0569 ± 0.0021** |
+| Latência máx (ms) | **0.6789 ± 0.0928** | 0.9165 ± 0.2006 | 0.7450 ± 0.0150 |
+| Latência mín (ms) | **0.3409 ± 0.0150** | 0.4000 ± 0.0132 | 0.4209 ± 0.0152 |
+| CPU média WAF (%) | **107.985 ± 0.051** | 108.093 ± 0.088 | 108.219 ± 0.039 |
+| Memória média WAF (MB) | 44.602 ± 0.250 | **42.750 ± 0.280** | 43.348 ± 0.182 |
+| CPU média observador (%) | 0.819 ± 1.578 | 1.423 ± 1.945 | **0.742 ± 1.398** |
+| Memória média observador (MB) | 15.138 ± 0.017 | **13.551 ± 0.028** | 24.164 ± 0.058 |
+
+#### Resultados oficiais — N=2.000.000 (17/05/2026)
+
+> DURATION = 2000000/15000 + 20 ≈ 153s → 153 amostras por run. Config: WORKERS=200, libbpf+CO-RE.
+
+| Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
+| ------- | ------------------- | ---------------------- | ------------------------- |
+| Latência média (ms) | **0.5283 ± 0.0070** | 0.5746 ± 0.0037 | 0.5932 ± 0.0042 |
+| Desvio padrão (ms) | 0.0850 ± 0.0151 | **0.0626 ± 0.0060** | 0.0621 ± 0.0022 |
+| Latência máx (ms) | 1.0622 ± 0.2253 | 0.8459 ± 0.0978 | **0.8168 ± 0.0301** |
+| Latência mín (ms) | **0.3641 ± 0.0154** | 0.4184 ± 0.0165 | 0.4270 ± 0.0153 |
+| CPU média WAF (%) | **107.958 ± 1.155** | 108.848 ± 0.068 | 108.671 ± 0.078 |
+| Memória média WAF (MB) | **49.891 ± 0.643** | 53.869 ± 0.373 | 53.485 ± 0.447 |
+| CPU média observador (%) | 0.471 ± 0.867 | **0.461 ± 0.836** | 0.801 ± 1.053 |
+| Memória média observador (MB) | 15.066 ± 0.022 | **13.660 ± 0.025** | 24.197 ± 0.051 |
+
+#### Comparativo cross-N — Latência média do observador (média de 30 runs, ms)
+
+| N | eBPF | sysstat | Prometheus |
+|---|------|---------|------------|
+| 100.000 | **0.5407** | 0.6012 | 0.6205 |
+| 500.000 | **0.5038** | 0.5721 | 0.5844 |
+| 1.000.000 | **0.4885** | 0.5725 | 0.5682 |
+| 2.000.000 | **0.5283** | 0.5746 | 0.5932 |
+
+#### Achado relevante: overhead do eBPF escala com volume
+
+O overhead do eBPF aumentou de N=1M para N=2M (+0.040ms, +8.2%), enquanto o sysstat permaneceu praticamente estável (+0.002ms, +0.3%). Isso ocorre porque os kprobes (`tcp_sendmsg`, `tcp_cleanup_rbuf`) disparam por pacote — com 2× o tráfego, há 2× as interrupções no kernel. O sysstat lê `/proc/net/dev` uma vez por segundo, independente do volume. A vantagem do eBPF em latência encolheu de 85µs (N=1M) para 47µs (N=2M).
+
+#### Correções de documentação (17/05/2026)
+
+- **`docs/arquitetura_c4.svg`:** reformulação do diagrama C4 — fusão dos dois boxes do Observador (eBPF/sysstat/prom + UDP server) em um único contêiner, corrigindo a incoerência arquitetural do C4 Level 2; labels das setas traduzidos para português; label "C4 — Container Diagram (Nível 2)" adicionado; correção do `writing-mode` na seta interna
+- **`docs/architecture.md`:** terminologia atualizada (`monitor_*.py` → `observador_*.py`, WORKERS 10 → 200, WAF multithreaded → asyncio + ThreadPoolExecutor, cliente threads → coroutines asyncio com conexões persistentes)
+- **PR #30:** branch `dev/joao` recriado com cherry-pick dos 5 commits relevantes (force-push com `--force-with-lease`) para eliminar histórico de merges antigos acumulados

@@ -154,7 +154,7 @@ Variáveis de ambiente relevantes:
 
 | Métrica                    | eBPF               | sysstat              | Prometheus              |
 | -------------------------- | ------------------ | -------------------- | ----------------------- |
-| Latência média (ms)        | **0.8039 ± 0.043** | 0.8995 ± 0.118       | 1.0924 ± 0.160          |
+| Tempo de resposta médio (ms)        | **0.8039 ± 0.043** | 0.8995 ± 0.118       | 1.0924 ± 0.160          |
 | Desvio padrão (ms)         | **0.3922 ± 0.160** | 0.5672 ± 0.324       | 0.7512 ± 0.297          |
 | CPU média WAF (%)          | 70.998 ± 0.611     | **66.828 ± 1.253**   | 78.182 ± 5.143          |
 | Memória média observador (MB) | 196.458 ± 0.314    | **13.704 ± 0.050**   | 24.596 ± 0.162          |
@@ -163,7 +163,7 @@ Variáveis de ambiente relevantes:
 
 | Métrica                    | eBPF               | sysstat              | Prometheus              |
 | -------------------------- | ------------------ | -------------------- | ----------------------- |
-| Latência média (ms)        | **0.7691 ± 0.037** | 0.8374 ± 0.016       | 0.9531 ± 0.069          |
+| Tempo de resposta médio (ms)        | **0.7691 ± 0.037** | 0.8374 ± 0.016       | 0.9531 ± 0.069          |
 | Desvio padrão (ms)         | 0.5447 ± 0.140     | **0.5130 ± 0.093**   | 0.5694 ± 0.173          |
 | CPU média WAF (%)          | 51.758 ± 0.471     | **50.728 ± 0.378**   | 67.384 ± 8.324          |
 | Memória média observador (MB) | 196.182 ± 0.325    | **13.504 ± 0.062**   | 24.502 ± 0.125          |
@@ -178,10 +178,10 @@ Variáveis de ambiente relevantes:
 
 | Métrica                    | eBPF (média ± IC95)    | sysstat (média ± IC95)  | Prometheus (média ± IC95) |
 | -------------------------- | ---------------------- | ----------------------- | ------------------------- |
-| Latência média (ms)        | 1.2252 ± 0.0498        | **1.1876 ± 0.0414**     | 1.2348 ± 0.0690           |
+| Tempo de resposta médio (ms)        | 1.2252 ± 0.0498        | **1.1876 ± 0.0414**     | 1.2348 ± 0.0690           |
 | Desvio padrão (ms)         | 0.9003 ± 0.1402        | **0.8323 ± 0.1306**     | 0.8647 ± 0.1148           |
-| Latência máx (ms)          | 5.5523 ± 0.9028        | 5.2487 ± 0.8089         | **5.0872 ± 0.6464**       |
-| Latência mín (ms)          | 0.5307 ± 0.0148        | 0.5265 ± 0.0226         | **0.4997 ± 0.0332**       |
+| Tempo de resposta máx (ms)          | 5.5523 ± 0.9028        | 5.2487 ± 0.8089         | **5.0872 ± 0.6464**       |
+| Tempo de resposta mín (ms)          | 0.5307 ± 0.0148        | 0.5265 ± 0.0226         | **0.4997 ± 0.0332**       |
 | CPU média WAF (%)          | **66.311 ± 2.2258**    | 70.008 ± 0.1606         | 68.356 ± 3.2806           |
 | Memória média WAF (MB)     | 12.194 ± 0.0147        | **12.155 ± 0.0200**     | 12.220 ± 0.0206           |
 | CPU média observador (%)      | 1.927 ± 2.6211         | 2.860 ± 4.2246          | **1.402 ± 1.8656**        |
@@ -193,10 +193,10 @@ Variáveis de ambiente relevantes:
 
 | Métrica                    | eBPF (média ± IC95)    | sysstat (média ± IC95)  | Prometheus (média ± IC95) |
 | -------------------------- | ---------------------- | ----------------------- | ------------------------- |
-| Latência média (ms)        | **1.3380 ± 0.0309**    | 1.4053 ± 0.0267         | 1.4381 ± 0.0265           |
+| Tempo de resposta médio (ms)        | **1.3380 ± 0.0309**    | 1.4053 ± 0.0267         | 1.4381 ± 0.0265           |
 | Desvio padrão (ms)         | **0.9469 ± 0.0861**    | 1.0322 ± 0.0748         | 1.0469 ± 0.0772           |
-| Latência máx (ms)          | 7.7065 ± 1.0172        | 7.8964 ± 0.8772         | **7.7276 ± 0.9048**       |
-| Latência mín (ms)          | **0.4412 ± 0.0264**    | 0.5098 ± 0.0118         | 0.5102 ± 0.0106           |
+| Tempo de resposta máx (ms)          | 7.7065 ± 1.0172        | 7.8964 ± 0.8772         | **7.7276 ± 0.9048**       |
+| Tempo de resposta mín (ms)          | **0.4412 ± 0.0264**    | 0.5098 ± 0.0118         | 0.5102 ± 0.0106           |
 | CPU média WAF (%)          | 72.1337 ± 0.1761       | 68.3013 ± 0.2223        | **67.4517 ± 0.2249**      |
 | Memória média WAF (MB)     | **12.197 ± 0.0245**    | 12.1983 ± 0.0222        | 12.2103 ± 0.0175          |
 | CPU média observador (%)      | **0.709 ± 0.8764**     | 0.749 ± 0.9423          | 0.978 ± 1.0451            |
@@ -208,10 +208,10 @@ Variáveis de ambiente relevantes:
 
 | Métrica                       | eBPF (média ± IC95)    | sysstat (média ± IC95)  | Prometheus (média ± IC95) |
 | ----------------------------- | ---------------------- | ----------------------- | ------------------------- |
-| Latência média (ms)           | **1.1016 ± 0.0140**    | 1.3141 ± 0.0548         | 1.2765 ± 0.0143           |
+| Tempo de resposta médio (ms)           | **1.1016 ± 0.0140**    | 1.3141 ± 0.0548         | 1.2765 ± 0.0143           |
 | Desvio padrão (ms)            | **0.7118 ± 0.0324**    | 0.8379 ± 0.0693         | 0.7442 ± 0.0347           |
-| Latência máx (ms)             | **6.0817 ± 0.2919**    | 7.3840 ± 0.8908         | 6.5889 ± 0.5932           |
-| Latência mín (ms)             | 0.3854 ± 0.0140        | **0.3333 ± 0.0299**     | 0.5218 ± 0.0461           |
+| Tempo de resposta máx (ms)             | **6.0817 ± 0.2919**    | 7.3840 ± 0.8908         | 6.5889 ± 0.5932           |
+| Tempo de resposta mín (ms)             | 0.3854 ± 0.0140        | **0.3333 ± 0.0299**     | 0.5218 ± 0.0461           |
 | CPU média WAF (%)             | **65.1473 ± 0.2609**   | 65.8940 ± 0.5843        | 70.1823 ± 0.5326          |
 | Memória média WAF (MB)        | 12.2693 ± 0.0206       | **12.2390 ± 0.0270**    | 12.2963 ± 0.0230          |
 | CPU média observador (%)      | 0.2943 ± 0.4334        | **0.1693 ± 0.1468**     | 0.2753 ± 0.2461           |
@@ -508,7 +508,7 @@ Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_resul
 | Métrica | BCC (original) | libbpf (novo) | Variação |
 | ------- | -------------- | ------------- | -------- |
 | Memória observador (MB) | ~196 | **14,98** | −92% |
-| Latência avg (ms) | ~1,18 | 1,20 | +1,7% |
+| Tempo de resposta médio (ms) | ~1,18 | 1,20 | +1,7% |
 | CPU avg (%) | ~0,1 | 0,09 | — |
 | inspect_count | 53.500 | 53.500 | igual |
 
@@ -524,7 +524,7 @@ Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_resul
 
 | Métrica | eBPF (libbpf) | sysstat | Prometheus |
 | ------- | ------------- | ------- | ---------- |
-| Latência média (ms) | **1.1435 ± 0.0272** | 1.1876 ± 0.0414 | 1.2348 ± 0.0690 |
+| Tempo de resposta médio (ms) | **1.1435 ± 0.0272** | 1.1876 ± 0.0414 | 1.2348 ± 0.0690 |
 | Memória observador (MB) | 15.050 ± 0.036 | **13.689 ± 0.029** | 24.559 ± 0.056 |
 
 eBPF libbpf passa a ter memória comparável ao sysstat (~15 MB vs ~14 MB), eliminando a desvantagem estrutural dos ~196 MB do BCC.
@@ -568,7 +568,7 @@ A conexão permanece aberta; o WAF lê mensagens em loop até o cliente fechar a
 | Métrica | Antes (threading) | Depois (asyncio) | Variação |
 | ------- | ----------------- | ---------------- | -------- |
 | Throughput | ~3500 msg/s | **~8000 msg/s** | +128% |
-| Latência UDP avg (ms) | 1.32 | **0.53** | −60% |
+| Tempo de resposta UDP médio (ms) | 1.32 | **0.53** | −60% |
 | CPU WAF avg (%) | 70 | **37** | −47% |
 | inspect_avg_ms | 0.214 | **0.089** | −58% |
 | Memória WAF (MB) | 12 | 21.6 | +80% (ThreadPoolExecutor) |
@@ -735,7 +735,7 @@ Com WORKERS=10, o cliente não conseguia saturar o WAF — a CPU do WAF ficava e
 #### Anomalia detectada no Prometheus 500k (dados antigos)
 
 Antes da recoleta, análise dos dados existentes de Prometheus 500k revelou valores críticos:
-- Latência média: 1.438ms (vs 0.504ms eBPF) — 2.8× maior
+- Tempo de resposta médio: 1.438ms (vs 0.504ms eBPF) — 2.8× maior
 - Desvio padrão: 1.047ms (vs ~0.06ms nas demais)
 - CPU WAF: 67.5% (vs 107% nas demais)
 - `inspect_count`: ~147k em vez de 500k
@@ -748,10 +748,10 @@ Root cause: os runs de Prometheus 500k foram coletados em 27/04/2026 com `WORKER
 
 | Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
 | ------- | ------------------- | ---------------------- | ------------------------- |
-| Latência média (ms) | **0.5407 ± 0.0121** | 0.6012 ± 0.0048 | 0.6205 ± 0.0046 |
+| Tempo de resposta médio (ms) | **0.5407 ± 0.0121** | 0.6012 ± 0.0048 | 0.6205 ± 0.0046 |
 | Desvio padrão (ms) | 0.0808 ± 0.0064 | **0.0797 ± 0.0048** | 0.0878 ± 0.0065 |
-| Latência máx (ms) | **0.7473 ± 0.0330** | 0.7797 ± 0.0318 | 0.8451 ± 0.0358 |
-| Latência mín (ms) | **0.3632 ± 0.0196** | 0.4010 ± 0.0098 | 0.4164 ± 0.0153 |
+| Tempo de resposta máx (ms) | **0.7473 ± 0.0330** | 0.7797 ± 0.0318 | 0.8451 ± 0.0358 |
+| Tempo de resposta mín (ms) | **0.3632 ± 0.0196** | 0.4010 ± 0.0098 | 0.4164 ± 0.0153 |
 | CPU média WAF (%) | **52.385 ± 7.283** | 57.230 ± 0.200 | 57.044 ± 0.158 |
 | Memória média WAF (MB) | 28.955 ± 0.083 | **28.106 ± 0.045** | 28.122 ± 0.046 |
 | CPU média observador (%) | **0.051 ± 0.010** | 4.663 ± 6.543 | 2.373 ± 4.720 |
@@ -765,10 +765,10 @@ Root cause: os runs de Prometheus 500k foram coletados em 27/04/2026 com `WORKER
 
 | Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
 | ------- | ------------------- | ---------------------- | ------------------------- |
-| Latência média (ms) | **0.5038 ± 0.0055** | 0.5721 ± 0.0034 | 0.5844 ± 0.0042 |
+| Tempo de resposta médio (ms) | **0.5038 ± 0.0055** | 0.5721 ± 0.0034 | 0.5844 ± 0.0042 |
 | Desvio padrão (ms) | 0.0669 ± 0.0258 | **0.0587 ± 0.0028** | 0.0598 ± 0.0028 |
-| Latência máx (ms) | 0.7475 ± 0.2027 | **0.7227 ± 0.0136** | 0.7417 ± 0.0200 |
-| Latência mín (ms) | **0.3552 ± 0.0143** | 0.4151 ± 0.0162 | 0.4121 ± 0.0118 |
+| Tempo de resposta máx (ms) | 0.7475 ± 0.2027 | **0.7227 ± 0.0136** | 0.7417 ± 0.0200 |
+| Tempo de resposta mín (ms) | **0.3552 ± 0.0143** | 0.4151 ± 0.0162 | 0.4121 ± 0.0118 |
 | CPU média WAF (%) | **107.02 ± 0.049** | 107.40 ± 0.052 | 107.42 ± 0.047 |
 | Memória média WAF (MB) | 37.527 ± 0.118 | 36.454 ± 0.094 | **36.426 ± 0.095** |
 | CPU média observador (%) | 3.515 ± 3.976 | **1.152 ± 2.244** | 3.484 ± 5.227 |
@@ -798,10 +798,10 @@ Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inco
 
 | Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
 | ------- | ------------------- | ---------------------- | ------------------------- |
-| Latência média (ms) | **0.4885 ± 0.0039** | 0.5725 ± 0.0053 | 0.5682 ± 0.0026 |
+| Tempo de resposta médio (ms) | **0.4885 ± 0.0039** | 0.5725 ± 0.0053 | 0.5682 ± 0.0026 |
 | Desvio padrão (ms) | 0.0547 ± 0.0084 | 0.0760 ± 0.0187 | **0.0569 ± 0.0021** |
-| Latência máx (ms) | **0.6789 ± 0.0928** | 0.9165 ± 0.2006 | 0.7450 ± 0.0150 |
-| Latência mín (ms) | **0.3409 ± 0.0150** | 0.4000 ± 0.0132 | 0.4209 ± 0.0152 |
+| Tempo de resposta máx (ms) | **0.6789 ± 0.0928** | 0.9165 ± 0.2006 | 0.7450 ± 0.0150 |
+| Tempo de resposta mín (ms) | **0.3409 ± 0.0150** | 0.4000 ± 0.0132 | 0.4209 ± 0.0152 |
 | CPU média WAF (%) | **107.985 ± 0.051** | 108.093 ± 0.088 | 108.219 ± 0.039 |
 | Memória média WAF (MB) | 44.602 ± 0.250 | **42.750 ± 0.280** | 43.348 ± 0.182 |
 | CPU média observador (%) | 0.819 ± 1.578 | 1.423 ± 1.945 | **0.742 ± 1.398** |
@@ -813,16 +813,16 @@ Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inco
 
 | Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
 | ------- | ------------------- | ---------------------- | ------------------------- |
-| Latência média (ms) | **0.5283 ± 0.0070** | 0.5746 ± 0.0037 | 0.5932 ± 0.0042 |
+| Tempo de resposta médio (ms) | **0.5283 ± 0.0070** | 0.5746 ± 0.0037 | 0.5932 ± 0.0042 |
 | Desvio padrão (ms) | 0.0850 ± 0.0151 | **0.0626 ± 0.0060** | 0.0621 ± 0.0022 |
-| Latência máx (ms) | 1.0622 ± 0.2253 | 0.8459 ± 0.0978 | **0.8168 ± 0.0301** |
-| Latência mín (ms) | **0.3641 ± 0.0154** | 0.4184 ± 0.0165 | 0.4270 ± 0.0153 |
+| Tempo de resposta máx (ms) | 1.0622 ± 0.2253 | 0.8459 ± 0.0978 | **0.8168 ± 0.0301** |
+| Tempo de resposta mín (ms) | **0.3641 ± 0.0154** | 0.4184 ± 0.0165 | 0.4270 ± 0.0153 |
 | CPU média WAF (%) | **107.958 ± 1.155** | 108.848 ± 0.068 | 108.671 ± 0.078 |
 | Memória média WAF (MB) | **49.891 ± 0.643** | 53.869 ± 0.373 | 53.485 ± 0.447 |
 | CPU média observador (%) | 0.471 ± 0.867 | **0.461 ± 0.836** | 0.801 ± 1.053 |
 | Memória média observador (MB) | 15.066 ± 0.022 | **13.660 ± 0.025** | 24.197 ± 0.051 |
 
-#### Comparativo cross-N — Latência média do observador (média de 30 runs, ms)
+#### Comparativo cross-N — Tempo de resposta médio do observador (média de 30 runs, ms)
 
 | N | eBPF | sysstat | Prometheus |
 |---|------|---------|------------|
@@ -834,6 +834,18 @@ Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inco
 #### Achado relevante: overhead do eBPF escala com volume
 
 O tempo de resposta do eBPF aumentou de N=1M para N=2M (+0.040ms, +8.2%), enquanto o sysstat permaneceu praticamente estável (+0.002ms, +0.3%). Isso ocorre porque os kprobes (`tcp_sendmsg`, `tcp_cleanup_rbuf`) disparam por pacote — com 2× o tráfego, há 2× as interrupções no kernel. O sysstat lê `/proc/net/dev` uma vez por segundo, independente do volume. A vantagem do eBPF em tempo de resposta encolheu de 85µs (N=1M) para 47µs (N=2M).
+
+#### Anomalias documentadas: runs com inspect_count=0
+
+5 runs apresentaram `inspect_count=0` e `inspect_avg_ms=0` devido a race condition na leitura de `waf_metrics.json` (probe encerrou antes de o WAF gravar o arquivo pela primeira vez). O tempo de resposta UDP nesses runs é válido e entra nas agregações normalmente; apenas as métricas de inspeção devem ser desconsiderados.
+
+| Run | inspect_count |
+|-----|---------------|
+| `sysstat_500000_run4_results.json` | 0 |
+| `sysstat_500000_run14_results.json` | 0 |
+| `sysstat_1000000_run27_results.json` | 0 |
+| `sysstat_2000000_run26_results.json` | 0 |
+| `prometheus_2000000_run25_results.json` | 0 |
 
 #### Correções de documentação (17/05/2026)
 

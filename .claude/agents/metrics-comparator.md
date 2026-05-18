@@ -15,7 +15,7 @@ Read the experiment results and produce a metric-by-metric competitive analysis 
 
 ## Comparison dimensions
 
-### 1. Overhead de monitoramento (latência)
+### 1. Overhead de monitoramento (tempo de resposta)
 - Metric: `monitor_latency_avg_ms`, `monitor_latency_stddev_ms`
 - Winner: lower avg + lower stddev = less impact on the monitored system
 - Note: eBPF latency = 0 in WSL2 is a measurement artifact, not real zero overhead

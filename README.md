@@ -29,18 +29,17 @@ tcc_gerenciamento_rede/
 │   ├── probe.py                   # Probe UDP único (configurado por variáveis de ambiente)
 │   ├── vnf/
 │   │   ├── waf.py                 # WAF TCP (porta 8080) — SQLi, XSS, PathTraversal, RCE, NullByte
-│   │   ├── observador_ebpf_libbpf.py # Observador eBPF (libbpf+CO-RE): carrega .o via ctypes, sem BCC
+│   │   ├── observador_ebpf.py     # Observador eBPF (libbpf+CO-RE): kprobes sport=8080, ~15 MB RSS
 │   │   ├── ebpf_kern.c            # Programa BPF CO-RE (kprobes tcp_sendmsg/tcp_cleanup_rbuf)
 │   │   ├── ebpf_entrypoint.sh     # Gera vmlinux.h, compila com clang, exec Python
-│   │   ├── observador_ebpf.py     # Observador eBPF legado (BCC) — substituído por libbpf
 │   │   ├── observador_sysstat.py  # Observador sysstat: /proc/net/dev + psutil WAF
 │   │   └── observador_prometheus.py # Observador Prometheus: /proc/net/dev + psutil WAF + HTTP :8000
 │   ├── client/
 │   │   └── client.py              # Envia payloads pré-gerados ao WAF (asyncio, conexões persistentes)
 │   └── compare.py                 # Consolida resultados em CSV e JSON (3 modos)
 ├── configs/
-│   ├── Dockerfile                 # Imagem base Ubuntu 24.04 + BCC (legado)
-│   ├── Dockerfile.ebpf-libbpf     # Imagem eBPF sem BCC: libbpf1 + clang (usada pelo stack ebpf)
+│   ├── Dockerfile                 # Imagem base Ubuntu 24.04 + Python 3
+│   ├── Dockerfile.ebpf-libbpf     # Imagem eBPF: libbpf1 + clang (usada pelo stack ebpf)
 │   └── Dockerfile.client          # Imagem para o cliente de tráfego
 ├── data/
 │   └── payloads/                  # Arquivos binários de payloads pré-gerados
@@ -53,7 +52,7 @@ tcc_gerenciamento_rede/
 │   ├── run_ebpf.sh                # Executa o teste completo com eBPF (libbpf)
 │   ├── run_sysstat.sh             # Executa o teste completo com sysstat
 │   ├── run_prometheus.sh          # Executa o teste completo com Prometheus
-│   └── run_multi.sh               # Executa N repetições sequenciais de uma ferramenta (ebpf|sysstat|prometheus|ebpf-libbpf)
+│   └── run_multi.sh               # Executa N repetições sequenciais de uma ferramenta (ebpf|sysstat|prometheus)
 ├── docs/
 │   ├── architecture.md            # Documentação de arquitetura
 │   ├── arquitetura_c4.svg         # Diagrama C4 da arquitetura
@@ -63,8 +62,7 @@ tcc_gerenciamento_rede/
 ├── results/                       # Resultados (*_<N>_run<ID>_results.json, .csv, .json)
 │   ├── plots/                     # Gráficos gerados por plot_results.py
 │   └── pre_testes/                # Runs preliminares de validação
-├── docker-compose.ebpf.yml            # Stack eBPF principal (libbpf+CO-RE)
-├── docker-compose.ebpf-libbpf.yml    # Stack eBPF libbpf standalone (para testes isolados)
+├── docker-compose.ebpf.yml        # Stack eBPF (libbpf+CO-RE)
 ├── docker-compose.sysstat.yml
 └── docker-compose.prometheus.yml
 ```
@@ -149,9 +147,9 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 | Métrica | Origem | Descrição |
 |---------|--------|-----------|
-| `observador_latency_avg_ms` | probe | Latência média da roundtrip UDP (overhead do monitoramento) |
+| `observador_latency_avg_ms` | probe | Tempo de resposta médio da roundtrip UDP (overhead do monitoramento) |
 | `observador_latency_stddev_ms` | probe | Desvio padrão do tempo de resposta |
-| `observador_latency_max_ms` | probe | Latência máxima observada |
+| `observador_latency_max_ms` | probe | Tempo de resposta máximo observado |
 | `observador_samples` | probe | Número de amostras coletadas |
 | `bytes_rx / bytes_tx` | observador | eBPF: kprobe sport=8080; sysstat/Prom: `/proc/net/dev` |
 | `cpu_avg_pct` | observador (psutil) | Uso médio de CPU do processo WAF |
@@ -167,7 +165,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 ## Detalhes dos Observadores
 
-### eBPF (`observador_ebpf_libbpf.py` + `ebpf_kern.c`)
+### eBPF (`observador_ebpf.py` + `ebpf_kern.c`)
 - Programa BPF CO-RE pré-compilado com `clang` no entrypoint do container (`ebpf_entrypoint.sh`).
 - Carregado em Python via `ctypes + libbpf.so.1` — sem BCC/LLVM no processo.
 - `kprobe/tcp_sendmsg`: acumula bytes TX quando `sport == 8080` (respostas do WAF).
@@ -210,7 +208,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
-| Latência média (ms) | **0.5407 ± 0.0121** | 0.6012 ± 0.0048 | 0.6205 ± 0.0046 |
+| Tempo de resposta médio (ms) | **0.5407 ± 0.0121** | 0.6012 ± 0.0048 | 0.6205 ± 0.0046 |
 | Desvio padrão (ms) | 0.0808 ± 0.0064 | **0.0797 ± 0.0048** | 0.0878 ± 0.0065 |
 | CPU média WAF (%) | **52.385 ± 7.283** | 57.230 ± 0.200 | 57.044 ± 0.158 |
 | Memória média WAF (MB) | 28.955 ± 0.083 | **28.106 ± 0.045** | 28.122 ± 0.046 |
@@ -223,7 +221,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
-| Latência média (ms) | **0.5038 ± 0.0055** | 0.5721 ± 0.0034 | 0.5844 ± 0.0042 |
+| Tempo de resposta médio (ms) | **0.5038 ± 0.0055** | 0.5721 ± 0.0034 | 0.5844 ± 0.0042 |
 | Desvio padrão (ms) | 0.0669 ± 0.0258 | **0.0587 ± 0.0028** | 0.0598 ± 0.0028 |
 | CPU média WAF (%) | **107.02 ± 0.049** | 107.40 ± 0.052 | 107.42 ± 0.047 |
 | Memória média WAF (MB) | 37.527 ± 0.118 | 36.454 ± 0.094 | **36.426 ± 0.095** |
@@ -236,7 +234,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
-| Latência média (ms) | **0.4885 ± 0.0039** | 0.5725 ± 0.0053 | 0.5682 ± 0.0026 |
+| Tempo de resposta médio (ms) | **0.4885 ± 0.0039** | 0.5725 ± 0.0053 | 0.5682 ± 0.0026 |
 | Desvio padrão (ms) | 0.0547 ± 0.0084 | 0.0760 ± 0.0187 | **0.0569 ± 0.0021** |
 | CPU média WAF (%) | **107.985 ± 0.051** | 108.093 ± 0.088 | 108.219 ± 0.039 |
 | Memória média WAF (MB) | 44.602 ± 0.250 | **42.750 ± 0.280** | 43.348 ± 0.182 |
@@ -249,14 +247,14 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
-| Latência média (ms) | **0.5283 ± 0.0070** | 0.5746 ± 0.0037 | 0.5932 ± 0.0042 |
+| Tempo de resposta médio (ms) | **0.5283 ± 0.0070** | 0.5746 ± 0.0037 | 0.5932 ± 0.0042 |
 | Desvio padrão (ms) | 0.0850 ± 0.0151 | **0.0626 ± 0.0060** | 0.0621 ± 0.0022 |
 | CPU média WAF (%) | **107.958 ± 1.155** | 108.848 ± 0.068 | 108.671 ± 0.078 |
 | Memória média WAF (MB) | **49.891 ± 0.643** | 53.869 ± 0.373 | 53.485 ± 0.447 |
 | CPU média observador (%) | 0.471 ± 0.867 | **0.461 ± 0.836** | 0.801 ± 1.053 |
 | Memória média observador (MB) | 15.066 ± 0.022 | **13.660 ± 0.025** | 24.197 ± 0.051 |
 
-### Comparativo cross-N — Latência média (ms)
+### Comparativo cross-N — Tempo de resposta médio (ms)
 
 | N | eBPF | sysstat | Prometheus |
 |---|------|---------|------------|

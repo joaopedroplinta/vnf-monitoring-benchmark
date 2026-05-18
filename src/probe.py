@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Probe UDP — TCC Gerenciamento de Rede
-Mede a latência de monitoramento (round-trip UDP) de qualquer observador.
+Mede o tempo de resposta do monitoramento (round-trip UDP) de qualquer observador.
 Configurado via variáveis de ambiente:
   COLLECTOR    — nome da ferramenta (ebpf | sysstat | prometheus)
   RESULTS_PATH — caminho do JSON de saída

@@ -50,7 +50,7 @@ python3 src/compare.py            # → results/comparison_all_runs.csv/.json
 | Variable | Default | Description |
 |---|---|---|
 | `NUM_MESSAGES` | 100000 | Used for DURATION calculation and result file naming |
-| `DURATION` | `NUM_MESSAGES/8000 + 20` | How long collectors run (seconds) |
+| `DURATION` | `NUM_MESSAGES/15000 + 20` | How long collectors run (seconds) |
 | `RUN_ID` | 1 | Run identifier appended to result filenames |
 | `WORKERS` | 200 | Concurrent asyncio coroutines in client (persistent connections) |
 | `QUEUE_SIZE` | 2000 | Client payload queue size — controls RAM usage (O(QUEUE_SIZE), not O(N)) |
@@ -73,7 +73,7 @@ Client → WAF (TCP :8080) → Observador (UDP :9999)
 1. `src/client/client.py` streams pre-generated payloads from `PAYLOADS_FILE` via asyncio queue (lazy loading — constant RAM regardless of N) and sends to WAF on port 8080 using 200 persistent connections with 4-byte framing
 2. WAF (`src/vnf/waf.py`) inspects for SQLi, XSS, Path Traversal, RCE, Null Byte attacks using asyncio + ThreadPoolExecutor; writes inspection timing to `waf_metrics.json` every 100 requests
 3. Observador (`src/vnf/observador_*.py`) reads `waf_metrics.json` and serves UDP probes on :9999 with a JSON of metrics (bytes RX/TX, CPU/mem, inspect stats)
-4. `src/probe.py` sends UDP probes every 1s, measuring roundtrip latency as the primary overhead metric
+4. `src/probe.py` sends UDP probes every 1s, measuring roundtrip response time (RTT UDP) as the primary overhead metric
 
 **Payload protocol (WAF ↔ Client):**
 ```

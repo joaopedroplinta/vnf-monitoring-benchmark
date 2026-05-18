@@ -11,8 +11,8 @@ if ! [[ "${NUM_MESSAGES}" =~ ^[1-9][0-9]*$ ]]; then
     exit 1
 fi
 RUN_ID=${RUN_ID:-1}
-WORKERS=${WORKERS:-10}
-DURATION=$(( (NUM_MESSAGES / 8000) + 20 )) # estimativa: ~8000 msg/s (asyncio + 200 workers) + 20s margem
+WORKERS=${WORKERS:-200}
+DURATION=$(( (NUM_MESSAGES / 15000) + 20 )) # estimativa: ~15000 msg/s (asyncio + 200 workers) + 20s margem
 SLEEP=$((DURATION + 30))                    # +30s para startup/shutdown dos containers
 
 # Arquivo de payloads pré-gerado (host → container via volume ./data/payloads:/app/payloads)

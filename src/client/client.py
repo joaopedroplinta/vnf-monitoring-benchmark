@@ -8,6 +8,7 @@ Payloads são lidos em streaming (lazy) via asyncio.Queue para manter RAM consta
 independente do número total de mensagens (N=5M, 10M, etc.).
 """
 import asyncio
+from typing import Optional
 import struct
 import time
 import os
@@ -19,7 +20,7 @@ PAYLOADS_FILE = os.environ.get("PAYLOADS_FILE", "")
 QUEUE_SIZE    = int(os.environ.get("QUEUE_SIZE", 2000))
 
 
-def _read_payload(f) -> bytes | None:
+def _read_payload(f) -> Optional[bytes]:
     """Lê um payload do arquivo binário aberto. Retorna None no EOF."""
     header = f.read(4)
     if len(header) < 4:

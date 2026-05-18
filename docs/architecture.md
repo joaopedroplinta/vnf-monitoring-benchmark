@@ -12,8 +12,8 @@ carga de tráfego e duração, para garantir comparação justa.
 │                                                                  │
 │   ┌─────────────────────┐  TCP :8080  ┌────────────────────────┐ │
 │   │      Cliente        │ ──────────▶ │         WAF            │ │
-│   │     client.py       │  10 workers │       waf.py           │ │
-│   │  60% limpos         │  concorrentes│ SQLi/XSS/RCE/PathTrav. │ │
+│   │     client.py       │ 200 workers │       waf.py           │ │
+│   │  60% limpos         │  asyncio    │ SQLi/XSS/RCE/PathTrav. │ │
 │   │  40% maliciosos     │             │   NullByte             │ │
 │   │  seed=42 (fixo)     │             └────────────────────────┘ │
 │   └─────────────────────┘                       ▲                │
@@ -22,18 +22,18 @@ carga de tráfego e duração, para garantir comparação justa.
 │                    ┌────────────────────────────┴─────────────┐  │
 │                    │        Monitor-server (UDP :9999)         │  │
 │                    │                                          │  │
-│                    │  eBPF variant     monitor_ebpf.py        │  │
+│                    │  eBPF variant     observador_ebpf.py        │  │
 │                    │  → kprobes tcp_sendmsg/tcp_cleanup_rbuf  │  │
 │                    │  → filtra sport=8080 no kernel           │  │
 │                    │  → psutil CPU/mem do processo WAF        │  │
 │                    │  → psutil CPU/mem do próprio coletor     │  │
 │                    │                                          │  │
-│                    │  sysstat variant  monitor_sysstat.py     │  │
+│                    │  sysstat variant  observador_sysstat.py     │  │
 │                    │  → /proc/net/dev (interface lo)          │  │
 │                    │  → psutil CPU/mem do processo WAF        │  │
 │                    │  → psutil CPU/mem do próprio coletor     │  │
 │                    │                                          │  │
-│                    │  Prometheus variant monitor_prometheus.py│  │
+│                    │  Prometheus variant observador_prometheus.py│  │
 │                    │  → /proc/net/dev (interface lo)          │  │
 │                    │  → psutil CPU/mem do processo WAF        │  │
 │                    │  → psutil CPU/mem do próprio coletor     │  │
@@ -65,11 +65,11 @@ carga de tráfego e duração, para garantir comparação justa.
 ## Componentes
 
 ### WAF — `src/vnf/waf.py`
-- Servidor TCP na porta 8080, multithreaded (uma thread por conexão).
-- Inspeciona cada payload com 5 regras: SQLi, XSS, PathTraversal, RCE, NullByte.
-- Não escreve métricas — coletadas externamente pelo monitor-server.
+- Servidor TCP na porta 8080, asyncio + ThreadPoolExecutor (workers = `WAF_INSPECT_WORKERS`, padrão: `os.cpu_count()`).
+- Inspeciona cada payload com 5 regras: SQLi, XSS, PathTraversal, RCE, NullByte; escreve timing em `waf_metrics.json` a cada 100 requisições.
+- Não expõe UDP — métricas coletadas externamente pelo Observador.
 
-### Monitor-server — `src/vnf/monitor_ebpf.py` | `monitor_sysstat.py` | `monitor_prometheus.py`
+### Observador — `src/vnf/observador_ebpf.py` | `observador_sysstat.py` | `observador_prometheus.py`
 - Servidor UDP na porta 9999.
 - Coleta métricas do WAF usando a ferramenta correspondente.
 - Responde cada request UDP com JSON contendo:
@@ -85,14 +85,14 @@ carga de tráfego e duração, para garantir comparação justa.
 - Script único compartilhado pelas 3 variantes, configurado via env vars (`COLLECTOR`, `RESULTS_PATH`, `DURATION`, `MONITOR_HOST`, `MONITOR_PORT`).
 - Aguarda o monitor estar pronto (`wait_ready`) antes de iniciar — evita perda de amostras no startup do BPF.
 - Handler SIGTERM registrado no início: garante que `finally: save()` é executado mesmo quando `docker compose down` encerra o container antes de DURATION expirar.
-- Envia request UDP ao monitor-server a cada 1s e mede a latência de roundtrip.
+- Envia request UDP ao Observador a cada 1s e mede a latência de roundtrip.
 - Salva resultados em `results/<collector>_<N>_run<ID>_results.json`.
 
 ### Cliente TCP — `src/client/client.py`
-- Envia `NUM_MESSAGES` requisições TCP ao WAF usando `WORKERS` threads concorrentes (padrão: 10).
-- Payloads gerados dinamicamente em memória com `random.seed(42)` para reprodutibilidade.
-- Distribuição fixa: 60% limpos / 40% maliciosos (SQLi, XSS, RCE, PathTraversal, NullByte).
-- Sem delay entre envios — taxa medida: ~4500 msg/s com 10 workers.
+- Envia `NUM_MESSAGES` mensagens ao WAF usando `WORKERS` coroutines asyncio com conexões persistentes (padrão: 200).
+- Payloads pré-gerados em disco (`data/payloads/`), carregados via fila asyncio de tamanho fixo (`QUEUE_SIZE=2000`) — RAM constante independente de N.
+- Distribuição fixa: 60% benignos / 40% maliciosos (SQLi, XSS, RCE, PathTraversal, NullByte), semente fixa e reprodutível.
+- Framing 4-byte big-endian sobre TCP persistente — sem handshake por mensagem.
 
 ### Comparador — `src/compare.py`
 
@@ -122,10 +122,10 @@ Três modos de uso:
 ## Fluxo de Execução
 
 1. Script `run_<ferramenta>.sh` (ou `run_multi.sh`) sobe a stack via Docker Compose.
-2. WAF inicia na porta 8080; monitor-server inicia e começa a coletar métricas.
+2. WAF inicia na porta 8080; Observador inicia e começa a coletar métricas.
 3. Probe aguarda o monitor responder (`wait_ready`) e inicia a medição.
-4. Cliente envia `NUM_MESSAGES` requisições concorrentes ao WAF (10 workers por padrão).
-5. Probe envia requests UDP ao monitor-server a cada 1s e registra latência + métricas.
+4. Cliente envia `NUM_MESSAGES` mensagens ao WAF via asyncio com 200 workers (conexões persistentes, framing 4-byte).
+5. Probe envia requests UDP ao Observador a cada 1s e registra latência + métricas.
 6. Após `DURATION` segundos, o probe salva `results/<ferramenta>_<N>_run<ID>_results.json`.
 7. `compare.py` consolida os resultados em CSV/JSON para análise.
 
@@ -133,8 +133,8 @@ Três modos de uso:
 
 ## Limitações Conhecidas
 
-- Bytes RX/TX são incomparáveis entre eBPF e os demais: eBPF mede apenas o tráfego do WAF (sport=8080); sysstat/Prometheus medem todo o tráfego da interface loopback, incluindo as próprias probes UDP.
-- O overhead de CPU do Prometheus inclui o custo do servidor HTTP, não apenas da coleta. Em N=50000 (~3500 msg/s), a CPU do coletor Prometheus chega a ~85%.
-- CPU/mem via psutil requer `pid: host` — o monitor-server enxerga o processo WAF via namespace de PID do host.
-- A taxa de envio (~3500 msg/s) é limitada pelo WAF (Python GIL + inspeção regex); adicionar workers além de 10 não aumenta o throughput.
+- Bytes RX/TX são incomparáveis entre eBPF e os demais: eBPF filtra `sport=8080` no kernel e mede apenas o tráfego do WAF; sysstat/Prometheus lêem `/proc/net/dev` (interface `lo`) e capturam todo o tráfego loopback, incluindo as próprias probes UDP.
+- O overhead de CPU do Prometheus inclui o custo do servidor HTTP (:8000/metrics), não apenas da coleta de bytes.
+- CPU/mem via psutil requer `pid: host` — o Observador enxerga o processo WAF via namespace de PID do host.
+- A taxa efetiva de inspeção é limitada pelo WAF (Python GIL + regex); aumentar `WORKERS` além de 200 não eleva o throughput pois o gargalo está na inspeção, não no transporte.
 - A porta HTTP 8000 (Prometheus) pode estar em TCP TIME_WAIT por até 120s entre runs consecutivos. O monitor agora vincula UDP antes do HTTP e tolera falha no bind HTTP sem comprometer a coleta de dados.

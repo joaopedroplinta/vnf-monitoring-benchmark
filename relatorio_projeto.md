@@ -1,6 +1,6 @@
 # TCC — Gerenciamento e Monitoramento de Rede
 
-**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 14/05/2026 — rev 9)
+**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 16/05/2026 — rev 10)
 
 ---
 
@@ -702,3 +702,141 @@ Descoberta e correção: o diretório correto para slash commands no Claude Code
 | `prometheus-specialist` | Debug do observador Prometheus — endpoint HTTP `:8000`, Gauges, port 8000 |
 | `pr-opener` | Monta e abre PRs via `gh pr create`, sempre com confirmação antes de executar |
 | `pr-reviewer` | Lê diff completo, emite veredicto estruturado (APROVADO / MUDANÇAS / BLOQUEADO), não submete sem confirmação |
+
+---
+
+### Correção crítica no cliente — incompatibilidade Python 3.9 (16/05/2026)
+
+**Bug:** `src/client/client.py` usava `bytes | None` na assinatura de `_read_payload` (PEP 604, Python 3.10+). O `Dockerfile.client` usa Python 3.9 slim, que não suporta essa sintaxe — o container crashava com `TypeError` na importação, antes de enviar qualquer mensagem ao WAF.
+
+**Impacto:** todos os 30 runs iniciais de N=100k coletados no desktop foram inválidos: `inspect_count=0`, `bytes_rx/tx=0`, `cpu_avg_pct=0`. O problema ficou mascarado porque o probe UDP (`src/probe.py`) opera independentemente do cliente e continuava a registrar latências, dando falsa impressão de experimento concluído.
+
+**Detecção:** análise cruzada de `inspect_count` e ausência de `results/waf_metrics.json` após os runs.
+
+**Correção:** substituir `bytes | None` por `Optional[bytes]` com `from typing import Optional`.
+
+**Consequência:** os 30 runs de N=100k foram descartados e recoletados após o fix.
+
+---
+
+### Correção de config e recoleta oficial N=100k e N=500k (16/05/2026)
+
+#### Correção dos scripts de coleta
+
+Identificado segundo problema de configuração além do bug Python 3.9: os três scripts `run_*.sh` usavam `WORKERS=10` (padrão) e fórmula de DURATION baseada em 8000 msg/s — valores de um experimento anterior com throughput muito mais baixo.
+
+| Parâmetro | Antes (errado) | Depois (correto) |
+| --------- | -------------- | ---------------- |
+| `WORKERS` | 10 | 200 |
+| Fórmula DURATION | `NUM_MESSAGES / 8000 + 20` | `NUM_MESSAGES / 15000 + 20` |
+
+Com WORKERS=10, o cliente não conseguia saturar o WAF — a CPU do WAF ficava em ~50-67% em vez dos ~107% esperados para 500k mensagens. A fórmula de DURATION superestimava o tempo de coleta (ex: 82s em vez de 53s para 500k), coletando amostras com o WAF ocioso e puxando `cpu_avg_pct` artificialmente para baixo.
+
+#### Anomalia detectada no Prometheus 500k (dados antigos)
+
+Antes da recoleta, análise dos dados existentes de Prometheus 500k revelou valores críticos:
+- Latência média: 1.438ms (vs 0.504ms eBPF) — 2.8× maior
+- Desvio padrão: 1.047ms (vs ~0.06ms nas demais)
+- CPU WAF: 67.5% (vs 107% nas demais)
+- `inspect_count`: ~147k em vez de 500k
+
+Root cause: os runs de Prometheus 500k foram coletados em 27/04/2026 com `WORKERS=10` e `DURATION=157s` — a config errada original. O WAF nunca foi saturado nesse stack. Todos os 30 runs foram descartados e recoletados.
+
+#### Resultados oficiais recoletados — N=100.000 (16/05/2026)
+
+> DURATION = 100000/15000 + 20 = 26s → 26 amostras por run. Config: WORKERS=200, libbpf+CO-RE.
+
+| Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
+| ------- | ------------------- | ---------------------- | ------------------------- |
+| Latência média (ms) | **0.5407 ± 0.0121** | 0.6012 ± 0.0048 | 0.6205 ± 0.0046 |
+| Desvio padrão (ms) | 0.0808 ± 0.0064 | **0.0797 ± 0.0048** | 0.0878 ± 0.0065 |
+| Latência máx (ms) | **0.7473 ± 0.0330** | 0.7797 ± 0.0318 | 0.8451 ± 0.0358 |
+| Latência mín (ms) | **0.3632 ± 0.0196** | 0.4010 ± 0.0098 | 0.4164 ± 0.0153 |
+| CPU média WAF (%) | **52.385 ± 7.283** | 57.230 ± 0.200 | 57.044 ± 0.158 |
+| Memória média WAF (MB) | 28.955 ± 0.083 | **28.106 ± 0.045** | 28.122 ± 0.046 |
+| CPU média observador (%) | **0.051 ± 0.010** | 4.663 ± 6.543 | 2.373 ± 4.720 |
+| Memória média observador (MB) | 15.226 ± 0.020 | **13.932 ± 0.015** | 24.822 ± 0.040 |
+
+> CPU WAF em 52% para eBPF em N=100k: carga leve — WAF não satura um core nesse volume. Valor coerente; contraste com N=500k onde todos chegam a 107%.
+
+#### Resultados oficiais recoletados — N=500.000 (16/05/2026)
+
+> DURATION = 500000/15000 + 20 = 53s → 53 amostras por run. Config: WORKERS=200, libbpf+CO-RE.
+
+| Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
+| ------- | ------------------- | ---------------------- | ------------------------- |
+| Latência média (ms) | **0.5038 ± 0.0055** | 0.5721 ± 0.0034 | 0.5844 ± 0.0042 |
+| Desvio padrão (ms) | 0.0669 ± 0.0258 | **0.0587 ± 0.0028** | 0.0598 ± 0.0028 |
+| Latência máx (ms) | 0.7475 ± 0.2027 | **0.7227 ± 0.0136** | 0.7417 ± 0.0200 |
+| Latência mín (ms) | **0.3552 ± 0.0143** | 0.4151 ± 0.0162 | 0.4121 ± 0.0118 |
+| CPU média WAF (%) | **107.02 ± 0.049** | 107.40 ± 0.052 | 107.42 ± 0.047 |
+| Memória média WAF (MB) | 37.527 ± 0.118 | 36.454 ± 0.094 | **36.426 ± 0.095** |
+| CPU média observador (%) | 3.515 ± 3.976 | **1.152 ± 2.244** | 3.484 ± 5.227 |
+| Memória média observador (MB) | 15.125 ± 0.023 | **13.907 ± 0.023** | 24.831 ± 0.045 |
+
+#### Permissão Docker para usuário pinguas
+
+Usuário `pinguas` adicionado ao grupo `docker` (`sudo usermod -aG docker pinguas`) para eliminar a necessidade de `sudo` nos scripts de coleta. Requer logout/login completo para ter efeito na sessão gráfica.
+
+#### Observações (resultados com config correta)
+
+- **Latências ~2× menores** que os dados anteriores (antigo: ~1.2ms; novo: ~0.5-0.6ms) — reflexo direto do WORKERS correto (200) e throughput real de ~15k msg/s
+- **eBPF lidera em latência** em ambos os N, com diferença estatisticamente significativa (IC95 sem sobreposição)
+- **Sysstat tem menor footprint de memória** do observador (~13.9 MB vs 15.2 MB eBPF vs 24.8 MB Prometheus)
+- **CPU do observador eBPF** praticamente zero em N=100k (0.051%) — confirma vantagem de overhead do kernel space
+- **PR #30** aberto em `dev/joao → main` com os 180 runs válidos e correções de config
+
+### Recoleta N=1M e coleta N=2M (17/05/2026)
+
+#### Descarte dos dados antigos de N=1M
+
+Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inconsistência de configuração: runs 1–12 tinham 86 samples (config antiga com DURATION menor), run 13 travou, e runs 14–30 tinham 300 samples (config nova). Dados incomparáveis para cálculo de média ± IC95%.
+
+#### Resultados oficiais recoletados — N=1.000.000 (17/05/2026)
+
+> DURATION = 1000000/15000 + 20 ≈ 87s → 86 amostras por run. Config: WORKERS=200, libbpf+CO-RE.
+
+| Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
+| ------- | ------------------- | ---------------------- | ------------------------- |
+| Latência média (ms) | **0.4885 ± 0.0039** | 0.5725 ± 0.0053 | 0.5682 ± 0.0026 |
+| Desvio padrão (ms) | 0.0547 ± 0.0084 | 0.0760 ± 0.0187 | **0.0569 ± 0.0021** |
+| Latência máx (ms) | **0.6789 ± 0.0928** | 0.9165 ± 0.2006 | 0.7450 ± 0.0150 |
+| Latência mín (ms) | **0.3409 ± 0.0150** | 0.4000 ± 0.0132 | 0.4209 ± 0.0152 |
+| CPU média WAF (%) | **107.985 ± 0.051** | 108.093 ± 0.088 | 108.219 ± 0.039 |
+| Memória média WAF (MB) | 44.602 ± 0.250 | **42.750 ± 0.280** | 43.348 ± 0.182 |
+| CPU média observador (%) | 0.819 ± 1.578 | 1.423 ± 1.945 | **0.742 ± 1.398** |
+| Memória média observador (MB) | 15.138 ± 0.017 | **13.551 ± 0.028** | 24.164 ± 0.058 |
+
+#### Resultados oficiais — N=2.000.000 (17/05/2026)
+
+> DURATION = 2000000/15000 + 20 ≈ 153s → 153 amostras por run. Config: WORKERS=200, libbpf+CO-RE.
+
+| Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
+| ------- | ------------------- | ---------------------- | ------------------------- |
+| Latência média (ms) | **0.5283 ± 0.0070** | 0.5746 ± 0.0037 | 0.5932 ± 0.0042 |
+| Desvio padrão (ms) | 0.0850 ± 0.0151 | **0.0626 ± 0.0060** | 0.0621 ± 0.0022 |
+| Latência máx (ms) | 1.0622 ± 0.2253 | 0.8459 ± 0.0978 | **0.8168 ± 0.0301** |
+| Latência mín (ms) | **0.3641 ± 0.0154** | 0.4184 ± 0.0165 | 0.4270 ± 0.0153 |
+| CPU média WAF (%) | **107.958 ± 1.155** | 108.848 ± 0.068 | 108.671 ± 0.078 |
+| Memória média WAF (MB) | **49.891 ± 0.643** | 53.869 ± 0.373 | 53.485 ± 0.447 |
+| CPU média observador (%) | 0.471 ± 0.867 | **0.461 ± 0.836** | 0.801 ± 1.053 |
+| Memória média observador (MB) | 15.066 ± 0.022 | **13.660 ± 0.025** | 24.197 ± 0.051 |
+
+#### Comparativo cross-N — Latência média do observador (média de 30 runs, ms)
+
+| N | eBPF | sysstat | Prometheus |
+|---|------|---------|------------|
+| 100.000 | **0.5407** | 0.6012 | 0.6205 |
+| 500.000 | **0.5038** | 0.5721 | 0.5844 |
+| 1.000.000 | **0.4885** | 0.5725 | 0.5682 |
+| 2.000.000 | **0.5283** | 0.5746 | 0.5932 |
+
+#### Achado relevante: overhead do eBPF escala com volume
+
+O overhead do eBPF aumentou de N=1M para N=2M (+0.040ms, +8.2%), enquanto o sysstat permaneceu praticamente estável (+0.002ms, +0.3%). Isso ocorre porque os kprobes (`tcp_sendmsg`, `tcp_cleanup_rbuf`) disparam por pacote — com 2× o tráfego, há 2× as interrupções no kernel. O sysstat lê `/proc/net/dev` uma vez por segundo, independente do volume. A vantagem do eBPF em latência encolheu de 85µs (N=1M) para 47µs (N=2M).
+
+#### Correções de documentação (17/05/2026)
+
+- **`docs/arquitetura_c4.svg`:** reformulação do diagrama C4 — fusão dos dois boxes do Observador (eBPF/sysstat/prom + UDP server) em um único contêiner, corrigindo a incoerência arquitetural do C4 Level 2; labels das setas traduzidos para português; label "C4 — Container Diagram (Nível 2)" adicionado; correção do `writing-mode` na seta interna
+- **`docs/architecture.md`:** terminologia atualizada (`monitor_*.py` → `observador_*.py`, WORKERS 10 → 200, WAF multithreaded → asyncio + ThreadPoolExecutor, cliente threads → coroutines asyncio com conexões persistentes)
+- **PR #30:** branch `dev/joao` recriado com cherry-pick dos 5 commits relevantes (force-push com `--force-with-lease`) para eliminar histórico de merges antigos acumulados

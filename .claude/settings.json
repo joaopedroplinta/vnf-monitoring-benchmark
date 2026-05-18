@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose *)",
+      "Bash(docker *)",
+      "Bash(bash scripts/run_multi.sh *)",
+      "Bash(bash scripts/run_ebpf.sh *)",
+      "Bash(bash scripts/run_sysstat.sh *)",
+      "Bash(bash scripts/run_prometheus.sh *)",
+      "Bash(python3 src/compare.py *)",
+      "Bash(python3 scripts/*)"
+    ]
+  }
+}

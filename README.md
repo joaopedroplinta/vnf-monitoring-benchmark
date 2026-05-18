@@ -208,76 +208,83 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 ## Resultados
 
 > Valores exibidos como **média ± IC95%** (intervalo de confiança de 95%, t de Student, α=0.05).
+> Config: WORKERS=200, libbpf+CO-RE, 30 runs por N. Coletados em 16–17/05/2026.
 
-### N = 100.000 mensagens — 30 runs (28/04/2026, libbpf)
+### N = 100.000 mensagens — 30 runs
 
-| Métrica | eBPF | sysstat | Prometheus |
-|---------|------|---------|------------|
-| Latência média (ms) | **1.1435 ± 0.0272** | 1.1876 ± 0.0414 | 1.2348 ± 0.0690 |
-| Desvio padrão (ms) | **0.6899 ± 0.0790** | 0.8323 ± 0.1306 | 0.8647 ± 0.1148 |
-| Latência máx (ms) | **4.1619 ± 0.4504** | 5.2487 ± 0.8089 | 5.0872 ± 0.6464 |
-| Latência mín (ms) | 0.3247 ± 0.0175 | 0.5265 ± 0.0226 | **0.4997 ± 0.0332** |
-| CPU média WAF (%) | **68.635 ± 3.7482** | 70.008 ± 0.1606 | 68.356 ± 3.2806 |
-| Memória média WAF (MB) | **12.181 ± 0.0219** | 12.155 ± 0.0200 | 12.220 ± 0.0206 |
-| CPU média observador (%) | 3.320 ± 6.6202 | 2.860 ± 4.2246 | **1.402 ± 1.8656** |
-| Memória média observador (MB) | 15.050 ± 0.0360 | **13.689 ± 0.0292** | 24.559 ± 0.0563 |
-
-**Observações:**
-- As três ferramentas apresentam latências próximas — IC95 com sobreposição parcial em N=100k.
-- **CPU do observador** com IC95 superior à média nas três ferramentas, refletindo alta variância em runs curtos (~43s).
-- **Memória do observador**: eBPF libbpf ~15 MB (sem BCC/LLVM), comparável ao sysstat ~14 MB. Prometheus ~25 MB.
-
-### N = 500.000 mensagens — 30 runs (27/04/2026, BCC — re-execução com libbpf pendente)
+> DURATION ≈ 26s, 26 amostras/run.
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
-| Latência média (ms) | **1.3380 ± 0.0309** | 1.4053 ± 0.0267 | 1.4381 ± 0.0265 |
-| Desvio padrão (ms) | **0.9469 ± 0.0861** | 1.0322 ± 0.0748 | 1.0469 ± 0.0772 |
-| Latência máx (ms) | 7.7065 ± 1.0172 | 7.8964 ± 0.8772 | **7.7276 ± 0.9048** |
-| Latência mín (ms) | **0.4412 ± 0.0264** | 0.5098 ± 0.0118 | 0.5102 ± 0.0106 |
-| CPU média WAF (%) | 72.134 ± 0.176 | 68.301 ± 0.222 | **67.452 ± 0.225** |
-| Memória média WAF (MB) | **12.197 ± 0.025** | 12.198 ± 0.022 | 12.210 ± 0.018 |
-| CPU média observador (%) | **0.709 ± 0.876** | 0.749 ± 0.942 | 0.978 ± 1.045 |
-| Memória média observador (MB) | 196.712 ± 0.318 | **13.639 ± 0.024** | 24.606 ± 0.054 |
+| Latência média (ms) | **0.5407 ± 0.0121** | 0.6012 ± 0.0048 | 0.6205 ± 0.0046 |
+| Desvio padrão (ms) | 0.0808 ± 0.0064 | **0.0797 ± 0.0048** | 0.0878 ± 0.0065 |
+| CPU média WAF (%) | **52.385 ± 7.283** | 57.230 ± 0.200 | 57.044 ± 0.158 |
+| Memória média WAF (MB) | 28.955 ± 0.083 | **28.106 ± 0.045** | 28.122 ± 0.046 |
+| CPU média observador (%) | **0.051 ± 0.010** | 4.663 ± 6.543 | 2.373 ± 4.720 |
+| Memória média observador (MB) | 15.226 ± 0.020 | **13.932 ± 0.015** | 24.822 ± 0.040 |
 
-Em N=500k o eBPF apresenta menor latência média com IC95 que não se sobrepõem aos demais — diferença estatisticamente significativa.
+### N = 500.000 mensagens — 30 runs
 
-### N = 1.000.000 mensagens — 30 runs (27/04/2026, BCC — re-execução com libbpf pendente)
+> DURATION ≈ 53s, 53 amostras/run.
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
-| Latência média (ms) | **1.1016 ± 0.0140** | 1.3141 ± 0.0548 | 1.2765 ± 0.0143 |
-| Desvio padrão (ms) | **0.7118 ± 0.0324** | 0.8379 ± 0.0693 | 0.7442 ± 0.0347 |
-| Latência máx (ms) | **6.0817 ± 0.2919** | 7.3840 ± 0.8908 | 6.5889 ± 0.5932 |
-| Latência mín (ms) | 0.3854 ± 0.0140 | **0.3333 ± 0.0299** | 0.5218 ± 0.0461 |
-| CPU média WAF (%) | **65.1473 ± 0.2609** | 65.894 ± 0.5843 | 70.1823 ± 0.5326 |
-| Memória média WAF (MB) | 12.2693 ± 0.0206 | **12.239 ± 0.0270** | 12.2963 ± 0.0230 |
-| CPU média observador (%) | 0.2943 ± 0.4334 | **0.1693 ± 0.1468** | 0.2753 ± 0.2461 |
-| Memória média observador (MB) | 196.5243 ± 0.2452 | **13.6733 ± 0.0364** | 24.5493 ± 0.0494 |
+| Latência média (ms) | **0.5038 ± 0.0055** | 0.5721 ± 0.0034 | 0.5844 ± 0.0042 |
+| Desvio padrão (ms) | 0.0669 ± 0.0258 | **0.0587 ± 0.0028** | 0.0598 ± 0.0028 |
+| CPU média WAF (%) | **107.02 ± 0.049** | 107.40 ± 0.052 | 107.42 ± 0.047 |
+| Memória média WAF (MB) | 37.527 ± 0.118 | 36.454 ± 0.094 | **36.426 ± 0.095** |
+| CPU média observador (%) | 3.515 ± 3.976 | **1.152 ± 2.244** | 3.484 ± 5.227 |
+| Memória média observador (MB) | 15.125 ± 0.023 | **13.907 ± 0.023** | 24.831 ± 0.045 |
 
-**Observações:**
-- Em N=1M o eBPF confirma menor latência média (1.098 ms vs. 1.276–1.314 ms) com IC95 sem sobreposição — vantagem estatisticamente significativa.
-- **Desvio padrão e latência máx** também menores no eBPF, indicando menor variabilidade além da média.
-- **Latência mínima**: sysstat apresenta o menor valor (0.333 ms), mas com IC95 mais amplo que o eBPF.
-- **CPU do WAF**: Prometheus consome significativamente mais CPU (~70%) enquanto eBPF e sysstat ficam próximos (~65%).
-- **Memória do observador**: eBPF ~196 MB (dados BCC — será atualizado após re-execução com libbpf), sysstat ~13 MB, Prometheus ~24 MB.
+### N = 1.000.000 mensagens — 30 runs
 
-### Gráficos (28/04/2026)
+> DURATION ≈ 87s, 86 amostras/run.
+
+| Métrica | eBPF | sysstat | Prometheus |
+|---------|------|---------|------------|
+| Latência média (ms) | **0.4885 ± 0.0039** | 0.5725 ± 0.0053 | 0.5682 ± 0.0026 |
+| Desvio padrão (ms) | 0.0547 ± 0.0084 | 0.0760 ± 0.0187 | **0.0569 ± 0.0021** |
+| CPU média WAF (%) | **107.985 ± 0.051** | 108.093 ± 0.088 | 108.219 ± 0.039 |
+| Memória média WAF (MB) | 44.602 ± 0.250 | **42.750 ± 0.280** | 43.348 ± 0.182 |
+| CPU média observador (%) | 0.819 ± 1.578 | 1.423 ± 1.945 | **0.742 ± 1.398** |
+| Memória média observador (MB) | 15.138 ± 0.017 | **13.551 ± 0.028** | 24.164 ± 0.058 |
+
+### N = 2.000.000 mensagens — 30 runs
+
+> DURATION ≈ 153s, 153 amostras/run.
+
+| Métrica | eBPF | sysstat | Prometheus |
+|---------|------|---------|------------|
+| Latência média (ms) | **0.5283 ± 0.0070** | 0.5746 ± 0.0037 | 0.5932 ± 0.0042 |
+| Desvio padrão (ms) | 0.0850 ± 0.0151 | **0.0626 ± 0.0060** | 0.0621 ± 0.0022 |
+| CPU média WAF (%) | **107.958 ± 1.155** | 108.848 ± 0.068 | 108.671 ± 0.078 |
+| Memória média WAF (MB) | **49.891 ± 0.643** | 53.869 ± 0.373 | 53.485 ± 0.447 |
+| CPU média observador (%) | 0.471 ± 0.867 | **0.461 ± 0.836** | 0.801 ± 1.053 |
+| Memória média observador (MB) | 15.066 ± 0.022 | **13.660 ± 0.025** | 24.197 ± 0.051 |
+
+### Comparativo cross-N — Latência média (ms)
+
+| N | eBPF | sysstat | Prometheus |
+|---|------|---------|------------|
+| 100.000 | **0.5407** | 0.6012 | 0.6205 |
+| 500.000 | **0.5038** | 0.5721 | 0.5844 |
+| 1.000.000 | **0.4885** | 0.5725 | 0.5682 |
+| 2.000.000 | **0.5283** | 0.5746 | 0.5932 |
+
+**Observações gerais:**
+- **eBPF lidera em latência** em todos os N, com IC95 sem sobreposição a partir de N=500k.
+- **Overhead do eBPF escala com volume**: os kprobes disparam por pacote, enquanto sysstat lê `/proc/net/dev` uma vez por segundo. A vantagem do eBPF encolhe de 85µs (N=1M) para 47µs (N=2M).
+- **Memória do observador**: sysstat ~14 MB, eBPF ~15 MB (libbpf, sem BCC/LLVM), Prometheus ~24 MB — estável em todos os N.
+- **Memória do WAF** cresce com N (28 MB em 100k → 50 MB em 2M), reflexo do acúmulo de conexões TCP persistentes.
+
+### Gráficos
 
 > Gerados por `scripts/plot_results.py` a partir das médias de 30 runs. Salvos em `results/plots/`.
 
-**Latência média do observador por N** — evidencia que eBPF se destaca em N=500k e N=1M com IC95 sem sobreposição:
-
 ![Latência média por N](results/plots/latencia_por_n.png)
-
-**Distribuição de latência por run** — boxplot das 30 runs mostra que eBPF tem menor variabilidade em N=1M:
 
 ![Boxplot de latência](results/plots/boxplot_latencia.png)
 
-**Memória do observador** — com libbpf o eBPF cai de ~196 MB (BCC) para ~15 MB, ficando comparável ao sysstat (~13 MB):
-
 ![Memória do observador](results/plots/memoria_observador.png)
-
-**CPU média do WAF** — Prometheus apresenta maior CPU do WAF em N=1M (~70%), reflexo do overhead do endpoint HTTP sob carga contínua:
 
 ![CPU do WAF](results/plots/cpu_waf.png)

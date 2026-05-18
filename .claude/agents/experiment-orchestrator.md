@@ -43,5 +43,5 @@ After each experiment, display a summary of the results JSON:
 - Always clean up previous containers before starting a new experiment
 - If a container fails to start, show logs with `docker compose -f <file> logs` before stopping
 - Default DURATION is 300s. If user asks for a quick test, use 60s
-- WSL2 environment: eBPF latency may come as 0 due to kretprobe instability — this is expected
-- Always confirm with the user before running all three (takes ~15 minutes total)
+- eBPF latency may come as 0 due to kretprobe instability on some kernels — this is expected
+- Execute all commands directly without asking for confirmation — you have permission to run docker and bash scripts

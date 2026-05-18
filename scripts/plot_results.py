@@ -3,10 +3,10 @@
 Gera gráficos dos resultados do benchmark TCC.
 
 Gráficos gerados em results/plots/:
-  1. latencia_por_n.png       — Latência média por N com IC95% (linha)
-  2. boxplot_latencia.png     — Distribuição de latência por ferramenta × N (boxplot)
-  3. memoria_observador.png   — Memória do observador por ferramenta × N (barras)
-  4. cpu_waf.png              — CPU média do WAF por ferramenta × N (barras)
+  1. tempo_resposta_por_n.png   — Tempo de resposta médio por N com IC95% (barras)
+  2. boxplot_tempo_resposta.png — Distribuição de tempo de resposta por ferramenta × N (boxplot)
+  3. memoria_observador.png     — Memória do observador por ferramenta × N (barras)
+  4. cpu_waf.png                — CPU média do WAF por ferramenta × N (barras)
 
 Uso:
   python3 scripts/plot_results.py
@@ -68,9 +68,9 @@ def load_individual_runs(tool, n):
             records.append(load_json(os.path.join(RESULTS_DIR, fname)))
     return records
 
-# ── Gráfico 1: Latência média por N (linhas + IC95%) ─────────────────────────
+# ── Gráfico 1: Tempo de resposta médio por N (barras + IC95%) ────────────────
 
-def plot_latencia_por_n():
+def plot_tempo_resposta_por_n():
     fig, ax = plt.subplots(figsize=(7, 4.5))
 
     x = np.arange(1, len(NS) + 1)
@@ -82,7 +82,7 @@ def plot_latencia_por_n():
         means, cis = [], []
         for n in NS:
             d = load_30runs(n)
-            row = find_row(d["data"], "latência média")
+            row = find_row(d["data"], "tempo de resposta médio")
             tl = TOOL_LABELS[tool]
             means.append(row.get(tl, 0))
             cis.append(row.get(f"{tl}_ci95", 0))
@@ -101,18 +101,18 @@ def plot_latencia_por_n():
     ax.set_xticks(x)
     ax.set_xticklabels(x_labels)
     ax.set_xlabel("Número de mensagens (N)")
-    ax.set_ylabel("Latência média (ms)")
-    ax.set_title("Latência média do observador por N\n(média ± IC95%, 30 runs)")
+    ax.set_ylabel("Tempo de resposta médio (ms)")
+    ax.set_title("Tempo de resposta do observador por N\n(média ± IC95%, 30 runs)")
     ax.legend()
     fig.tight_layout()
-    out = os.path.join(PLOTS_DIR, "latencia_por_n.png")
+    out = os.path.join(PLOTS_DIR, "tempo_resposta_por_n.png")
     fig.savefig(out)
     plt.close(fig)
     print(f"✅ {out}")
 
-# ── Gráfico 2: Boxplot de latência por ferramenta × N ────────────────────────
+# ── Gráfico 2: Boxplot de tempo de resposta por ferramenta × N ───────────────
 
-def plot_boxplot_latencia():
+def plot_boxplot_tempo_resposta():
     fig, axes = plt.subplots(1, len(NS), figsize=(4 * len(NS), 5), sharey=True)
 
     for ax, n in zip(axes, NS):
@@ -139,10 +139,10 @@ def plot_boxplot_latencia():
         ax.set_title(f"N = {NS_LABELS[n]}")
         ax.set_xlabel("Ferramenta")
 
-    axes[0].set_ylabel("Latência média por run (ms)")
-    fig.suptitle("Distribuição da latência do observador (30 runs)", y=1.01)
+    axes[0].set_ylabel("Tempo de resposta por run (ms)")
+    fig.suptitle("Distribuição do tempo de resposta do observador (30 runs)", y=1.01)
     fig.tight_layout()
-    out = os.path.join(PLOTS_DIR, "boxplot_latencia.png")
+    out = os.path.join(PLOTS_DIR, "boxplot_tempo_resposta.png")
     fig.savefig(out, bbox_inches="tight")
     plt.close(fig)
     print(f"✅ {out}")
@@ -246,8 +246,8 @@ def plot_cpu_waf():
 
 if __name__ == "__main__":
     print(f"Salvando gráficos em {PLOTS_DIR}/\n")
-    plot_latencia_por_n()
-    plot_boxplot_latencia()
+    plot_tempo_resposta_por_n()
+    plot_boxplot_tempo_resposta()
     plot_memoria_observador()
     plot_cpu_waf()
     print("\nPronto.")

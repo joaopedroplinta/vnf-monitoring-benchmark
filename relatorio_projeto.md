@@ -219,24 +219,24 @@ Variáveis de ambiente relevantes:
 
 > DURATION = 1000000/8000 + 20 = 145s → 145 amostras por run.
 
-### Comparativo cross-N — Latência média do observador (média de 30 runs, ms)
+### Comparativo cross-N — Tempo de resposta médio do observador (média de 30 runs, ms)
 
-| N          | eBPF             | sysstat          | Prometheus       | Menor latência |
-| ---------- | ---------------- | ---------------- | ---------------- | -------------- |
+| N          | eBPF             | sysstat          | Prometheus       | Menor tempo de resposta |
+| ---------- | ---------------- | ---------------- | ---------------- | ----------------------- |
 | 100.000    | 1.2252 ± 0.0498  | **1.1876 ± 0.0414**  | 1.2348 ± 0.0690  | sysstat        |
 | 500.000    | **1.3380 ± 0.0309**  | 1.4053 ± 0.0267  | 1.4381 ± 0.0265  | eBPF           |
 | 1.000.000  | **1.1016 ± 0.0140**  | 1.3141 ± 0.0548  | 1.2765 ± 0.0143  | eBPF           |
 
 ### Observações (30 runs)
 
-- **N=100k**: as três ferramentas apresentam latências estatisticamente equivalentes — IC95 se sobrepõem. Sem dominância clara.
-- **N=500k**: eBPF se destaca com menor latência média (1.338 ms vs 1.405 ms sysstat vs 1.438 ms Prometheus) e IC95 que não se sobrepõem — diferença estatisticamente significativa nesse volume.
-- **N=1M**: eBPF mantém a menor latência (1.098 ms), com IC95 que não se sobrepõem em relação às demais — diferença estatisticamente significativa. Prometheus supera sysstat nesse volume (1.277 ms vs 1.314 ms). CPU do WAF com Prometheus é ~5 pp maior (70.2% vs ~65%), indicando overhead do endpoint HTTP sob carga alta.
-- **Tendência com N crescente**: eBPF apresenta latência inversamente proporcional ao volume (1.225 → 1.338 → 1.098 ms), sugerindo que os kprobes amortizam o custo fixo de inicialização sob cargas maiores. sysstat e Prometheus crescem monotonicamente (polling `/proc` se torna mais custoso relativamente).
+- **N=100k**: as três ferramentas apresentam tempos de resposta estatisticamente equivalentes — IC95 se sobrepõem. Sem dominância clara.
+- **N=500k**: eBPF se destaca com menor tempo de resposta médio (1.338 ms vs 1.405 ms sysstat vs 1.438 ms Prometheus) e IC95 que não se sobrepõem — diferença estatisticamente significativa nesse volume.
+- **N=1M**: eBPF mantém o menor tempo de resposta (1.098 ms), com IC95 que não se sobrepõem em relação às demais — diferença estatisticamente significativa. Prometheus supera sysstat nesse volume (1.277 ms vs 1.314 ms). CPU do WAF com Prometheus é ~5 pp maior (70.2% vs ~65%), indicando overhead do endpoint HTTP sob carga alta.
+- **Tendência com N crescente**: eBPF apresenta tempo de resposta inversamente proporcional ao volume (1.225 → 1.338 → 1.098 ms), sugerindo que os kprobes amortizam o custo fixo de inicialização sob cargas maiores. sysstat e Prometheus crescem monotonicamente (polling `/proc` se torna mais custoso relativamente).
 - **CPU do WAF** com eBPF é maior em N=500k (72.1% vs ~68%), reflexo da interferência dos kprobes no processo monitorado sob carga contínua.
 - **CPU do coletor** apresenta IC95 superior à média em N=100k (~43s de run), refletindo ruído em execuções curtas. Em N=500k (~157s) e N=1M (~300s) a variância cai significativamente.
 - **Memória do coletor** estável entre runs: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB.
-- **`ebpf_1000000_run9`** (corrigido em 28/04/2026): run original tinha `inspect_count=0` — o WAF não gravou `waf_metrics.json` nessa execução (falha pontual de volume Docker). Run foi re-executado; novo resultado: 300 amostras, latência 1.1767ms, `inspect_count=274700`. Comparativo regenerado.
+- **`ebpf_1000000_run9`** (corrigido em 28/04/2026): run original tinha `inspect_count=0` — o WAF não gravou `waf_metrics.json` nessa execução (falha pontual de volume Docker). Run foi re-executado; novo resultado: 300 amostras, tempo de resposta 1.1767ms, `inspect_count=274700`. Comparativo regenerado.
 
 ---
 
@@ -442,7 +442,7 @@ O modo sem argumentos de `compare.py` (`python3 src/compare.py`) gerava `compari
 | `discover_runs()` | Retornava lista de N disponíveis | Renomeada para `discover_ns()` para evitar ambiguidade com "número de runs" |
 | `comparison_all_runs.json` | Valores do run1 (ruidosos) | Valores de média das 30 runs — coerentes com os `comparison_<N>_30runs.json` |
 
-Os valores corrigidos para latência média (ms):
+Os valores corrigidos para tempo de resposta médio (ms):
 
 | N       | eBPF   | sysstat | Prometheus |
 | ------- | ------ | ------- | ---------- |
@@ -456,8 +456,8 @@ Script para geração de gráficos a partir dos dados de benchmark. Salva em `re
 
 | Gráfico | Arquivo | Descrição |
 | ------- | ------- | --------- |
-| Latência média por N | `latencia_por_n.png` | Barras agrupadas (eBPF/sysstat/Prometheus × N=100k/500k/1M) com IC95% |
-| Distribuição de latência | `boxplot_latencia.png` | Boxplot das 30 runs por ferramenta, um painel por N |
+| Tempo de resposta médio por N | `tempo_resposta_por_n.png` | Barras agrupadas (eBPF/sysstat/Prometheus × N=100k/500k/1M/2M) com IC95% |
+| Distribuição do tempo de resposta | `boxplot_tempo_resposta.png` | Boxplot das 30 runs por ferramenta, um painel por N |
 | Memória do observador | `memoria_observador.png` | Barras agrupadas por N com IC95% — evidencia diferença eBPF (~196 MB) vs sysstat (~13 MB) vs Prometheus (~24 MB) |
 | CPU do WAF | `cpu_waf.png` | Barras agrupadas por N com IC95% |
 
@@ -473,7 +473,7 @@ Os JSONs de N=100k e N=500k foram gerados antes do rename `coletor → observado
 
 #### Documentação: run anômalo `ebpf_1000000_run9`
 
-Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_results.json` tem `inspect_count=0` e `inspect_avg_ms=0`. O run foi executado normalmente (300 amostras, latência média 1.0758 ms, duração 300s), mas o WAF não gravou `waf_metrics.json` nesse run — provavelmente race condition na inicialização. Dados de latência, CPU e memória são válidos e entram nas agregações normalmente; apenas métricas de inspeção desse run devem ser desconsideradas.
+Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_results.json` tem `inspect_count=0` e `inspect_avg_ms=0`. O run foi executado normalmente (300 amostras, tempo de resposta médio 1.0758 ms, duração 300s), mas o WAF não gravou `waf_metrics.json` nesse run — provavelmente race condition na inicialização. Dados de tempo de resposta, CPU e memória são válidos e entram nas agregações normalmente; apenas métricas de inspeção desse run devem ser desconsideradas.
 
 #### Correção: código redundante em `plot_results.py`
 
@@ -512,7 +512,7 @@ Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_resul
 | CPU avg (%) | ~0,1 | 0,09 | — |
 | inspect_count | 53.500 | 53.500 | igual |
 
-**Conclusão preliminar:** A variante libbpf+CO-RE reduz o consumo de memória do observador eBPF em ~93%, de ~196 MB para ~15 MB, sem degradação mensurável de latência ou CPU. O consumo passa a ser comparável ao de sysstat (~13 MB).
+**Conclusão preliminar:** A variante libbpf+CO-RE reduz o consumo de memória do observador eBPF em ~93%, de ~196 MB para ~15 MB, sem degradação mensurável de tempo de resposta ou CPU. O consumo passa a ser comparável ao de sysstat (~13 MB).
 
 **Decisão (Opção C):** Substituir o observador BCC pelo libbpf no stack principal (`docker-compose.ebpf.yml`) e re-executar todos os 90 runs (30×3 N) para manter o dataset consistente sob uma única implementação.
 
@@ -537,7 +537,7 @@ eBPF libbpf passa a ter memória comparável ao sysstat (~15 MB vs ~14 MB), elim
 
 **Diagnóstico do gargalo:**
 
-Com latência de roundtrip UDP de ~1.32 ms e 10 workers, o throughput teórico máximo seria:
+Com tempo de resposta UDP de ~1.32 ms e 10 workers, o throughput teórico máximo seria:
 
 ```
 10 workers / 0.00132s = ~7576 msg/s
@@ -709,7 +709,7 @@ Descoberta e correção: o diretório correto para slash commands no Claude Code
 
 **Bug:** `src/client/client.py` usava `bytes | None` na assinatura de `_read_payload` (PEP 604, Python 3.10+). O `Dockerfile.client` usa Python 3.9 slim, que não suporta essa sintaxe — o container crashava com `TypeError` na importação, antes de enviar qualquer mensagem ao WAF.
 
-**Impacto:** todos os 30 runs iniciais de N=100k coletados no desktop foram inválidos: `inspect_count=0`, `bytes_rx/tx=0`, `cpu_avg_pct=0`. O problema ficou mascarado porque o probe UDP (`src/probe.py`) opera independentemente do cliente e continuava a registrar latências, dando falsa impressão de experimento concluído.
+**Impacto:** todos os 30 runs iniciais de N=100k coletados no desktop foram inválidos: `inspect_count=0`, `bytes_rx/tx=0`, `cpu_avg_pct=0`. O problema ficou mascarado porque o probe UDP (`src/probe.py`) opera independentemente do cliente e continuava a registrar tempos de resposta, dando falsa impressão de experimento concluído.
 
 **Detecção:** análise cruzada de `inspect_count` e ausência de `results/waf_metrics.json` após os runs.
 
@@ -780,8 +780,8 @@ Usuário `pinguas` adicionado ao grupo `docker` (`sudo usermod -aG docker pingua
 
 #### Observações (resultados com config correta)
 
-- **Latências ~2× menores** que os dados anteriores (antigo: ~1.2ms; novo: ~0.5-0.6ms) — reflexo direto do WORKERS correto (200) e throughput real de ~15k msg/s
-- **eBPF lidera em latência** em ambos os N, com diferença estatisticamente significativa (IC95 sem sobreposição)
+- **Tempos de resposta ~2× menores** que os dados anteriores (antigo: ~1.2ms; novo: ~0.5-0.6ms) — reflexo direto do WORKERS correto (200) e throughput real de ~15k msg/s
+- **eBPF lidera em tempo de resposta** em ambos os N, com diferença estatisticamente significativa (IC95 sem sobreposição)
 - **Sysstat tem menor footprint de memória** do observador (~13.9 MB vs 15.2 MB eBPF vs 24.8 MB Prometheus)
 - **CPU do observador eBPF** praticamente zero em N=100k (0.051%) — confirma vantagem de overhead do kernel space
 - **PR #30** aberto em `dev/joao → main` com os 180 runs válidos e correções de config
@@ -833,7 +833,7 @@ Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inco
 
 #### Achado relevante: overhead do eBPF escala com volume
 
-O overhead do eBPF aumentou de N=1M para N=2M (+0.040ms, +8.2%), enquanto o sysstat permaneceu praticamente estável (+0.002ms, +0.3%). Isso ocorre porque os kprobes (`tcp_sendmsg`, `tcp_cleanup_rbuf`) disparam por pacote — com 2× o tráfego, há 2× as interrupções no kernel. O sysstat lê `/proc/net/dev` uma vez por segundo, independente do volume. A vantagem do eBPF em latência encolheu de 85µs (N=1M) para 47µs (N=2M).
+O tempo de resposta do eBPF aumentou de N=1M para N=2M (+0.040ms, +8.2%), enquanto o sysstat permaneceu praticamente estável (+0.002ms, +0.3%). Isso ocorre porque os kprobes (`tcp_sendmsg`, `tcp_cleanup_rbuf`) disparam por pacote — com 2× o tráfego, há 2× as interrupções no kernel. O sysstat lê `/proc/net/dev` uma vez por segundo, independente do volume. A vantagem do eBPF em tempo de resposta encolheu de 85µs (N=1M) para 47µs (N=2M).
 
 #### Correções de documentação (17/05/2026)
 

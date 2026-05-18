@@ -6,7 +6,7 @@ Análise comparativa de desempenho entre três abordagens de monitoramento de re
 2. **sysstat**: polling em userspace via `/proc/net/dev`.
 3. **Prometheus**: igual ao sysstat, com exposição adicional de métricas via HTTP (`:8000/metrics`).
 
-O foco é medir o **overhead do monitoramento** (latência da coleta) ao monitorar um WAF simplificado rodando em Python.
+O foco é medir o **overhead do monitoramento** (tempo de resposta do observador) ao monitorar um WAF simplificado rodando em Python.
 
 ---
 
@@ -22,7 +22,7 @@ Cliente TCP ──► WAF (porta 8080)
               coleta bytes RX/TX + CPU/mem do WAF
                       ▲
                probe UDP (1/s)
-               mede latência de roundtrip
+               mede tempo de resposta (RTT UDP)
                       │
               <ferramenta>_<N>_run<ID>_results.json
                       │
@@ -33,7 +33,7 @@ Cliente TCP ──► WAF (porta 8080)
 
 - O **WAF** inspeciona cada payload (SQLi, XSS, PathTraversal, RCE, NullByte) via `asyncio` + `ThreadPoolExecutor`, registra o tempo de inspeção e responde ao cliente. Protocolo: framing com 4 bytes de comprimento por mensagem (conexões persistentes).
 - O **observador** coleta métricas do WAF usando a ferramenta correspondente e responde a qualquer request UDP com um JSON de métricas.
-- O **probe** envia requests UDP a cada 1s e mede o tempo de roundtrip — essa latência é a métrica principal de comparação.
+- O **probe** envia requests UDP a cada 1s e mede o tempo de resposta (RTT UDP) — essa é a métrica principal de comparação.
 - A ferramenta muda entre os testes; o probe é o mesmo script (`probe.py`) nos três casos.
 
 ---
@@ -167,7 +167,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 | Métrica | Origem | Descrição |
 |---------|--------|-----------|
 | `observador_latency_avg_ms` | probe | Latência média da roundtrip UDP (overhead do monitoramento) |
-| `observador_latency_stddev_ms` | probe | Desvio padrão da latência |
+| `observador_latency_stddev_ms` | probe | Desvio padrão do tempo de resposta |
 | `observador_latency_max_ms` | probe | Latência máxima observada |
 | `observador_samples` | probe | Número de amostras coletadas |
 | `bytes_rx / bytes_tx` | observador | eBPF: kprobe sport=8080; sysstat/Prom: `/proc/net/dev` |
@@ -272,7 +272,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 | 2.000.000 | **0.5283** | 0.5746 | 0.5932 |
 
 **Observações gerais:**
-- **eBPF lidera em latência** em todos os N, com IC95 sem sobreposição a partir de N=500k.
+- **eBPF lidera em tempo de resposta** em todos os N, com IC95 sem sobreposição a partir de N=500k.
 - **Overhead do eBPF escala com volume**: os kprobes disparam por pacote, enquanto sysstat lê `/proc/net/dev` uma vez por segundo. A vantagem do eBPF encolhe de 85µs (N=1M) para 47µs (N=2M).
 - **Memória do observador**: sysstat ~14 MB, eBPF ~15 MB (libbpf, sem BCC/LLVM), Prometheus ~24 MB — estável em todos os N.
 - **Memória do WAF** cresce com N (28 MB em 100k → 50 MB em 2M), reflexo do acúmulo de conexões TCP persistentes.
@@ -281,9 +281,9 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 > Gerados por `scripts/plot_results.py` a partir das médias de 30 runs. Salvos em `results/plots/`.
 
-![Latência média por N](results/plots/latencia_por_n.png)
+![Tempo de resposta por N](results/plots/tempo_resposta_por_n.png)
 
-![Boxplot de latência](results/plots/boxplot_latencia.png)
+![Boxplot de tempo de resposta](results/plots/boxplot_tempo_resposta.png)
 
 ![Memória do observador](results/plots/memoria_observador.png)
 

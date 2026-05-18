@@ -34,10 +34,10 @@ TOOLS       = ["ebpf", "sysstat", "prometheus"]
 TOOL_LABELS = {"ebpf": "eBPF", "sysstat": "sysstat", "prometheus": "Prometheus"}
 
 METRICS = [
-    ("observador_latency_avg_ms",    "Latência média (ms)"),
+    ("observador_latency_avg_ms",    "Tempo de resposta médio (ms)"),
     ("observador_latency_stddev_ms", "Desvio padrão (ms)"),
-    ("observador_latency_max_ms",    "Latência máx (ms)"),
-    ("observador_latency_min_ms",    "Latência mín (ms)"),
+    ("observador_latency_max_ms",    "Tempo de resposta máx (ms)"),
+    ("observador_latency_min_ms",    "Tempo de resposta mín (ms)"),
     ("observador_samples",           "Amostras coletadas"),
     ("bytes_rx",                  "Bytes RX WAF"),
     ("bytes_tx",                  "Bytes TX WAF"),

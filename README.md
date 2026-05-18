@@ -83,7 +83,7 @@ tcc_gerenciamento_rede/
 | **Kernel** | 7.0.0-15-generic |
 
 **Requisitos mínimos para reproduzir:**
-- Linux nativo (kernel 6.10+, testado no 6.12)
+- Linux nativo (kernel 6.10+, testado no 7.0)
 - Docker + Docker Compose
 - Python 3.10+
 - BTF habilitado no kernel (`/sys/kernel/btf/vmlinux` — presente em kernels 5.8+)

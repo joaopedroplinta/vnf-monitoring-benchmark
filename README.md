@@ -12,28 +12,11 @@ O foco é medir o **overhead do monitoramento** (tempo de resposta do observador
 
 ## Arquitetura
 
-```
-Cliente TCP ──► WAF (porta 8080)
-                      ▲
-               observa via ferramenta
-                      │
-              Observador (UDP :9999)
-              eBPF | sysstat | Prometheus
-              coleta bytes RX/TX + CPU/mem do WAF
-                      ▲
-               probe UDP (1/s)
-               mede tempo de resposta (RTT UDP)
-                      │
-              <ferramenta>_<N>_run<ID>_results.json
-                      │
-                 compare.py
-                      │
-         comparison_<N>_<RUNS>runs.csv/.json
-```
+![Diagrama C4 — Container Diagram (Nível 2)](docs/arquitetura_c4.svg)
 
 - O **WAF** inspeciona cada payload (SQLi, XSS, PathTraversal, RCE, NullByte) via `asyncio` + `ThreadPoolExecutor`, registra o tempo de inspeção e responde ao cliente. Protocolo: framing com 4 bytes de comprimento por mensagem (conexões persistentes).
-- O **observador** coleta métricas do WAF usando a ferramenta correspondente e responde a qualquer request UDP com um JSON de métricas.
-- O **probe** envia requests UDP a cada 1s e mede o tempo de resposta (RTT UDP) — essa é a métrica principal de comparação.
+- O **Observador** coleta métricas do WAF usando a ferramenta correspondente (eBPF / sysstat / Prometheus) e responde a qualquer request UDP com um JSON de métricas.
+- O **Probe** envia requests UDP a cada 1s e mede o tempo de resposta (RTT UDP) — essa é a métrica principal de comparação.
 - A ferramenta muda entre os testes; o probe é o mesmo script (`probe.py`) nos três casos.
 
 ---

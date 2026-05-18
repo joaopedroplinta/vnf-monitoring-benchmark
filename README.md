@@ -71,11 +71,22 @@ tcc_gerenciamento_rede/
 
 ## Como Rodar
 
-### Requisitos
-- Linux nativo (kernel 6.10+, testado no 6.12).
-- Docker + Docker Compose.
-- Python 3.10+.
-- BTF habilitado no kernel (`/sys/kernel/btf/vmlinux` — presente em kernels 5.8+).
+### Ambiente
+
+**Máquina usada nos resultados oficiais:**
+
+| Item | Especificação |
+|------|---------------|
+| **CPU** | AMD Ryzen 5 5500 (6 núcleos / 12 threads, até 4,27 GHz, L3 16 MB) |
+| **RAM** | 16 GB |
+| **SO** | Ubuntu 26.04 LTS (Resolute Raccoon) |
+| **Kernel** | 7.0.0-15-generic |
+
+**Requisitos mínimos para reproduzir:**
+- Linux nativo (kernel 6.10+, testado no 6.12)
+- Docker + Docker Compose
+- Python 3.10+
+- BTF habilitado no kernel (`/sys/kernel/btf/vmlinux` — presente em kernels 5.8+)
 
 ### Passo 1 — Gerar os payloads (uma vez)
 
@@ -183,17 +194,6 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 - Expõe Gauges em `:8000/metrics` via `prometheus_client`.
 - Bind do UDP :9999 feito antes do HTTP :8000 para evitar falha por TIME_WAIT entre runs.
 - Requer `pid: host`.
-
----
-
-## Ambiente de Teste
-
-| Item | Especificação |
-|------|---------------|
-| **CPU** | AMD Ryzen 5 5500 (6 núcleos / 12 threads, até 4,27 GHz, L3 16 MB) |
-| **RAM** | 16 GB |
-| **SO** | Ubuntu 26.04 LTS (Resolute Raccoon) |
-| **Kernel** | 7.0.0-15-generic |
 
 ---
 

@@ -18,7 +18,7 @@
   ],
   "data": [
     {
-      "metrica": "Lat\u00eancia m\u00e9dia (ms)",
+      "metrica": "Tempo de resposta m\u00e9dio (ms)",
       "eBPF": 0.4885,
       "eBPF_std": 0.0105,
       "eBPF_ci95": 0.0039,
@@ -42,7 +42,7 @@
       "Prometheus_ci95": 0.0021
     },
     {
-      "metrica": "Lat\u00eancia m\u00e1x (ms)",
+      "metrica": "Tempo de resposta m\u00e1x (ms)",
       "eBPF": 0.6789,
       "eBPF_std": 0.2485,
       "eBPF_ci95": 0.0928,
@@ -54,7 +54,7 @@
       "Prometheus_ci95": 0.015
     },
     {
-      "metrica": "Lat\u00eancia m\u00edn (ms)",
+      "metrica": "Tempo de resposta m\u00edn (ms)",
       "eBPF": 0.3409,
       "eBPF_std": 0.0401,
       "eBPF_ci95": 0.015,

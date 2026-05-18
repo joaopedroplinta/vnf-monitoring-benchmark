@@ -41,7 +41,7 @@ carga de tráfego e duração, para garantir comparação justa.
 │                    └──────────────────┬───────────────────────┘  │
 │                                       │                          │
 │                          request/response UDP (1/s)              │
-│                          latência = tempo de roundtrip           │
+│                          tempo de resposta = RTT UDP             │
 │                                       │                          │
 │                              ┌────────┴────────┐                 │
 │                              │    probe.py      │                 │
@@ -85,7 +85,7 @@ carga de tráfego e duração, para garantir comparação justa.
 - Script único compartilhado pelas 3 variantes, configurado via env vars (`COLLECTOR`, `RESULTS_PATH`, `DURATION`, `MONITOR_HOST`, `MONITOR_PORT`).
 - Aguarda o monitor estar pronto (`wait_ready`) antes de iniciar — evita perda de amostras no startup do BPF.
 - Handler SIGTERM registrado no início: garante que `finally: save()` é executado mesmo quando `docker compose down` encerra o container antes de DURATION expirar.
-- Envia request UDP ao Observador a cada 1s e mede a latência de roundtrip.
+- Envia request UDP ao Observador a cada 1s e mede o tempo de resposta (RTT UDP).
 - Salva resultados em `results/<collector>_<N>_run<ID>_results.json`.
 
 ### Cliente TCP — `src/client/client.py`
@@ -125,7 +125,7 @@ Três modos de uso:
 2. WAF inicia na porta 8080; Observador inicia e começa a coletar métricas.
 3. Probe aguarda o monitor responder (`wait_ready`) e inicia a medição.
 4. Cliente envia `NUM_MESSAGES` mensagens ao WAF via asyncio com 200 workers (conexões persistentes, framing 4-byte).
-5. Probe envia requests UDP ao Observador a cada 1s e registra latência + métricas.
+5. Probe envia requests UDP ao Observador a cada 1s e registra tempo de resposta + métricas.
 6. Após `DURATION` segundos, o probe salva `results/<ferramenta>_<N>_run<ID>_results.json`.
 7. `compare.py` consolida os resultados em CSV/JSON para análise.
 

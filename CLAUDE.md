@@ -155,10 +155,17 @@ This project has custom agents (`.claude/agents/`) and slash commands (`.claude/
 | `/analyze-anomalies` | Deep anomaly investigation |
 | `/write-section <section>` | Generate TCC academic section |
 
-## Current Status (14/05/2026)
+## Test Environment
 
-- Official results collected: N=100k, 500k, 1M — 30 runs each (notebook i5 11th gen + BigLinux)
-- N=100k also re-collected with libbpf in `feat/ebpf-libbpf-memory` branch
-- **Pending:** merge `feat/ebpf-libbpf-memory` → main, then re-collect all data on desktop AMD Ryzen 5 5500 (Ubuntu native) for thermal consistency
-- **Next N:** 2M messages
+| Item | Spec |
+|------|------|
+| **CPU** | AMD Ryzen 5 5500 (6 cores / 12 threads, up to 4.27 GHz, L3 16 MB) |
+| **RAM** | 16 GB |
+| **OS** | Ubuntu 26.04 LTS (Resolute Raccoon) |
+| **Kernel** | 7.0.0-15-generic |
+
+## Current Status (17/05/2026)
+
+- Official results collected: N=100k, 500k, 1M, 2M — 30 runs each (AMD Ryzen 5 5500, Ubuntu 26.04)
+- All data collected with libbpf+CO-RE (no BCC), WORKERS=200
 - **Runs per N:** 30 (fixed by advisor)

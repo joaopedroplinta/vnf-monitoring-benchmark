@@ -188,6 +188,17 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 ---
 
+## Ambiente de Teste
+
+| Item | Especificação |
+|------|---------------|
+| **CPU** | AMD Ryzen 5 5500 (6 núcleos / 12 threads, até 4,27 GHz, L3 16 MB) |
+| **RAM** | 16 GB |
+| **SO** | Ubuntu 26.04 LTS (Resolute Raccoon) |
+| **Kernel** | 7.0.0-15-generic |
+
+---
+
 ## Resultados
 
 > Valores exibidos como **média ± IC95%** (intervalo de confiança de 95%, t de Student, α=0.05).

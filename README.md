@@ -1,4 +1,4 @@
-# TCC — Gerenciamento e Monitoramento de Rede (eBPF vs Clássicos)
+# vnf-monitoring-benchmark — eBPF vs Sysstat vs Prometheus
 
 Análise comparativa de desempenho entre três abordagens de monitoramento de rede aplicadas a uma VNF (Virtual Network Function):
 
@@ -24,7 +24,7 @@ O foco é medir o **overhead do monitoramento** (tempo de resposta do observador
 ## Estrutura do Projeto
 
 ```
-tcc_gerenciamento_rede/
+vnf-monitoring-benchmark/
 ├── src/
 │   ├── probe.py                   # Probe UDP único (configurado por variáveis de ambiente)
 │   ├── vnf/
@@ -45,7 +45,8 @@ tcc_gerenciamento_rede/
 │   └── payloads/                  # Arquivos binários de payloads pré-gerados
 │       ├── payloads_100000_6040.bin
 │       ├── payloads_500000_6040.bin
-│       └── payloads_1000000_6040.bin
+│       ├── payloads_1000000_6040.bin
+│       └── payloads_2000000_6040.bin
 ├── scripts/
 │   ├── gen_payloads.py            # Gera arquivos de payloads (executar antes dos testes)
 │   ├── plot_results.py            # Gera gráficos em results/plots/
@@ -123,7 +124,7 @@ Variáveis de ambiente:
 | Variável | Padrão | Descrição |
 |---|---|---|
 | `NUM_MESSAGES` | 100000 | Quantidade de mensagens — usada para DURATION e nomenclatura dos resultados |
-| `DURATION` | `NUM_MESSAGES/8000 + 20` | Duração da coleta (segundos) |
+| `DURATION` | `NUM_MESSAGES/15000 + 20` | Duração da coleta (segundos) |
 | `RUN_ID` | 1 | Identificador do run |
 | `WORKERS` | 200 | Conexões assíncronas do cliente (coroutines asyncio) |
 | `PAYLOADS_FILE_HOST` | `data/payloads/payloads_<N>_6040.bin` | Caminho do arquivo de payloads no host (sobrescreve o padrão) |

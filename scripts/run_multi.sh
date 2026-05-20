@@ -31,7 +31,7 @@ else
 fi
 
 echo "========================================"
-echo "  TCC — Multi-run"
+echo "  TCC — Múltiplas execuções"
 echo "  Ferramenta : ${TOOL}"
 echo "  Mensagens  : ${NUM_MESSAGES}"
 echo "  Repetições : ${NUM_RUNS}"
@@ -46,7 +46,7 @@ export SKIP_BUILD=1
 
 for i in $(seq 1 $NUM_RUNS); do
     echo ""
-    echo "▶ [${TOOL^^}] Run ${i}/${NUM_RUNS} — ${NUM_MESSAGES} msgs"
+    echo "▶ [${TOOL^^}] Execução ${i}/${NUM_RUNS} — ${NUM_MESSAGES} msgs"
     echo "----------------------------------------"
     export NUM_MESSAGES RUN_ID=$i
     bash "$(dirname "$0")/run_${TOOL}.sh"
@@ -54,7 +54,7 @@ done
 
 echo ""
 echo "========================================"
-echo "  ${NUM_RUNS} runs concluídos!"
+echo "  ${NUM_RUNS} execuções concluídas!"
 echo "  Gerando agregação..."
 echo "========================================"
 

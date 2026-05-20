@@ -410,7 +410,7 @@ Convenção adotada:
 | 500.000   | 30   | 82s          | ~35s         | ~117s     | ~3h                         | ✅ Concluído (27/04/2026) |
 | 1.000.000 | 30   | 145s         | ~35s         | ~180s     | ~4h30                       | ✅ Concluído (27/04/2026) |
 
-> DURATION = `NUM_MESSAGES / 8000 + 20` (divisão inteira bash). Overhead inclui `docker compose down + up + shutdown`. O build ocorre uma única vez antes do loop de execuções (via `run_multi.sh`), não mais a cada execução.
+> DURATION = `NUM_MESSAGES / 8000 + 20` (divisão inteira bash) — fórmula usada nessas coletas; corrigida para divisor 15.000 em 16/05/2026. Overhead inclui `docker compose down + up + shutdown`. O build ocorre uma única vez antes do loop de execuções (via `run_multi.sh`), não mais a cada execução.
 
 Comando para cada etapa (rodar uma ferramenta por vez para não perder resultados em caso de falha):
 ```bash
@@ -837,7 +837,7 @@ O tempo de resposta do eBPF aumentou de N=1M para N=2M (+0.040ms, +8.2%), enquan
 
 #### Anomalias documentadas: execuções com inspect_count=0
 
-5 execuções apresentaram `inspect_count=0` e `inspect_avg_ms=0` devido a race condition na leitura de `waf_metrics.json` (probe encerrou antes de o WAF gravar o arquivo pela primeira vez). O tempo de resposta UDP nessas execuções é válido e entra nas agregações normalmente; apenas as métricas de inspeção devem ser desconsiderados.
+5 execuções apresentaram `inspect_count=0` e `inspect_avg_ms=0` devido a race condition na leitura de `waf_metrics.json` (probe encerrou antes de o WAF gravar o arquivo pela primeira vez). O tempo de resposta UDP nessas execuções é válido e entra nas agregações normalmente; apenas as métricas de inspeção devem ser desconsideradas.
 
 | Execução | inspect_count |
 |-----|---------------|
@@ -896,7 +896,7 @@ O valor de `t` é o t de Student bicaudal com α=0,05, tabelado internamente em 
 
 #### O que significa cada coluna nas tabelas de resultados
 
-Nas tabelas do relatório, cada célula exibe `média ± IC95`. Por exemplo, na linha **Latência média**:
+Nas tabelas do relatório, cada célula exibe `média ± IC95`. Por exemplo, na linha **Tempo de resposta médio**:
 
 - O valor central (ex: `0.5407`) é a média do `observador_latency_avg_ms` nas 30 execuções.
 - O `±0.0121` é o IC95% dessa média, calculado com o desvio padrão **entre as 30 execuções**.

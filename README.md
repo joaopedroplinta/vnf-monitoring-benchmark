@@ -1,4 +1,4 @@
-# TCC — Gerenciamento e Monitoramento de Rede (eBPF vs Clássicos)
+# vnf-monitoring-benchmark — eBPF vs Sysstat vs Prometheus
 
 Análise comparativa de desempenho entre três abordagens de monitoramento de rede aplicadas a uma VNF (Virtual Network Function):
 
@@ -24,7 +24,7 @@ O foco é medir o **overhead do monitoramento** (tempo de resposta do observador
 ## Estrutura do Projeto
 
 ```
-tcc_gerenciamento_rede/
+vnf-monitoring-benchmark/
 ├── src/
 │   ├── probe.py                   # Probe UDP único (configurado por variáveis de ambiente)
 │   ├── vnf/
@@ -45,7 +45,8 @@ tcc_gerenciamento_rede/
 │   └── payloads/                  # Arquivos binários de payloads pré-gerados
 │       ├── payloads_100000_6040.bin
 │       ├── payloads_500000_6040.bin
-│       └── payloads_1000000_6040.bin
+│       ├── payloads_1000000_6040.bin
+│       └── payloads_2000000_6040.bin
 ├── scripts/
 │   ├── gen_payloads.py            # Gera arquivos de payloads (executar antes dos testes)
 │   ├── plot_results.py            # Gera gráficos em results/plots/
@@ -88,6 +89,14 @@ tcc_gerenciamento_rede/
 - Python 3.10+
 - BTF habilitado no kernel (`/sys/kernel/btf/vmlinux` — presente em kernels 5.8+)
 
+**Bibliotecas Python do host** (os contêineres instalam as suas próprias automaticamente via Dockerfile):
+
+```bash
+pip install matplotlib numpy          # geração de gráficos (plot_results.py)
+```
+
+> `psutil` e `prometheus_client` são instalados apenas dentro dos contêineres — não é necessário instalá-los no host.
+
 ### Passo 1 — Gerar os payloads (uma vez)
 
 Os payloads são pré-gerados no host e montados no container do cliente:
@@ -123,7 +132,7 @@ Variáveis de ambiente:
 | Variável | Padrão | Descrição |
 |---|---|---|
 | `NUM_MESSAGES` | 100000 | Quantidade de mensagens — usada para DURATION e nomenclatura dos resultados |
-| `DURATION` | `NUM_MESSAGES/8000 + 20` | Duração da coleta (segundos) |
+| `DURATION` | `NUM_MESSAGES/15000 + 20` | Duração da coleta (segundos) |
 | `RUN_ID` | 1 | Identificador do run |
 | `WORKERS` | 200 | Conexões assíncronas do cliente (coroutines asyncio) |
 | `PAYLOADS_FILE_HOST` | `data/payloads/payloads_<N>_6040.bin` | Caminho do arquivo de payloads no host (sobrescreve o padrão) |
@@ -167,8 +176,8 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 | `mem_avg_mb` | observador (psutil) | Uso médio de memória do processo WAF |
 | `collector_cpu_avg_pct` | observador (psutil) | Uso médio de CPU do próprio observador |
 | `collector_mem_avg_mb` | observador (psutil) | Uso médio de memória do próprio observador |
-| `inspect_count` | waf → observador | Total de payloads inspecionados no run |
-| `inspect_avg_ms` | waf → observador | Tempo médio de inspeção por payload (ms) |
+| `inspect_count` | waf → observador | Total de mensagens inspecionadas na execução |
+| `inspect_avg_ms` | waf → observador | Tempo médio de inspeção por mensagem (ms) |
 | `inspect_min_ms` | waf → observador | Tempo mínimo de inspeção (ms) |
 | `inspect_max_ms` | waf → observador | Tempo máximo de inspeção (ms) |
 
@@ -192,7 +201,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 ### Prometheus (`observador_prometheus.py`)
 - Mesma lógica de coleta do sysstat.
 - Expõe Gauges em `:8000/metrics` via `prometheus_client`.
-- Bind do UDP :9999 feito antes do HTTP :8000 para evitar falha por TIME_WAIT entre runs.
+- Bind do UDP :9999 feito antes do HTTP :8000 para evitar falha por TIME_WAIT entre execuções.
 - Requer `pid: host`.
 
 ---
@@ -200,11 +209,11 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 ## Resultados
 
 > Valores exibidos como **média ± IC95%** (intervalo de confiança de 95%, t de Student, α=0.05).
-> Config: WORKERS=200, libbpf+CO-RE, 30 runs por N. Coletados em 16–17/05/2026.
+> Config: WORKERS=200, libbpf+CO-RE, 30 execuções por N. Coletados em 16–17/05/2026.
 
-### N = 100.000 mensagens — 30 runs
+### N = 100.000 mensagens — 30 execuções
 
-> DURATION ≈ 26s, 26 amostras/run.
+> DURATION ≈ 26s, 26 amostras/execução.
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
@@ -215,9 +224,9 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 | CPU média observador (%) | **0.051 ± 0.010** | 4.663 ± 6.543 | 2.373 ± 4.720 |
 | Memória média observador (MB) | 15.226 ± 0.020 | **13.932 ± 0.015** | 24.822 ± 0.040 |
 
-### N = 500.000 mensagens — 30 runs
+### N = 500.000 mensagens — 30 execuções
 
-> DURATION ≈ 53s, 53 amostras/run.
+> DURATION ≈ 53s, 53 amostras/execução.
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
@@ -228,9 +237,9 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 | CPU média observador (%) | 3.515 ± 3.976 | **1.152 ± 2.244** | 3.484 ± 5.227 |
 | Memória média observador (MB) | 15.125 ± 0.023 | **13.907 ± 0.023** | 24.831 ± 0.045 |
 
-### N = 1.000.000 mensagens — 30 runs
+### N = 1.000.000 mensagens — 30 execuções
 
-> DURATION ≈ 87s, 86 amostras/run.
+> DURATION ≈ 87s, 86 amostras/execução.
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|
@@ -241,9 +250,9 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 | CPU média observador (%) | 0.819 ± 1.578 | 1.423 ± 1.945 | **0.742 ± 1.398** |
 | Memória média observador (MB) | 15.138 ± 0.017 | **13.551 ± 0.028** | 24.164 ± 0.058 |
 
-### N = 2.000.000 mensagens — 30 runs
+### N = 2.000.000 mensagens — 30 execuções
 
-> DURATION ≈ 153s, 153 amostras/run.
+> DURATION ≈ 153s, 153 amostras/execução.
 
 | Métrica | eBPF | sysstat | Prometheus |
 |---------|------|---------|------------|

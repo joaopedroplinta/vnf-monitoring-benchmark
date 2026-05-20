@@ -62,7 +62,7 @@
   <line x1="56" y1="323" x2="56" y2="318" stroke="#888" stroke-width="1"/>
   <line x1="56" y1="344" x2="56" y2="349" stroke="#888" stroke-width="1"/>
   <text x="74" y="334" font-family="monospace" font-size="11" fill="#999">TCP Socket</text>
-  <text x="74" y="350" font-family="monospace" font-size="12" fill="white">WAF <tspan font-weight="bold">Server</tspan></text>
+  <text x="74" y="350" font-family="monospace" font-size="12" fill="white">WAF <tspan font-weight="bold">Servidor</tspan></text>
   <rect x="172" y="306" width="38" height="14" rx="3" fill="#cc7700"/>
   <text x="191" y="317" font-family="monospace" font-size="9" fill="white" text-anchor="middle">:8080</text>
 
@@ -72,7 +72,7 @@
   <rect x="457" y="27"  width="222" height="220" rx="4" fill="#073d1a"/>
   <rect x="449" y="19"  width="222" height="220" rx="4" fill="#041a0a" stroke="#00aa44" stroke-width="2"/>
   <text x="461" y="45" font-family="monospace" font-size="17" font-weight="bold"
-        fill="white" text-decoration="underline">Probe</text>
+        fill="white" text-decoration="underline">Coletor</text>
 
   <!-- probe.py -->
   <rect x="475" y="64"  width="170" height="70" rx="2" fill="#0a200a"/>
@@ -89,7 +89,7 @@
   <rect x="468" y="146" width="170" height="62" rx="2" fill="#131313" stroke="#555" stroke-width="1"/>
   <text x="483" y="163" font-family="monospace" font-size="10" fill="#888">saída</text>
   <text x="483" y="179" font-family="monospace" font-size="11" fill="white">→ <tspan font-weight="bold">*_N_results.json</tspan></text>
-  <text x="483" y="198" font-family="monospace" font-size="9"  fill="#555">RTT medido a cada probe</text>
+  <text x="483" y="198" font-family="monospace" font-size="9"  fill="#555">RTT medido a cada requisição</text>
 
   <!-- ═══════════════════════════════════════════
        Client  (right bottom, blue)
@@ -97,7 +97,7 @@
   <rect x="457" y="277" width="222" height="200" rx="4" fill="#071428"/>
   <rect x="449" y="269" width="222" height="200" rx="4" fill="#040d1a" stroke="#2266cc" stroke-width="2"/>
   <text x="461" y="295" font-family="monospace" font-size="17" font-weight="bold"
-        fill="white" text-decoration="underline">Client</text>
+        fill="white" text-decoration="underline">Cliente</text>
 
   <!-- client.py -->
   <rect x="475" y="314" width="170" height="70" rx="2" fill="#071428"/>
@@ -123,15 +123,15 @@
   <line x1="468" y1="94" x2="209" y2="94"
         stroke="white" stroke-width="1.5" stroke-dasharray="6,3"
         marker-end="url(#arr)"/>
-  <text x="338" y="70" font-family="monospace" font-size="11" fill="white" text-anchor="middle">Sonda ativa</text>
-  <text x="338" y="84" font-family="monospace" font-size="10" fill="#aaa"  text-anchor="middle">UDP, 1 req/s</text>
+  <text x="338" y="70" font-family="monospace" font-size="11" fill="white" text-anchor="middle">Requisição Ativa</text>
+  <text x="338" y="84" font-family="monospace" font-size="10" fill="#aaa"  text-anchor="middle">UDP (1 req/s)</text>
 
   <!-- 2. Observador → Probe/saída (Resposta reativa) -->
   <line x1="209" y1="172" x2="468" y2="172"
         stroke="white" stroke-width="1.5" stroke-dasharray="6,3"
         marker-end="url(#arr)"/>
-  <text x="338" y="188" font-family="monospace" font-size="11" fill="white" text-anchor="middle">Resposta reativa</text>
-  <text x="338" y="202" font-family="monospace" font-size="10" fill="#aaa"  text-anchor="middle">JSON de métricas</text>
+  <text x="338" y="188" font-family="monospace" font-size="11" fill="white" text-anchor="middle">Resposta Reativa</text>
+  <text x="338" y="202" font-family="monospace" font-size="10" fill="#aaa"  text-anchor="middle">JSON de Métricas</text>
 
   <!-- 3. Client → WAF (Tráfego TCP) -->
   <line x1="468" y1="342" x2="209" y2="342"
@@ -141,5 +141,5 @@
   <text x="338" y="340" font-family="monospace" font-size="10" fill="#aaa"  text-anchor="middle">TCP :8080</text>
 
   <!-- C4 level label -->
-  <text x="350" y="497" font-family="monospace" font-size="9" fill="#777" text-anchor="middle">C4 — Container Diagram (Nível 2)</text>
+  <text x="350" y="497" font-family="monospace" font-size="9" fill="#777" text-anchor="middle">C4 — Diagrama de Contêineres (Nível 2)</text>
 </svg>

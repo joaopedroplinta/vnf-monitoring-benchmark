@@ -137,4 +137,4 @@ Três modos de uso:
 - O overhead de CPU do Prometheus inclui o custo do servidor HTTP (:8000/metrics), não apenas da coleta de bytes.
 - CPU/mem via psutil requer `pid: host` — o Observador enxerga o processo WAF via namespace de PID do host.
 - A taxa efetiva de inspeção é limitada pelo WAF (Python GIL + regex); aumentar `WORKERS` além de 200 não eleva o throughput pois o gargalo está na inspeção, não no transporte.
-- A porta HTTP 8000 (Prometheus) pode estar em TCP TIME_WAIT por até 120s entre runs consecutivos. O monitor agora vincula UDP antes do HTTP e tolera falha no bind HTTP sem comprometer a coleta de dados.
+- A porta HTTP 8000 (Prometheus) pode estar em TCP TIME_WAIT por até 120s entre execuções consecutivas. O monitor agora vincula UDP antes do HTTP e tolera falha no bind HTTP sem comprometer a coleta de dados.

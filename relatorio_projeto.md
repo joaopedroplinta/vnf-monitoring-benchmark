@@ -146,9 +146,9 @@ Variáveis de ambiente relevantes:
 
 ---
 
-## Resultados preliminares (18/04/2026) — 5 runs, pré-testes
+## Resultados preliminares (18/04/2026) — 5 execuções, pré-testes
 
-> Arquivos em `results/pre_testes/`. Valores exibidos como média ± desvio padrão entre runs.
+> Arquivos em `results/pre_testes/`. Valores exibidos como média ± desvio padrão entre execuções.
 
 ### N = 100.000 mensagens
 
@@ -170,11 +170,11 @@ Variáveis de ambiente relevantes:
 
 ---
 
-## Resultados oficiais (26/04/2026) — 30 runs
+## Resultados oficiais (26/04/2026) — 30 execuções
 
 > Arquivos em `results/`. Valores exibidos como **média ± IC95%** (intervalo de confiança de 95% — t de Student, α=0.05).
 
-### N = 100.000 mensagens — 30 runs
+### N = 100.000 mensagens — 30 execuções
 
 | Métrica                    | eBPF (média ± IC95)    | sysstat (média ± IC95)  | Prometheus (média ± IC95) |
 | -------------------------- | ---------------------- | ----------------------- | ------------------------- |
@@ -187,9 +187,9 @@ Variáveis de ambiente relevantes:
 | CPU média observador (%)      | 1.927 ± 2.6211         | 2.860 ± 4.2246          | **1.402 ± 1.8656**        |
 | Memória média observador (MB) | 196.474 ± 0.2631       | **13.689 ± 0.0292**     | 24.559 ± 0.0563           |
 
-> DURATION = 100000/8000 + 20 = 32s → 32 amostras por run.
+> DURATION = 100000/8000 + 20 = 32s → 32 amostras por execução.
 
-### N = 500.000 mensagens — 30 runs (27/04/2026)
+### N = 500.000 mensagens — 30 execuções (27/04/2026)
 
 | Métrica                    | eBPF (média ± IC95)    | sysstat (média ± IC95)  | Prometheus (média ± IC95) |
 | -------------------------- | ---------------------- | ----------------------- | ------------------------- |
@@ -202,9 +202,9 @@ Variáveis de ambiente relevantes:
 | CPU média observador (%)      | **0.709 ± 0.8764**     | 0.749 ± 0.9423          | 0.978 ± 1.0451            |
 | Memória média observador (MB) | 196.712 ± 0.3179       | **13.639 ± 0.0242**     | 24.606 ± 0.0543           |
 
-> DURATION = 500000/8000 + 20 = 82s → 82 amostras por run.
+> DURATION = 500000/8000 + 20 = 82s → 82 amostras por execução.
 
-### N = 1.000.000 mensagens — 30 runs (27/04/2026)
+### N = 1.000.000 mensagens — 30 execuções (27/04/2026)
 
 | Métrica                       | eBPF (média ± IC95)    | sysstat (média ± IC95)  | Prometheus (média ± IC95) |
 | ----------------------------- | ---------------------- | ----------------------- | ------------------------- |
@@ -217,9 +217,9 @@ Variáveis de ambiente relevantes:
 | CPU média observador (%)      | 0.2943 ± 0.4334        | **0.1693 ± 0.1468**     | 0.2753 ± 0.2461           |
 | Memória média observador (MB) | 196.5243 ± 0.2452      | **13.6733 ± 0.0364**    | 24.5493 ± 0.0494          |
 
-> DURATION = 1000000/8000 + 20 = 145s → 145 amostras por run.
+> DURATION = 1000000/8000 + 20 = 145s → 145 amostras por execução.
 
-### Comparativo cross-N — Tempo de resposta médio do observador (média de 30 runs, ms)
+### Comparativo cross-N — Tempo de resposta médio do observador (média de 30 execuções, ms)
 
 | N          | eBPF             | sysstat          | Prometheus       | Menor tempo de resposta |
 | ---------- | ---------------- | ---------------- | ---------------- | ----------------------- |
@@ -227,16 +227,16 @@ Variáveis de ambiente relevantes:
 | 500.000    | **1.3380 ± 0.0309**  | 1.4053 ± 0.0267  | 1.4381 ± 0.0265  | eBPF           |
 | 1.000.000  | **1.1016 ± 0.0140**  | 1.3141 ± 0.0548  | 1.2765 ± 0.0143  | eBPF           |
 
-### Observações (30 runs)
+### Observações (30 execuções)
 
 - **N=100k**: as três ferramentas apresentam tempos de resposta estatisticamente equivalentes — IC95 se sobrepõem. Sem dominância clara.
 - **N=500k**: eBPF se destaca com menor tempo de resposta médio (1.338 ms vs 1.405 ms sysstat vs 1.438 ms Prometheus) e IC95 que não se sobrepõem — diferença estatisticamente significativa nesse volume.
 - **N=1M**: eBPF mantém o menor tempo de resposta (1.098 ms), com IC95 que não se sobrepõem em relação às demais — diferença estatisticamente significativa. Prometheus supera sysstat nesse volume (1.277 ms vs 1.314 ms). CPU do WAF com Prometheus é ~5 pp maior (70.2% vs ~65%), indicando overhead do endpoint HTTP sob carga alta.
 - **Tendência com N crescente**: eBPF apresenta tempo de resposta inversamente proporcional ao volume (1.225 → 1.338 → 1.098 ms), sugerindo que os kprobes amortizam o custo fixo de inicialização sob cargas maiores. sysstat e Prometheus crescem monotonicamente (polling `/proc` se torna mais custoso relativamente).
 - **CPU do WAF** com eBPF é maior em N=500k (72.1% vs ~68%), reflexo da interferência dos kprobes no processo monitorado sob carga contínua.
-- **CPU do coletor** apresenta IC95 superior à média em N=100k (~43s de run), refletindo ruído em execuções curtas. Em N=500k (~157s) e N=1M (~300s) a variância cai significativamente.
-- **Memória do coletor** estável entre runs: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB.
-- **`ebpf_1000000_run9`** (corrigido em 28/04/2026): run original tinha `inspect_count=0` — o WAF não gravou `waf_metrics.json` nessa execução (falha pontual de volume Docker). Run foi re-executado; novo resultado: 300 amostras, tempo de resposta 1.1767ms, `inspect_count=274700`. Comparativo regenerado.
+- **CPU do coletor** apresenta IC95 superior à média em N=100k (~43s de execução), refletindo ruído em execuções curtas. Em N=500k (~157s) e N=1M (~300s) a variância cai significativamente.
+- **Memória do coletor** estável entre execuções: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB.
+- **`ebpf_1000000_run9`** (corrigido em 28/04/2026): execução original tinha `inspect_count=0` — o WAF não gravou `waf_metrics.json` nessa execução (falha pontual de volume Docker). Execução foi re-executada; novo resultado: 300 amostras, tempo de resposta 1.1767ms, `inspect_count=274700`. Comparativo regenerado.
 
 ---
 
@@ -260,7 +260,7 @@ python3 scripts/gen_payloads.py 100000 --ratio 70
 NUM_MESSAGES=100000 bash scripts/run_ebpf.sh
 NUM_MESSAGES=100000 bash scripts/run_sysstat.sh
 
-# Múltiplas repetições (sequencial, salva cada run separado)
+# Múltiplas repetições (sequencial, salva cada execução separada)
 bash scripts/run_multi.sh ebpf       100000 5
 bash scripts/run_multi.sh sysstat    100000 5
 bash scripts/run_multi.sh prometheus 100000 5
@@ -343,7 +343,7 @@ probe.py: captura os campos no sample por iteração
 
 | Campo | Descrição |
 | ----- | --------- |
-| `inspect_count` | Total de payloads inspecionados pelo WAF no run |
+| `inspect_count` | Total de mensagens inspecionadas pelo WAF na execução |
 | `inspect_avg_ms` | Tempo médio de inspeção (ms) — cumulativo até o último sample |
 | `inspect_min_ms` | Tempo mínimo de inspeção (ms) |
 | `inspect_max_ms` | Tempo máximo de inspeção (ms) |
@@ -393,24 +393,24 @@ Quando os scripts são executados individualmente (fora do `run_multi.sh`), o bu
 
 ### Reorganização de resultados (26/04/2026)
 
-Os resultados dos testes preliminares (5 runs × 100k e 500k) foram movidos de `results/` para `results/pre_testes/`, liberando `results/` para os runs oficiais do TCC.
+Os resultados dos testes preliminares (5 execuções × 100k e 500k) foram movidos de `results/` para `results/pre_testes/`, liberando `results/` para as execuções oficiais do TCC.
 
 Convenção adotada:
 
 | Pasta | Conteúdo |
 | ----- | -------- |
-| `results/pre_testes/` | Testes de validação e aquecimento (runs anteriores, 5 runs por ferramenta) |
-| `results/` | Dados oficiais do TCC (30 runs por ferramenta, por volume de mensagens) |
+| `results/pre_testes/` | Testes de validação e aquecimento (execuções anteriores, 5 execuções por ferramenta) |
+| `results/` | Dados oficiais do TCC (30 execuções por ferramenta, por volume de mensagens) |
 
 ### Plano de execução dos testes oficiais
 
-| N         | Runs | DURATION/run | Overhead/run | Tempo/run | Tempo total (3 ferramentas) | Status     |
+| N         | Execuções | DURATION/execução | Overhead/execução | Tempo/execução | Tempo total (3 ferramentas) | Status     |
 | --------- | ---- | ------------ | ------------ | --------- | --------------------------- | ---------- |
 | 100.000   | 30   | 32s          | ~35s         | ~67s      | ~1h40                       | ✅ Concluído (26/04/2026) |
 | 500.000   | 30   | 82s          | ~35s         | ~117s     | ~3h                         | ✅ Concluído (27/04/2026) |
 | 1.000.000 | 30   | 145s         | ~35s         | ~180s     | ~4h30                       | ✅ Concluído (27/04/2026) |
 
-> DURATION = `NUM_MESSAGES / 8000 + 20` (divisão inteira bash). Overhead inclui `docker compose down + up + shutdown`. O build ocorre uma única vez antes do loop de runs (via `run_multi.sh`), não mais a cada run.
+> DURATION = `NUM_MESSAGES / 8000 + 20` (divisão inteira bash). Overhead inclui `docker compose down + up + shutdown`. O build ocorre uma única vez antes do loop de execuções (via `run_multi.sh`), não mais a cada execução.
 
 Comando para cada etapa (rodar uma ferramenta por vez para não perder resultados em caso de falha):
 ```bash
@@ -421,7 +421,7 @@ bash scripts/run_multi.sh prometheus <N> 30
 
 ### Resultados disponíveis
 
-| N      | Ferramenta                | Runs | Localização           |
+| N      | Ferramenta                | Execuções | Localização           |
 | ------ | ------------------------- | ---- | --------------------- |
 | 100000 | eBPF, sysstat, Prometheus | 5    | `results/pre_testes/` |
 | 500000 | eBPF, sysstat, Prometheus | 5    | `results/pre_testes/` |
@@ -432,15 +432,15 @@ bash scripts/run_multi.sh prometheus <N> 30
 
 #### Correção: `compare_all_runs` usava run1 em vez das médias agregadas
 
-O modo sem argumentos de `compare.py` (`python3 src/compare.py`) gerava `comparison_all_runs.csv/.json` carregando apenas o `run1_results.json` de cada ferramenta/N, ignorando os outros 29 runs.
+O modo sem argumentos de `compare.py` (`python3 src/compare.py`) gerava `comparison_all_runs.csv/.json` carregando apenas o `run1_results.json` de cada ferramenta/N, ignorando as outras 29 execuções.
 
 **Correção aplicada:**
 
 | Componente | Antes | Depois |
 | ---------- | ----- | ------ |
-| `src/compare.py` — `compare_all_runs()` | Carregava fixo `<tool>_<N>_run1_results.json` | Descobre quantos runs existem por ferramenta/N via `discover_num_runs()` e calcula a média de todos |
-| `discover_runs()` | Retornava lista de N disponíveis | Renomeada para `discover_ns()` para evitar ambiguidade com "número de runs" |
-| `comparison_all_runs.json` | Valores do run1 (ruidosos) | Valores de média das 30 runs — coerentes com os `comparison_<N>_30runs.json` |
+| `src/compare.py` — `compare_all_runs()` | Carregava fixo `<tool>_<N>_run1_results.json` | Descobre quantas execuções existem por ferramenta/N via `discover_num_runs()` e calcula a média de todos |
+| `discover_runs()` | Retornava lista de N disponíveis | Renomeada para `discover_ns()` para evitar ambiguidade com "número de execuções" |
+| `comparison_all_runs.json` | Valores do run1 (ruidosos) | Valores de média das 30 execuções — coerentes com os `comparison_<N>_30runs.json` |
 
 Os valores corrigidos para tempo de resposta médio (ms):
 
@@ -457,7 +457,7 @@ Script para geração de gráficos a partir dos dados de benchmark. Salva em `re
 | Gráfico | Arquivo | Descrição |
 | ------- | ------- | --------- |
 | Tempo de resposta médio por N | `tempo_resposta_por_n.png` | Barras agrupadas (eBPF/sysstat/Prometheus × N=100k/500k/1M/2M) com IC95% |
-| Distribuição do tempo de resposta | `boxplot_tempo_resposta.png` | Boxplot das 30 runs por ferramenta, um painel por N |
+| Distribuição do tempo de resposta | `boxplot_tempo_resposta.png` | Boxplot das 30 execuções por ferramenta, um painel por N |
 | Memória do observador | `memoria_observador.png` | Barras agrupadas por N com IC95% — evidencia diferença eBPF (~196 MB) vs sysstat (~13 MB) vs Prometheus (~24 MB) |
 | CPU do WAF | `cpu_waf.png` | Barras agrupadas por N com IC95% |
 
@@ -503,7 +503,7 @@ Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_resul
 - O wrapper `/usr/sbin/bpftool` no Ubuntu 24.04 verifica `uname -r` e falha em kernels não-Ubuntu (ex: Manjaro 6.12). Solução: o entrypoint usa `find /usr/lib/linux-tools -name bpftool | head -1` para obter o binário real.
 - A flag de arquitetura BPF deve ser `-D__TARGET_ARCH_x86` (não `x86_64`) para targets x86_64.
 
-**Resultado do primeiro teste (N=100.000, run de validação):**
+**Resultado do primeiro teste (N=100.000, execução de validação):**
 
 | Métrica | BCC (original) | libbpf (novo) | Variação |
 | ------- | -------------- | ------------- | -------- |
@@ -514,13 +514,13 @@ Identificado durante revisão de integridade dos dados: `ebpf_1000000_run9_resul
 
 **Conclusão preliminar:** A variante libbpf+CO-RE reduz o consumo de memória do observador eBPF em ~93%, de ~196 MB para ~15 MB, sem degradação mensurável de tempo de resposta ou CPU. O consumo passa a ser comparável ao de sysstat (~13 MB).
 
-**Decisão (Opção C):** Substituir o observador BCC pelo libbpf no stack principal (`docker-compose.ebpf.yml`) e re-executar todos os 90 runs (30×3 N) para manter o dataset consistente sob uma única implementação.
+**Decisão (Opção C):** Substituir o observador BCC pelo libbpf no stack principal (`docker-compose.ebpf.yml`) e re-executar todas as 90 execuções (30×3 N) para manter o dataset consistente sob uma única implementação.
 
 - `docker-compose.ebpf.yml` atualizado: observador usa `Dockerfile.ebpf-libbpf` + `ebpf_entrypoint.sh`; volumes `/lib/modules` e `/usr/src` removidos; `/sys/kernel/btf` adicionado.
-- N=100k re-executado: 30 runs concluídos com libbpf em 28/04/2026.
+- N=100k re-executado: 30 execuções concluídas com libbpf em 28/04/2026.
 - N=500k e N=1M: re-execução pendente.
 
-**Resultado N=100k (30 runs libbpf, 28/04/2026):**
+**Resultado N=100k (30 execuções libbpf, 28/04/2026):**
 
 | Métrica | eBPF (libbpf) | sysstat | Prometheus |
 | ------- | ------------- | ------- | ---------- |
@@ -563,7 +563,7 @@ Resposta:   "ALLOWED:OK\n" ou "BLOCKED:<motivo>\n"  (newline-terminated)
 
 A conexão permanece aberta; o WAF lê mensagens em loop até o cliente fechar a conexão (`asyncio.IncompleteReadError`).
 
-**Resultado medido (N=100.000, 1 run, 29/04/2026):**
+**Resultado medido (N=100.000, 1 execução, 29/04/2026):**
 
 | Métrica | Antes (threading) | Depois (asyncio) | Variação |
 | ------- | ----------------- | ---------------- | -------- |
@@ -658,21 +658,21 @@ A RAM do cliente agora é constante independente de N. O único limite para N pa
 
 **Hardware para coleta dos dados definitivos**
 
-Os dados existentes (N=100k, 500k, 1M — 30 runs cada) foram coletados em notebook com Intel Core i5 11ª geração, sujeito a throttling térmico em runs longos. Os dados definitivos do TCC serão coletados em desktop com AMD Ryzen 5 5500 (6 cores físicos / 12 threads) rodando Ubuntu nativo, pelos seguintes motivos:
+Os dados existentes (N=100k, 500k, 1M — 30 execuções cada) foram coletados em notebook com Intel Core i5 11ª geração, sujeito a throttling térmico em execuções longas. Os dados definitivos do TCC serão coletados em desktop com AMD Ryzen 5 5500 (6 cores físicos / 12 threads) rodando Ubuntu nativo, pelos seguintes motivos:
 
-- Ausência de throttling térmico — desempenho sustentado e consistente entre runs
+- Ausência de throttling térmico — desempenho sustentado e consistente entre execuções
 - Mais cores disponíveis para `WAF_INSPECT_WORKERS` — maior throughput (~15.000–20.000 msg/s estimado vs ~8.000 msg/s no notebook)
 - eBPF sem limitações de WSL2 — kretprobes estáveis, latência real medida
 
-**Consequência:** todos os 270 runs (30 × 3 ferramentas × 3 valores de N) serão re-coletados no desktop para garantir consistência do dataset.
+**Consequência:** todas as 270 execuções (30 × 3 ferramentas × 3 valores de N) serão re-coletadas no desktop para garantir consistência do dataset.
 
 **Próximo valor de N**
 
-N=2.000.000 definido como próximo ponto de dados após a migração de hardware. Com throughput estimado de ~15.000 msg/s, cada run leva ~150s, resultando em ~11h para 90 runs (30 × 3 ferramentas) — viável em execução noturna.
+N=2.000.000 definido como próximo ponto de dados após a migração de hardware. Com throughput estimado de ~15.000 msg/s, cada execução leva ~150s, resultando em ~11h para 90 execuções (30 × 3 ferramentas) — viável em execução noturna.
 
-**Número de runs**
+**Número de execuções**
 
-30 runs por ferramenta por N mantidos conforme definição do orientador.
+30 execuções por ferramenta por N mantidas conforme definição do orientador.
 
 ---
 
@@ -680,7 +680,7 @@ N=2.000.000 definido como próximo ponto de dados após a migração de hardware
 
 #### Consolidação: libbpf como implementação única do observador eBPF
 
-Com a migração para libbpf+CO-RE já validada (N=100k, 30 runs) e a decisão de re-coletar todos os dados no desktop, os arquivos duplicados da variante libbpf foram removidos e a implementação passou a ser única:
+Com a migração para libbpf+CO-RE já validada (N=100k, 30 execuções) e a decisão de re-coletar todos os dados no desktop, os arquivos duplicados da variante libbpf foram removidos e a implementação passou a ser única:
 
 | Ação | Detalhe |
 | ---- | ------- |
@@ -709,13 +709,13 @@ Descoberta e correção: o diretório correto para slash commands no Claude Code
 
 **Bug:** `src/client/client.py` usava `bytes | None` na assinatura de `_read_payload` (PEP 604, Python 3.10+). O `Dockerfile.client` usa Python 3.9 slim, que não suporta essa sintaxe — o container crashava com `TypeError` na importação, antes de enviar qualquer mensagem ao WAF.
 
-**Impacto:** todos os 30 runs iniciais de N=100k coletados no desktop foram inválidos: `inspect_count=0`, `bytes_rx/tx=0`, `cpu_avg_pct=0`. O problema ficou mascarado porque o probe UDP (`src/probe.py`) opera independentemente do cliente e continuava a registrar tempos de resposta, dando falsa impressão de experimento concluído.
+**Impacto:** todas as 30 execuções iniciais de N=100k coletadas no desktop foram inválidas: `inspect_count=0`, `bytes_rx/tx=0`, `cpu_avg_pct=0`. O problema ficou mascarado porque o probe UDP (`src/probe.py`) opera independentemente do cliente e continuava a registrar tempos de resposta, dando falsa impressão de experimento concluído.
 
-**Detecção:** análise cruzada de `inspect_count` e ausência de `results/waf_metrics.json` após os runs.
+**Detecção:** análise cruzada de `inspect_count` e ausência de `results/waf_metrics.json` após as execuções.
 
 **Correção:** substituir `bytes | None` por `Optional[bytes]` com `from typing import Optional`.
 
-**Consequência:** os 30 runs de N=100k foram descartados e recoletados após o fix.
+**Consequência:** as 30 execuções de N=100k foram descartadas e recoletadas após o fix.
 
 ---
 
@@ -740,11 +740,11 @@ Antes da recoleta, análise dos dados existentes de Prometheus 500k revelou valo
 - CPU WAF: 67.5% (vs 107% nas demais)
 - `inspect_count`: ~147k em vez de 500k
 
-Root cause: os runs de Prometheus 500k foram coletados em 27/04/2026 com `WORKERS=10` e `DURATION=157s` — a config errada original. O WAF nunca foi saturado nesse stack. Todos os 30 runs foram descartados e recoletados.
+Root cause: as execuções do Prometheus 500k foram coletadas em 27/04/2026 com `WORKERS=10` e `DURATION=157s` — a config errada original. O WAF nunca foi saturado nesse stack. Todas as 30 execuções foram descartadas e recoletadas.
 
 #### Resultados oficiais recoletados — N=100.000 (16/05/2026)
 
-> DURATION = 100000/15000 + 20 = 26s → 26 amostras por run. Config: WORKERS=200, libbpf+CO-RE.
+> DURATION = 100000/15000 + 20 = 26s → 26 amostras por execução. Config: WORKERS=200, libbpf+CO-RE.
 
 | Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
 | ------- | ------------------- | ---------------------- | ------------------------- |
@@ -761,7 +761,7 @@ Root cause: os runs de Prometheus 500k foram coletados em 27/04/2026 com `WORKER
 
 #### Resultados oficiais recoletados — N=500.000 (16/05/2026)
 
-> DURATION = 500000/15000 + 20 = 53s → 53 amostras por run. Config: WORKERS=200, libbpf+CO-RE.
+> DURATION = 500000/15000 + 20 = 53s → 53 amostras por execução. Config: WORKERS=200, libbpf+CO-RE.
 
 | Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
 | ------- | ------------------- | ---------------------- | ------------------------- |
@@ -784,17 +784,17 @@ Usuário `pinguas` adicionado ao grupo `docker` (`sudo usermod -aG docker pingua
 - **eBPF lidera em tempo de resposta** em ambos os N, com diferença estatisticamente significativa (IC95 sem sobreposição)
 - **Sysstat tem menor footprint de memória** do observador (~13.9 MB vs 15.2 MB eBPF vs 24.8 MB Prometheus)
 - **CPU do observador eBPF** praticamente zero em N=100k (0.051%) — confirma vantagem de overhead do kernel space
-- **PR #30** aberto em `dev/joao → main` com os 180 runs válidos e correções de config
+- **PR #30** aberto em `dev/joao → main` com as 180 execuções válidas e correções de config
 
 ### Recoleta N=1M e coleta N=2M (17/05/2026)
 
 #### Descarte dos dados antigos de N=1M
 
-Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inconsistência de configuração: runs 1–12 tinham 86 samples (config antiga com DURATION menor), run 13 travou, e runs 14–30 tinham 300 samples (config nova). Dados incomparáveis para cálculo de média ± IC95%.
+Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inconsistência de configuração: execuções 1–12 tinham 86 samples (config antiga com DURATION menor), execução 13 travou, e execuções 14–30 tinham 300 samples (config nova). Dados incomparáveis para cálculo de média ± IC95%.
 
 #### Resultados oficiais recoletados — N=1.000.000 (17/05/2026)
 
-> DURATION = 1000000/15000 + 20 ≈ 87s → 86 amostras por run. Config: WORKERS=200, libbpf+CO-RE.
+> DURATION = 1000000/15000 + 20 ≈ 87s → 86 amostras por execução. Config: WORKERS=200, libbpf+CO-RE.
 
 | Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
 | ------- | ------------------- | ---------------------- | ------------------------- |
@@ -809,7 +809,7 @@ Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inco
 
 #### Resultados oficiais — N=2.000.000 (17/05/2026)
 
-> DURATION = 2000000/15000 + 20 ≈ 153s → 153 amostras por run. Config: WORKERS=200, libbpf+CO-RE.
+> DURATION = 2000000/15000 + 20 ≈ 153s → 153 amostras por execução. Config: WORKERS=200, libbpf+CO-RE.
 
 | Métrica | eBPF (média ± IC95) | sysstat (média ± IC95) | Prometheus (média ± IC95) |
 | ------- | ------------------- | ---------------------- | ------------------------- |
@@ -822,7 +822,7 @@ Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inco
 | CPU média observador (%) | 0.471 ± 0.867 | **0.461 ± 0.836** | 0.801 ± 1.053 |
 | Memória média observador (MB) | 15.066 ± 0.022 | **13.660 ± 0.025** | 24.197 ± 0.051 |
 
-#### Comparativo cross-N — Tempo de resposta médio do observador (média de 30 runs, ms)
+#### Comparativo cross-N — Tempo de resposta médio do observador (média de 30 execuções, ms)
 
 | N | eBPF | sysstat | Prometheus |
 |---|------|---------|------------|
@@ -835,11 +835,11 @@ Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inco
 
 O tempo de resposta do eBPF aumentou de N=1M para N=2M (+0.040ms, +8.2%), enquanto o sysstat permaneceu praticamente estável (+0.002ms, +0.3%). Isso ocorre porque os kprobes (`tcp_sendmsg`, `tcp_cleanup_rbuf`) disparam por pacote — com 2× o tráfego, há 2× as interrupções no kernel. O sysstat lê `/proc/net/dev` uma vez por segundo, independente do volume. A vantagem do eBPF em tempo de resposta encolheu de 85µs (N=1M) para 47µs (N=2M).
 
-#### Anomalias documentadas: runs com inspect_count=0
+#### Anomalias documentadas: execuções com inspect_count=0
 
-5 runs apresentaram `inspect_count=0` e `inspect_avg_ms=0` devido a race condition na leitura de `waf_metrics.json` (probe encerrou antes de o WAF gravar o arquivo pela primeira vez). O tempo de resposta UDP nesses runs é válido e entra nas agregações normalmente; apenas as métricas de inspeção devem ser desconsiderados.
+5 execuções apresentaram `inspect_count=0` e `inspect_avg_ms=0` devido a race condition na leitura de `waf_metrics.json` (probe encerrou antes de o WAF gravar o arquivo pela primeira vez). O tempo de resposta UDP nessas execuções é válido e entra nas agregações normalmente; apenas as métricas de inspeção devem ser desconsiderados.
 
-| Run | inspect_count |
+| Execução | inspect_count |
 |-----|---------------|
 | `sysstat_500000_run4_results.json` | 0 |
 | `sysstat_500000_run14_results.json` | 0 |
@@ -852,3 +852,153 @@ O tempo de resposta do eBPF aumentou de N=1M para N=2M (+0.040ms, +8.2%), enquan
 - **`docs/arquitetura_c4.svg`:** reformulação do diagrama C4 — fusão dos dois boxes do Observador (eBPF/sysstat/prom + UDP server) em um único contêiner, corrigindo a incoerência arquitetural do C4 Level 2; labels das setas traduzidos para português; label "C4 — Container Diagram (Nível 2)" adicionado; correção do `writing-mode` na seta interna
 - **`docs/architecture.md`:** terminologia atualizada (`monitor_*.py` → `observador_*.py`, WORKERS 10 → 200, WAF multithreaded → asyncio + ThreadPoolExecutor, cliente threads → coroutines asyncio com conexões persistentes)
 - **PR #30:** branch `dev/joao` recriado com cherry-pick dos 5 commits relevantes (force-push com `--force-with-lease`) para eliminar histórico de merges antigos acumulados
+
+---
+
+### Documentação de coleta de métricas (20/05/2026)
+
+#### Métricas do probe (`src/probe.py`)
+
+O probe é um script Python independente, compartilhado pelas três stacks. Ele envia uma sonda UDP a cada 1 segundo para o observador na porta 9999 e mede o tempo de roundtrip. Ao final do experimento (via DURATION ou SIGTERM), serializa tudo em um JSON de resultado.
+
+| Campo no JSON | Como é calculado |
+| ------------- | ---------------- |
+| `observador_latency_avg_ms` | `statistics.mean(latencies)` — média aritmética de todos os roundtrips UDP coletados durante a execução |
+| `observador_latency_stddev_ms` | `statistics.stdev(latencies)` — desvio padrão das amostras de latência **dentro da execução** (variação entre as sondas individuais do próprio experimento) |
+| `observador_latency_max_ms` | `max(latencies)` |
+| `observador_latency_min_ms` | `min(latencies)` |
+| `observador_samples` | `len(latencies)` — número de sondas bem-sucedidas (≈ DURATION em segundos) |
+| `cpu_avg_pct` | `statistics.mean` das leituras psutil do processo WAF, uma por sonda |
+| `mem_avg_mb` | `statistics.mean` das leituras de RSS do processo WAF, uma por sonda |
+| `collector_cpu_avg_pct` | `statistics.mean` das leituras psutil do processo observador, uma por sonda |
+| `collector_mem_avg_mb` | `statistics.mean` das leituras de RSS do processo observador, uma por sonda |
+
+#### Métricas do observador (retornadas via UDP a cada sonda)
+
+Cada sonda UDP recebe um JSON com o estado atual do observador. Os valores de bytes, CPU e memória são lidos nesse momento pelo observador e acumulados pelo probe nas listas acima.
+
+| Campo | eBPF | sysstat / Prometheus |
+| ----- | ---- | -------------------- |
+| `bytes_rx` / `bytes_tx` | Contadores de bytes lidos do mapa BPF compartilhado entre o programa kernel e o userspace. Os kprobes `tcp_sendmsg` (TX) e `tcp_cleanup_rbuf` (RX) filtram por `sport=8080`, isolando o tráfego do WAF no loopback | Delta acumulado de bytes lidos em `/proc/net/dev` (interface `lo`) desde o início da execução |
+| `inspect_count` / `inspect_avg_ms` / `inspect_min_ms` / `inspect_max_ms` | Nos três casos: o WAF registra o tempo de cada inspeção em `waf_metrics.json` a cada 100 requests; o observador lê esse arquivo a cada sonda e repassa os campos diretamente ao probe |
+
+#### Agregação entre runs (`src/compare.py`)
+
+Ao executar `python3 src/compare.py <N> <RUNS>`, o script lê os `RUNS` arquivos `<tool>_<N>_run<ID>_results.json` e, para cada métrica, aplica:
+
+```
+média  = statistics.mean([valor_run1, …, valor_runN])
+std    = statistics.stdev([valor_run1, …, valor_runN])   # desvio entre execuções
+IC95   = t(df = N−1, α = 0.05) × std / √N
+```
+
+O valor de `t` é o t de Student bicaudal com α=0,05, tabelado internamente em `compare.py` para df ≤ 30 (com 30 runs, t(29) = 2,045). Para df > 30 usa z = 1,960.
+
+#### O que significa cada coluna nas tabelas de resultados
+
+Nas tabelas do relatório, cada célula exibe `média ± IC95`. Por exemplo, na linha **Latência média**:
+
+- O valor central (ex: `0.5407`) é a média do `observador_latency_avg_ms` nas 30 execuções.
+- O `±0.0121` é o IC95% dessa média, calculado com o desvio padrão **entre as 30 execuções**.
+
+Na linha **Desvio padrão**:
+
+- O valor central (ex: `0.0808`) é a média do `observador_latency_stddev_ms` nas 30 execuções — ou seja, o desvio intra-execução médio, indicando a estabilidade da latência dentro de um experimento.
+- O `±0.0064` é o IC95% desse desvio médio, calculado também com o desvio **entre as 30 execuções**.
+
+Em ambos os casos a fórmula do IC95 é a mesma; o que muda é qual série de 30 valores entra no cálculo.
+
+---
+
+## Revisão e expansão do TCC (20/05/2026)
+
+### Revisão da Literatura — integração de 7 novas referências
+
+Sete novas entradas verificadas foram adicionadas ao `docs/referencias.bib` e citadas no texto de `docs/1.RevisãoDaLiteratura.tex`:
+
+| Chave | Obra | Onde citada |
+|-------|------|-------------|
+| `etsi_nfv_002_2014` | ETSI GS NFV 002 V1.2.1 (2014) | Seção NFV — intro e arquitetura ETSI |
+| `han2015nfv` | Han et al., IEEE Comm. Magazine 2015 | Seção NFV — benefícios da abordagem |
+| `rfc7665` | RFC 7665 — SFC Architecture (2015) | Subseção SFC |
+| `mccanne1993bpf` | McCanne & Jacobson, USENIX 1993 (BPF original) | Seção eBPF — contexto histórico |
+| `nakryiko2020core` | Nakryiko, BPF CO-RE (2020) | Seção eBPF — CO-RE e BTF |
+| `cai2021netstack` | Cai et al., ACM SIGCOMM 2021 | Seção Sysstat/Prometheus e seção TCP |
+| `miano2023sketching` | Miano et al., ACM CCR 2023 | Trabalhos Relacionados |
+
+#### Expansões de conteúdo na revisão
+
+- **Seção eBPF**: dois novos parágrafos — origem do BPF clássico (1993) e evolução para eBPF (2014); parágrafo CO-RE expandido com explicação de BTF e comparação com BCC
+- **Seção Sysstat/Prometheus**: novo parágrafo introdutório explicando o `/proc` e overhead de leitura de contadores protegidos por spinlocks; mais detalhe sobre utilitários `sar`/`iostat`
+- **Seção TCP — kprobes vs /proc**: parágrafo adicional sobre contenção de spinlocks sob alto tráfego
+- **Trabalhos Relacionados**: novo parágrafo sobre `miano2023sketching` (sketches eBPF em alta velocidade)
+
+---
+
+### Metodologia — quatro adições de conteúdo (`docs/2.Metodologia.tex`)
+
+1. **Tabela de versões de software** (Seção Ambiente Experimental): Python 3.12/3.9, libbpf, clang, psutil, prometheus\_client, matplotlib+numpy, Docker CE — com distinção entre componentes do contêiner e do host
+2. **Semente formalizada** (Seção Protocolo de Testes): seed=42 explicitada como condição de validade comparativa entre ferramentas e volumes
+3. **Critério de descarte de anomalias** (Seção Protocolo de Testes): as 5 execuções com `inspect_count=0` têm RTT UDP válido incluído nas agregações; métricas de inspeção dessas execuções desconsideradas
+4. **Fórmula do IC95** (Seção Métricas e Análise Estatística): equação `IC₉₅% = t(29; 0,025) × s / √n` com t=2,045, n=30, formato x̄ ± IC95%
+
+#### Correção: `\usepackage{amsmath}` adicionado ao `main.tex`
+
+Pacote ausente causava erro no Overleaf (`\text`, `\frac`, `\lfloor` indefinidos). Adicionado `\usepackage{amsmath}` antes dos demais pacotes.
+
+#### Correção: pasta `docs/imagens/` criada
+
+A pasta não existia; `arquitetura_c4.png` copiada para `docs/imagens/arquitetura_c4.png` conforme caminho esperado pelo `\includegraphics` e pelo `\graphicspath{{imagens/}}` do `main.tex`.
+
+---
+
+### Tradução de nomenclaturas inglesas para português
+
+#### `relatorio_projeto.md`, `README.md`, `docs/architecture.md`
+
+- "runs" / "run" → "execuções" / "execução" (~50 ocorrências nos três arquivos)
+- "payload/payloads" → "mensagem/mensagens" nas tabelas de métricas do README
+
+#### `scripts/run_multi.sh`
+
+- Banner `TCC — Multi-run` → `TCC — Múltiplas execuções`
+- `Run ${i}/${NUM_RUNS}` → `Execução ${i}/${NUM_RUNS}`
+- `runs concluídos` → `execuções concluídas`
+
+#### `scripts/plot_results.py` — rótulos dos gráficos
+
+| Antes | Depois |
+|-------|--------|
+| `30 runs` (títulos dos 3 gráficos) | `30 execuções` |
+| `Tempo de resposta por run (ms)` | `Tempo de resposta por execução (ms)` |
+| `Distribuição do tempo de resposta do observador (30 runs)` | `Distribuição do tempo de resposta do observador (30 execuções)` |
+
+Gráficos PNG em `results/plots/` regenerados com os novos rótulos.
+
+#### `docs/2.Metodologia.tex`
+
+| Termo anterior | Substituição |
+|----------------|--------------|
+| `\textit{stacks}` Docker Compose | "pilhas Docker Compose" |
+| `(\textit{workers})` | removido — "200 corrotinas assíncronas" já descreve |
+| `\textit{big-endian}` | "ordem de bytes big-endian" |
+| SQLi, XSS, Path Traversal, RCE, Null Byte | expandidos com nomes em português + sigla |
+| `\textit{round-trip}` | removido — texto já usava "tempo de ida e volta" |
+| `\textit{framework}` BCC/LLVM | "arcabouço BCC/LLVM" |
+| `\textit{scraping}` | "raspagem" |
+| `\textit{lazy loading}` | "carregamento sob demanda" |
+| `\textit{workers}` / throughput | "corrotinas assíncronas" / "taxa de vazão" |
+| payloads/cargas | "cargas" |
+
+#### `docs/arquitetura_c4.svg` + PNG
+
+- "Container Diagram" → "Diagrama de Contêineres" no rodapé do diagrama C4
+- PNG `docs/imagens/arquitetura_c4.png` regenerado
+
+#### `README.md` — pré-requisitos Python do host
+
+Adicionada seção explícita em **Requisitos**:
+```bash
+pip install matplotlib numpy   # geração de gráficos (plot_results.py)
+```
+Com nota de que `psutil` e `prometheus_client` são instalados automaticamente pelos Dockerfiles dos contêineres.

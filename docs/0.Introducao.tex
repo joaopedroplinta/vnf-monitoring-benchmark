@@ -1,0 +1,47 @@
+\chapter{Introdução}
+
+A crescente demanda por otimização de sistemas computacionais torna essencial a escolha de ferramentas eficientes para o monitoramento e o gerenciamento de desempenho, principalmente quando a busca por serviços disponibilizados em um ambiente não é constante, como, por exemplo, os serviços de redes. Um dos paradigmas que busca responder à essa vivacidade da rede \cite{oliveira2026-sbrc} é a Virtualização de Funções de Rede (\textit{Network Functions Virtualization} - NFV), que desacopla as funções de rede do hardware por meio da virtualização, separando os serviços de rede em funções virtualizadas. Os benefícios da \textit{NFV} incluem flexibilidade no desenvolvimento e na implantação de serviços, além da redução de custos operacionais da rede \cite{mijumbi2016}. Esse paradigma oferece serviços de rede por meio de máquinas virtuais, as Funções de Rede Virtualizadas (\textit{Virtualized Network Functions} - VNF), que realizam diferentes operações, como firewall, inspeção de pacotes, roteamento, entre outras \cite{10.1145/3172866}. Para que a flexibilidade proposta pela \textit{NFV} seja alcançada com eficiência, é necessário que as VNFs sejam monitoradas constantemente, assim como as demandas requisitadas pelo consumo dos recursos computacionais da própria rede.
+
+O monitoramento das VNFs pode consistir nas métricas de consumo de CPU, memória principal, quantidades de pacotes e regras de aplicação processadas, entre outros, ao mesmo tempo em que o monitoramento da rede consiste na coleta de métricas como latência, vazão, \textit{jitter} \cite{rfc6390}, sendo fundamental para identificar gargalos e garantir o correto funcionamento de serviços disponibilizados no ambiente. Dentre as tecnologias disponíveis para essa finalidade, destacam-se o Extended Berkeley Packet Filter (eBPF) \cite{gregg_bpf_2019}, o Sysstat \cite{godard2024sysstat} e o Prometheus \cite{turnbull_prometheus_2018}, cada qual com abordagens distintas para a obtenção de métricas, tanto das VNFs quanto das de rede.
+
+O presente trabalho propõe uma análise comparativa de desempenho entre essas três tecnologias de monitoramento, com o objetivo de verificar qual apresenta maior eficiência em termos de tempo de resposta na coleta de métricas e possíveis sobrecargas em uma VNF. A relevância desta pesquisa fundamenta-se na necessidade de compreender as diferenças práticas entre as abordagens \textit{kernel-level} e \textit{user-level} \cite{linux_bpf_docs}, considerando que a escolha da ferramenta adequada pode impactar significativamente o desempenho de sistemas virtualizados \cite{10.1145/3397022}.
+
+A estrutura deste trabalho segue com a revisão da literatura no Capítulo \ref{chap:revisao_literatura}, abordando os conceitos teóricos sobre a NFV e as ferramentas aqui consideradas, seguida pela metodologia proposta, Capítulo \ref{chap:metodologia}, para os experimentos e os resultados preliminares obtidos até o momento no Capítulo \ref{chap:resultados}. Na sequência, são apresentados os resultados obtidos e a análise quantitativa do experimento de validação. Por fim, são discutidas as conclusões e as contribuições do trabalho para a área de gerenciamento e monitoramento de redes virtualizadas.
+
+
+% ----
+\section{Problema}
+
+A escolha da ferramenta de monitoramento adequada pode impactar diretamente o desempenho de serviços de redes virtualizados, uma vez que cada tecnologia apresenta diferentes abordagens de coleta de métricas e possível geração de sobrecarga no sistema monitorado por meio de concorrência. Dessa forma, emerge a seguinte questão de pesquisa: \textbf{quais são as diferenças práticas de desempenho entre o eBPF, o Sysstat e o Prometheus quando aplicados ao monitoramento de uma VNF, e qual tecnologia oferece menor sobrecarga sem comprometer a qualidade da coleta de métricas?}
+
+A motivação para essa investigação surge da constatação de que, embora o eBPF seja amplamente reconhecido por sua capacidade de estender as funcionalidades do \textit{kernel} de forma segura através de \texttt{kprobes} \cite{bcc_project}, há uma carência de estudos comparativos quantitativos que demonstrem, na prática, as vantagens dessa abordagem em um cenário controlado \cite{usman_observability_2022}. Da mesma forma, o Sysstat e o Prometheus, embora sejam ferramentas consolidadas e amplamente utilizadas em ambientes de produção, carecem de análises comparativas diretas quanto ao contexto de funções de redes virtualizadas.
+
+% ----
+\section{Hipótese}
+
+O eBPF, por operar em nível de \textit{kernel}, apresenta menor sobrecarga de monitoramento em comparação ao Sysstat e ao Prometheus, que realizam \textit{polling} \cite{rfc9232} em espaço de usuário via \texttt{/proc} \cite{linux_proc_man}. Consequentemente, espera-se que o eBPF produza o menor tempo de resposta em relação à coleta de métricas e o menor impacto no desempenho da VNF monitorada.
+
+% ----
+\section{Justificativa}
+
+A escolha da ferramenta de monitoramento adequada representa um desafio constante para administradores de sistemas e engenheiros de rede, uma vez que cada tecnologia apresenta características distintas de coleta de métricas e geração de sobrecarga. O Sysstat e o Prometheus, embora sejam ferramentas consolidadas e amplamente utilizadas em ambientes de produção, baseiam-se em \textit{polling} em nível de usuário via \texttt{/proc}, gerando concorrência e tráfego constante de rede, podendo, consequentemente, aumentar o tempo de resposta do sistema monitorado. Já o eBPF, tecnologia relativamente recente, promete capturar dados no nível do \textit{kernel} através de \texttt{kprobes}, eliminando a necessidade de serialização e transmissão de métricas pela rede.
+
+A relevância desta pesquisa justifica-se pela carência de estudos comparativos quantitativos que demonstrem, na prática, as vantagens de desempenho de cada abordagem \cite{usman_observability_2022}. Os resultados obtidos podem fornecer uma base técnica para que profissionais da área possam fundamentar suas decisões na escolha de ferramentas de monitoramento, considerando não apenas a funcionalidade, mas também o impacto no desempenho do sistema monitorado \cite{10.23919}. Além disso, o trabalho contribui para o avanço do conhecimento científico ao demonstrar empiricamente as diferenças entre as tecnologias \textit{kernel-level} e \textit{user-level} de monitoramento.
+
+% ----
+\section{Objetivos}
+
+Após a identificação do problema de pesquisa e da hipótese, estabelecem-se os seguintes objetivos deste estudo.
+
+\subsection{Objetivo Geral}
+
+Compreender como as tecnologias eBPF, Sysstat e Prometheus influenciam, do ponto de vista do tempo de resposta de extração de métricas e da sobrecarga, o monitoramento de uma VNF sob diferentes condições de consumo.
+
+\subsection{Objetivos Específicos}
+
+\begin{itemize}
+  \item Analisar os trabalhos da literatura que envolvem monitoramento no contexto de virtualização de funções de redes;
+  \item Implementar três monitores baseados nas tecnologias citadas para a coleta de métricas de um \textit{Firewall} de Aplicação Web (\textit{Web Application Firewall} - WAF);
+  \item Executar experimentos quantitativos com, no mínimo, três cargas distintas, mensurando o tempo de extração das métricas, o consumo médio de CPU e de memória do WAF;
+  \item Compreender as vantagens e limitações de cada abordagem, considerando o tempo de extração, o consumo de recursos e a precisão da coleta de métricas.
+\end{itemize}

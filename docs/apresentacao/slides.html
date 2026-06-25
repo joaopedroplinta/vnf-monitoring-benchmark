@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pré-banca TCC — Monitoramento de VNFs</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css" id="theme">
+
+  <style>
+    :root {
+      --azul:  #11385f;
+      --azul2: #1f6feb;
+      --verde: #2e7d32;
+      --cinza: #5b6770;
+      --bg:    #ffffff;
+    }
+    .reveal { font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; color:#222; }
+    .reveal h1, .reveal h2, .reveal h3 { color: var(--azul); font-weight: 700; text-transform: none; letter-spacing: 0; }
+    .reveal h1 { font-size: 1.7em; }
+    .reveal h2 { font-size: 1.25em; border-bottom: 3px solid var(--azul2); padding-bottom: .25em; margin-bottom: .6em; }
+    .reveal section img { border: none; box-shadow: none; background: #fff; border-radius: 6px; }
+    .reveal p, .reveal li { font-size: .82em; line-height: 1.35; }
+    .reveal small { color: var(--cinza); }
+    .reveal .slides section { text-align: left; }
+    .reveal .slides section.center { text-align: center; }
+
+    .tag { display:inline-block; background:var(--azul2); color:#fff; padding:.12em .6em; border-radius:999px; font-size:.55em; font-weight:600; letter-spacing:.04em; vertical-align:middle; }
+    .footer { position:absolute; bottom:8px; left:18px; font-size:.4em; color:var(--cinza); }
+    .pagenum { position:absolute; bottom:8px; right:18px; font-size:.4em; color:var(--cinza); }
+
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1.2em; align-items:center; }
+    .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.9em; }
+    .card { background:#f4f7fb; border-left:5px solid var(--azul2); border-radius:8px; padding:.7em .9em; }
+    .card.ebpf  { border-left-color:#2e7d32; }
+    .card.sys   { border-left-color:#1f6feb; }
+    .card.prom  { border-left-color:#e08a00; }
+    .card h3 { margin:.1em 0 .35em 0; font-size:.95em; }
+    .card p, .card li { font-size:.72em; margin:.2em 0; }
+
+    .reveal table { font-size:.62em; }
+    .reveal table th { background:var(--azul); color:#fff; }
+    .reveal table td, .reveal table th { padding:.35em .6em; }
+    .win { color:var(--verde); font-weight:700; }
+    .key { color:var(--azul2); font-weight:700; }
+    .big { font-size:1.6em; color:var(--azul); font-weight:700; }
+    .quote { font-style:italic; color:var(--cinza); border-left:4px solid #ccc; padding-left:.8em; }
+    .center-cap { text-align:center; font-size:.6em; color:var(--cinza); margin-top:.2em; }
+    ul.tight li { margin:.18em 0; }
+  </style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- 1. CAPA -->
+<section class="center" data-background-color="#11385f">
+  <div style="color:#fff;">
+    <p style="font-size:.55em; letter-spacing:.15em; opacity:.85;">INSTITUTO FEDERAL DO PARANÁ — CAMPUS PINHAIS</p>
+    <p style="font-size:.55em; opacity:.85;">Bacharelado em Ciência da Computação</p>
+    <h1 style="color:#fff; margin:.4em 0;">Monitoramento de Funções Virtualizadas de Redes</h1>
+    <p style="font-size:.8em; color:#cfe0f5;">Um estudo comparativo entre ferramentas de extração de comportamento</p>
+    <hr style="border-color:#3a5a82; width:60%;">
+    <p style="font-size:.62em; color:#eaf2fb;">Rafael Correia Alves &nbsp;•&nbsp; João Pedro dos Santos Henrique Plinta</p>
+    <p style="font-size:.55em; color:#bcd2ec;">Orientador: Prof. Guilherme Werneck de Oliveira</p>
+    <p style="font-size:.5em; color:#9bb6d6; margin-top:1.2em;">Pré-banca — Pinhais, 2026</p>
+  </div>
+</section>
+
+<!-- 2. AGENDA -->
+<section>
+  <h2>Roteiro da apresentação</h2>
+  <div class="grid2">
+    <ol class="tight">
+      <li>Contexto: NFV e o monitoramento de VNFs</li>
+      <li>Problema, hipótese e objetivos</li>
+      <li>As três abordagens comparadas</li>
+      <li>Lacuna na literatura</li>
+    </ol>
+    <ol class="tight" start="5">
+      <li>Metodologia e arquitetura experimental</li>
+      <li>Resultados (360 execuções)</li>
+      <li>Síntese e conclusões</li>
+      <li>Limitações e trabalhos futuros</li>
+    </ol>
+  </div>
+  <p style="margin-top:1em;" class="quote">Pergunta central: <strong>qual é o custo de monitorar uma VNF?</strong> E qual ferramenta impõe a menor sobrecarga?</p>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">2</div>
+</section>
+
+<!-- 3. CONTEXTO NFV -->
+<section>
+  <h2>Contexto: Virtualização de Funções de Rede (NFV)</h2>
+  <div class="grid2">
+    <div>
+      <ul class="tight">
+        <li>NFV <strong>desacopla</strong> funções de rede do hardware dedicado — elas viram software (VNFs) em servidores comuns.</li>
+        <li>Exemplos de VNF: <em>firewall</em>, IDS, balanceador, <strong>WAF</strong>.</li>
+        <li>Flexibilidade exige <strong>monitoramento constante</strong>: CPU, memória, tráfego, latência.</li>
+        <li>O orquestrador (MANO) decide <em>escalar</em> ou <em>recuperar</em> a VNF com base nessas métricas.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Por que importa</h3>
+      <p>Métrica atrasada → o orquestrador reage tarde → violação de SLA.</p>
+      <p>O monitor roda <strong>co-localizado</strong> à VNF: compete pelos mesmos núcleos de CPU e memória.</p>
+    </div>
+  </div>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">3</div>
+</section>
+
+<!-- 4. PROBLEMA -->
+<section>
+  <h2>O problema</h2>
+  <p>A própria ferramenta de monitoramento <strong>consome recursos</strong> que deveriam ir para a VNF.
+     Um coletor pesado degrada justamente o serviço que deveria apenas observar.</p>
+  <div class="card" style="margin:.8em 0;">
+    <p style="font-size:.8em;"><strong>Pergunta de pesquisa:</strong> quais são as diferenças práticas de desempenho entre
+    <span class="win">eBPF</span>, <span class="key">Sysstat</span> e <span style="color:#e08a00;font-weight:700;">Prometheus</span>
+    ao monitorar uma VNF, e qual oferece <strong>menor sobrecarga</strong> sem comprometer a coleta?</p>
+  </div>
+  <div class="grid2">
+    <div class="card ebpf">
+      <h3>Hipótese</h3>
+      <p>O eBPF, por operar no <strong>kernel</strong>, deve ter o menor tempo de resposta e o menor impacto, frente ao <em>polling</em> em espaço de usuário (Sysstat e Prometheus via <code>/proc</code>).</p>
+    </div>
+    <div class="card sys">
+      <h3>Lacuna</h3>
+      <p>Faltam estudos <strong>quantitativos controlados</strong> comparando as três abordagens sobre <em>uma mesma VNF</em>, em condições equivalentes.</p>
+    </div>
+  </div>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">4</div>
+</section>
+
+<!-- 5. OBJETIVOS -->
+<section>
+  <h2>Objetivos</h2>
+  <p><strong>Geral:</strong> compreender como eBPF, Sysstat e Prometheus influenciam, em <em>tempo de resposta</em> e <em>sobrecarga</em>, o monitoramento de uma VNF sob diferentes cargas.</p>
+  <p style="margin-top:.6em;"><strong>Específicos:</strong></p>
+  <ul class="tight">
+    <li>Levantar a literatura de monitoramento em NFV;</li>
+    <li>Implementar <strong>três coletores</strong> (eBPF, Sysstat, Prometheus) para um WAF;</li>
+    <li>Executar experimentos com <strong>4 cargas</strong> distintas, medindo tempo de extração, CPU e memória;</li>
+    <li>Compreender vantagens e limitações de cada abordagem.</li>
+  </ul>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">5</div>
+</section>
+
+<!-- 6. AS TRÊS FERRAMENTAS -->
+<section>
+  <h2>As três abordagens comparadas</h2>
+  <div class="grid3">
+    <div class="card ebpf">
+      <h3>🟢 eBPF</h3>
+      <p><strong>Kernel-level.</strong></p>
+      <p>kprobes em <code>tcp_sendmsg</code> e <code>tcp_cleanup_rbuf</code>.</p>
+      <p>Conta bytes no kernel via mapas BPF; espaço de usuário só lê o agregado.</p>
+      <p><small>libbpf + CO-RE, sem cópia de pacotes.</small></p>
+    </div>
+    <div class="card sys">
+      <h3>🔵 Sysstat</h3>
+      <p><strong>User-space.</strong></p>
+      <p><em>Polling</em> de <code>/proc/net/dev</code> + <code>psutil</code> a cada requisição.</p>
+      <p>Lê e faz <em>parsing</em> de arquivos de texto do <code>/proc</code>.</p>
+      <p><small>Ferramenta consolidada e portável.</small></p>
+    </div>
+    <div class="card prom">
+      <h3>🟠 Prometheus</h3>
+      <p><strong>User-space.</strong></p>
+      <p>Mesma lógica do Sysstat + servidor HTTP na porta 8000.</p>
+      <p>Expõe <code>/metrics</code> no padrão Prometheus.</p>
+      <p><small>Padrão de observabilidade em microsserviços.</small></p>
+    </div>
+  </div>
+  <p style="text-align:center; margin-top:.9em;" class="quote">Núcleo do contraste: <strong>ler contadores no kernel</strong> &nbsp;vs.&nbsp; <strong>fazer polling de <code>/proc</code> no espaço de usuário</strong>.</p>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">6</div>
+</section>
+
+<!-- 7. TRABALHOS RELACIONADOS -->
+<section>
+  <h2>Lacuna na literatura</h2>
+  <table>
+    <thead><tr><th>Trabalho</th><th>Tecnologias</th><th>Comparou as 3?</th><th>Carga controlada / VNF</th></tr></thead>
+    <tbody>
+      <tr><td>Cassagnes et al. (2020)</td><td>eBPF vs. polling</td><td>Não (sem Prometheus)</td><td>Rede geral</td></tr>
+      <tr><td>Sathyaseelan et al. (2024)</td><td>eBPF</td><td>Não</td><td>Kubernetes</td></tr>
+      <tr><td>Shahinfar et al. (2025)</td><td>eBPF</td><td>Não</td><td>Host / rede</td></tr>
+      <tr><td>Oliveira et al. (2026)</td><td>Sysstat</td><td>Não</td><td>DPI simulado</td></tr>
+      <tr style="background:#eafaf0;"><td><strong>Este trabalho</strong></td><td><strong>eBPF + Sysstat + Prometheus</strong></td><td class="win"><strong>Sim</strong></td><td><strong>WAF, 100k–2M msgs</strong></td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:.8em;">Nenhum estudo compara <strong>as três</strong> abordagens sobre uma <strong>mesma VNF</strong> com cargas crescentes e controladas. É essa lacuna que preenchemos.</p>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">7</div>
+</section>
+
+<!-- 8. METODOLOGIA -->
+<section>
+  <h2>Metodologia</h2>
+  <div class="grid2">
+    <div>
+      <ul class="tight">
+        <li>Pesquisa <strong>aplicada, quantitativa, comparativa e experimental</strong>.</li>
+        <li>VNF representativa: um <strong>WAF</strong> que inspeciona SQLi, XSS, Path Traversal, RCE e Null Byte.</li>
+        <li>WAF concentra carga de CPU → torna visível qualquer sobrecarga do coletor.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Ambiente</h3>
+      <p>AMD Ryzen 5 5500 (6c/12t), 16 GB RAM</p>
+      <p>Ubuntu 26.04 LTS · kernel 7.0.0-15</p>
+      <p>3 pilhas Docker Compose isoladas</p>
+      <p>libbpf 1.3 · clang 18 · Python 3.12</p>
+    </div>
+  </div>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">8</div>
+</section>
+
+<!-- 9. ARQUITETURA C4 -->
+<section class="center">
+  <h2>Arquitetura experimental</h2>
+  <img src="../imagens/C4model.drawio.png" style="max-height:380px;">
+  <p class="center-cap">Cliente → WAF (TCP 8080) → Observador (UDP 9999); <code>probe.py</code> mede o RTT a cada 1 s.</p>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">9</div>
+</section>
+
+<!-- 10. PROTOCOLO DE TESTES -->
+<section>
+  <h2>Protocolo de testes</h2>
+  <div class="grid2">
+    <div>
+      <ul class="tight">
+        <li><strong>Variável independente:</strong> volume N = 100k, 500k, 1M, 2M mensagens.</li>
+        <li>Carga: 60% benigna + 40% maliciosa, semente fixa (42) → <strong>idêntica</strong> entre ferramentas.</li>
+        <li>Cliente: 200 corrotinas assíncronas, conexões TCP persistentes.</li>
+        <li><strong>30 repetições</strong> por combinação → <span class="key">360 execuções</span>.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Métrica primária</h3>
+      <p><strong>Tempo de resposta do observador (RTT UDP)</strong>, medido em nanossegundos pelo <code>probe.py</code>.</p>
+      <h3 style="margin-top:.5em;">Secundárias</h3>
+      <p>CPU e memória do WAF e do próprio coletor.</p>
+      <p><small>Agregação: média ± IC95% (t de Student, n=30).</small></p>
+    </div>
+  </div>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">10</div>
+</section>
+
+<!-- 11. RESULTADO: TEMPO DE RESPOSTA -->
+<section class="center">
+  <h2>Resultado — Tempo de resposta <span class="tag">métrica primária</span></h2>
+  <div class="grid2" style="grid-template-columns:1.2fr 1fr;">
+    <img src="../imagens/tempo_resposta_por_n.png" style="max-height:340px;">
+    <div style="text-align:left;">
+      <p class="big">−8% a −15%</p>
+      <p>O <span class="win">eBPF</span> teve o <strong>menor RTT em todos os volumes</strong>.</p>
+      <ul class="tight">
+        <li>Redução de 8,1% a 14,7% vs. Sysstat.</li>
+        <li>Redução de 10,9% a 14,0% vs. Prometheus.</li>
+        <li>IC95% <strong>nunca se sobrepõem</strong> → diferença estatisticamente significativa.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">11</div>
+</section>
+
+<!-- 12. BOXPLOT -->
+<section class="center">
+  <h2>Distribuição do tempo de resposta</h2>
+  <img src="../imagens/boxplot_tempo_resposta.png" style="max-height:360px;">
+  <p style="text-align:left; font-size:.74em; margin-top:.3em;">
+    Separação clara: em 500k e 1M, a caixa do eBPF fica <strong>inteiramente abaixo</strong> das demais.
+    Contrapartida: o eBPF tem <strong>maior dispersão</strong> e <em>outliers</em> ocasionais (máx. 1,06 ms em 2M).</p>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">12</div>
+</section>
+
+<!-- 13. CPU DO WAF -->
+<section class="center">
+  <h2>CPU do WAF — controle</h2>
+  <div class="grid2" style="grid-template-columns:1.2fr 1fr;">
+    <img src="../imagens/cpu_waf.png" style="max-height:330px;">
+    <div style="text-align:left;">
+      <p>A partir de 500k, o WAF <strong>satura em ~107–109%</strong> de uma thread, <strong>igual nos três casos</strong> (IC95% sobrepostos).</p>
+      <p>Confirma que <strong>nenhum coletor interfere</strong> no caminho de inspeção do WAF.</p>
+      <p><small>O coletor afeta sua própria sobrecarga, não a CPU da VNF.</small></p>
+    </div>
+  </div>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">13</div>
+</section>
+
+<!-- 14. MEMÓRIA DO OBSERVADOR -->
+<section class="center">
+  <h2>Memória do observador</h2>
+  <div class="grid2" style="grid-template-columns:1.2fr 1fr;">
+    <img src="../imagens/memoria_observador.png" style="max-height:330px;">
+    <div style="text-align:left;">
+      <p>Maior separação entre as abordagens:</p>
+      <ul class="tight">
+        <li><span class="key">Sysstat</span>: ~14 MB (menor)</li>
+        <li><span class="win">eBPF</span>: ~15 MB</li>
+        <li style="color:#e08a00;"><strong>Prometheus</strong>: ~24 MB (+78% vs. Sysstat)</li>
+      </ul>
+      <p><small>Custo do servidor HTTP + <code>prometheus_client</code>. Constante com o volume.</small></p>
+    </div>
+  </div>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">14</div>
+</section>
+
+<!-- 15. CPU DO OBSERVADOR -->
+<section>
+  <h2>CPU do próprio observador</h2>
+  <p>Resultado mais limpo em <strong>N = 100k</strong>:</p>
+  <table style="width:75%; margin:.5em auto;">
+    <thead><tr><th>Coletor</th><th>CPU média do observador</th></tr></thead>
+    <tbody>
+      <tr style="background:#eafaf0;"><td><span class="win">eBPF</span></td><td><strong>0,05% ± 0,01</strong></td></tr>
+      <tr><td>Prometheus</td><td>2,37%</td></tr>
+      <tr><td>Sysstat</td><td>4,66%</td></tr>
+    </tbody>
+  </table>
+  <p>O eBPF consome CPU <strong>1 a 2 ordens de grandeza menor</strong> — ler mapas do kernel é muito mais barato que <em>parsear</em> <code>/proc</code>.</p>
+  <p><small>Em volumes maiores a métrica fica ruidosa (amostragem psutil + contenção entre contêineres) → usada como evidência qualitativa.</small></p>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">15</div>
+</section>
+
+<!-- 16. SÍNTESE -->
+<section>
+  <h2>Síntese dos resultados</h2>
+  <table style="font-size:.68em;">
+    <thead><tr><th>Dimensão</th><th>eBPF</th><th>Sysstat</th><th>Prometheus</th></tr></thead>
+    <tbody>
+      <tr><td>Tempo de resposta (RTT)</td><td class="win">Menor</td><td>Intermediário</td><td>Maior</td></tr>
+      <tr><td>CPU do WAF</td><td>Equivalente</td><td>Equivalente</td><td>Equivalente</td></tr>
+      <tr><td>Memória do observador</td><td>~15 MB</td><td class="win">~14 MB (menor)</td><td>~24 MB (maior)</td></tr>
+      <tr><td>CPU do observador</td><td class="win">Menor / estável</td><td>Maior / ruidosa</td><td>Maior / ruidosa</td></tr>
+    </tbody>
+  </table>
+  <div class="grid3" style="margin-top:1em;">
+    <div class="card ebpf"><h3>eBPF</h3><p>Vence em desempenho e CPU do coletor.</p></div>
+    <div class="card sys"><h3>Sysstat</h3><p>Mais leve em memória; simples e portável.</p></div>
+    <div class="card prom"><h3>Prometheus</h3><p>Maior custo de memória; ganho só com scraping real.</p></div>
+  </div>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">16</div>
+</section>
+
+<!-- 17. CONCLUSÃO -->
+<section>
+  <h2>Conclusões</h2>
+  <ul class="tight">
+    <li>✅ <strong>A hipótese se confirma:</strong> o eBPF tem o menor tempo de resposta e a menor CPU de coletor, sem sobrecarregar o WAF.</li>
+    <li>A vantagem no RTT é <strong>consistente e estatisticamente significativa</strong>, porém de magnitude <strong>moderada (8–15%)</strong> e com maior variabilidade.</li>
+    <li>Não há "ganhador absoluto": a escolha depende do <strong>contexto operacional</strong> — memória escassa favorece Sysstat; ecossistema de observabilidade favorece Prometheus.</li>
+    <li>Contribuição: primeiro <strong>benchmark direto das três</strong> sobre uma mesma VNF, com código aberto e reprodutível.</li>
+  </ul>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">17</div>
+</section>
+
+<!-- 18. LIMITAÇÕES E FUTUROS -->
+<section>
+  <h2>Limitações e trabalhos futuros</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>Limitações</h3>
+      <ul class="tight">
+        <li>Tráfego em <em>loopback</em> (sem overhead de NIC física).</li>
+        <li>Contêineres compartilham núcleos → possível contenção.</li>
+        <li>WAF simplificado em Python (não é ModSecurity).</li>
+        <li>Prometheus sem servidor central fazendo <em>scraping</em>.</li>
+      </ul>
+    </div>
+    <div class="card ebpf">
+      <h3>Trabalhos futuros</h3>
+      <ul class="tight">
+        <li>Estender para uma <strong>SFC completa</strong> (firewall + IDS + LB).</li>
+        <li>Medir em <strong>rede física</strong> e sob ataque DDoS real.</li>
+        <li>Incluir o ciclo de <em>scraping</em> Prometheus.</li>
+        <li>Explorar hooks XDP/TC do eBPF.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer">Pré-banca TCC — IFPR Pinhais</div><div class="pagenum">18</div>
+</section>
+
+<!-- 19. ENCERRAMENTO -->
+<section class="center" data-background-color="#11385f">
+  <div style="color:#fff;">
+    <h1 style="color:#fff;">Obrigado!</h1>
+    <p style="font-size:.8em; color:#cfe0f5;">Dúvidas e considerações da banca</p>
+    <hr style="border-color:#3a5a82; width:50%;">
+    <p style="font-size:.6em; color:#eaf2fb;">Rafael Correia Alves &nbsp;•&nbsp; João Pedro dos Santos Henrique Plinta</p>
+    <p style="font-size:.55em; color:#bcd2ec;">github.com/joaopedroplinta/vnf-monitoring-benchmark</p>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: false,
+    transition: 'slide',
+    width: 1280,
+    height: 720,
+    margin: 0.04
+  });
+</script>
+</body>
+</html>

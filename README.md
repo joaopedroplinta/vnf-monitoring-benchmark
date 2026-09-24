@@ -12,7 +12,7 @@ O foco é medir o **overhead do monitoramento** (tempo de resposta do observador
 
 ## Arquitetura
 
-![Diagrama C4 — Container Diagram (Nível 2)](docs/arquitetura_c4.svg)
+![Diagrama de contêineres (C4, Nível 2)](docs/C4model.drawio.svg)
 
 - O **WAF** inspeciona cada payload (SQLi, XSS, PathTraversal, RCE, NullByte) via `asyncio` + `ThreadPoolExecutor`, registra o tempo de inspeção e responde ao cliente. Protocolo: framing com 4 bytes de comprimento por mensagem (conexões persistentes).
 - O **Observador** coleta métricas do WAF usando a ferramenta correspondente (eBPF / sysstat / Prometheus) e responde a qualquer request UDP com um JSON de métricas.
@@ -56,7 +56,7 @@ vnf-monitoring-benchmark/
 │   └── run_multi.sh               # Executa N repetições sequenciais de uma ferramenta (ebpf|sysstat|prometheus)
 ├── docs/
 │   ├── architecture.md            # Documentação de arquitetura
-│   ├── arquitetura_c4.svg         # Diagrama C4 da arquitetura
+│   ├── C4model.drawio.svg         # Diagrama C4 da arquitetura (fonte: C4model.drawio)
 │   ├── main.tex                   # Documento LaTeX do TCC
 │   ├── ifpr-pinhais.cls           # Classe LaTeX IFPR Pinhais
 │   └── referencias.bib            # Referências bibliográficas
@@ -274,7 +274,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 **Observações gerais:**
 - **eBPF lidera em tempo de resposta** em todos os N, com IC95 sem sobreposição a partir de N=500k.
-- **Overhead do eBPF escala com volume**: os kprobes disparam por pacote, enquanto sysstat lê `/proc/net/dev` uma vez por segundo. A vantagem do eBPF encolhe de 85µs (N=1M) para 47µs (N=2M).
+- **Tempo de resposta do eBPF sobe de 1M para 2M**: a vantagem sobre o sysstat encolhe de 85µs (N=1M) para 47µs (N=2M). Causa não determinada — ver a seção "Revisão do texto da tese e análise dos dados (23/09/2026)" em `relatorio_projeto.md`.
 - **Memória do observador**: sysstat ~14 MB, eBPF ~15 MB (libbpf, sem BCC/LLVM), Prometheus ~24 MB — estável em todos os N.
 - **Memória do WAF** cresce com N (28 MB em 100k → 50 MB em 2M), reflexo do acúmulo de conexões TCP persistentes.
 

@@ -1,0 +1,191 @@
+% ============================================================
+% Template LaTeX para Trabalhos Acadêmicos
+% Instituto Federal do Paraná – Campus Pinhais
+% APÊNDICE K – Modelo de Trabalho Acadêmico para Projeto de Curso I
+%
+% Baseado na estrutura do template UTFPR-PG (abntex2)
+% Adaptado para o modelo do IFPR Campus Pinhais
+% ============================================================
+
+
+
+\documentclass{ifpr-pinhais}
+
+% \usepackage{cmap}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{amssymb}
+\usepackage{placeins}
+
+\graphicspath{{imagens/}}
+
+% ---- Metadados do trabalho ----
+\curso{Bacharelado em Ciência da Computação}
+\departamento{Coordenação do Curso de Bacharelado em Ciência da Computação}
+\autor{Rafael Correia Alves \\ João Pedro dos Santos Henrique Plinta}
+\titulo{Monitoramento de Funções Virtualizadas de Redes: Um Estudo Comparativo entre Ferramentas de Extração de Comportamento}
+\tipotrabalho{Trabalho de Conclusão de Curso}
+\local{Pinhais}
+\data{2026}
+
+\orientador{Prof. Guilherme Werneck de Oliveira}
+% \coorientador{Prof. Nome do Coorientador}  % descomente se houver
+
+\preambulo{%
+  \imprimirtipotrabalho\ apresentado como requisito parcial para
+  obtenção do título de Bacharel em \imprimircurso, do
+  \ifpr\ -- \campus.
+}
+
+% ---- Configurações do PDF ----
+\makeatletter
+\hypersetup{
+  pdftitle={\@title},
+  pdfauthor={\@author},
+  pdfsubject={\imprimirpreambulo},
+  pdfcreator={LaTeX com abntex2 e ifpr-pinhais},
+  hidelinks,
+}
+\makeatother
+
+% ---- Espaçamento entre parágrafos ----
+\setlength{\parskip}{0.1cm}
+
+\makeindex
+
+% ============================================================
+\begin{document}
+\frenchspacing
+
+% ================================================================
+% ELEMENTOS PRÉ-TEXTUAIS
+% ================================================================
+\pretextual
+
+% --- Capa ---
+\imprimircapa
+
+% --- Folha de Rosto ---
+\imprimirfolhaderosto
+
+% --- Folha de Aprovação ---
+% (preencha com os dados reais antes de imprimir)
+\imprimirfolhadeaprovacao
+
+% --- Dedicatória (opcional) ---
+% \begin{dedicatoria}
+%   \vspace*{\fill}
+%   \centering
+%   \noindent
+%   \textit{Dedico este trabalho...}
+%   \vspace*{\fill}
+% \end{dedicatoria}
+
+% --- Agradecimentos (opcional) ---
+% \begin{agradecimentos}
+%   Agradeço...
+% \end{agradecimentos}
+
+% --- Epígrafe (opcional) ---
+% \begin{epigrafe}
+%   \vspace*{\fill}
+%   \begin{flushright}
+%     \textit{``Frase de efeito.''\\(Autor, Ano)}
+%   \end{flushright}
+% \end{epigrafe}
+
+% --- Resumo em português --- (pendente: escrever após Desenvolvimento)
+% \begin{resumo}
+%   Conter de 150 e 500 palavras, em parágrafo único com espaçamento simples,
+%   tamanho 12, sem recuo na primeira linha. Deve-se ressaltar sucintamente o
+%   conteúdo de um texto: os objetivos, os métodos empregados, os resultados
+%   preliminares e as conclusões. Recomenda-se para documento técnico e científico
+%   o resumo informativo.
+%
+%   \vspace{\onelineskip}
+%   \noindent
+%   \textbf{Palavras-chave}: palavra 1; palavra 2; palavra 3; palavra 4; palavra 5.
+% \end{resumo}
+
+% --- Abstract (resumo em inglês) --- (pendente)
+% \begin{resumo}[Abstract]
+%   \begin{otherlanguage*}{english}
+%     Mandatory element, written preferably in English. It must contain the same
+%     information as the Portuguese abstract, including keywords.
+%
+%     \vspace{\onelineskip}
+%     \noindent
+%     \textbf{Keywords}: word 1; word 2; word 3; word 4; word 5.
+%   \end{otherlanguage*}
+% \end{resumo}
+
+% --- Lista de Figuras (a partir de 5 figuras) ---
+\pdfbookmark[0]{\listfigurename}{lof}
+\listoffigures*
+\cleardoublepage
+
+% --- Lista de Gráficos (a partir de 5 gráficos) --- (pendente)
+% \pdfbookmark[0]{Lista de Gráficos}{log}
+% \listof{grafico}{Lista de Gráficos}
+% \cleardoublepage
+
+% --- Lista de Tabelas (a partir de 5 tabelas) ---
+\pdfbookmark[0]{\listtablename}{lot}
+\listoftables*
+\cleardoublepage
+
+% --- Lista de Quadros (opcional) ---
+% \pdfbookmark[0]{Lista de Quadros}{loq}
+% \listof{quadro}{Lista de Quadros}
+% \cleardoublepage
+
+% --- Lista de Abreviaturas e Siglas ---
+\begin{siglas}
+  \item[BCC]   BPF Compiler Collection
+  \item[BPF]   Berkeley Packet Filter
+  \item[CPU]   Central Processing Unit
+  \item[eBPF]  Extended Berkeley Packet Filter
+  \item[IFPR]  Instituto Federal do Paraná
+  \item[NFV]   Network Functions Virtualization
+  \item[RTT]   Round-Trip Time
+  \item[TCP]   Transmission Control Protocol
+  \item[UDP]   User Datagram Protocol
+  \item[VNF]   Virtualized Network Function
+  \item[WAF]   Web Application Firewall
+  \item[MANO]  Management and Orchestration
+\end{siglas}
+
+% --- Lista de Símbolos (opcional) ---
+% \begin{simbolos}
+%   \item[$\Gamma$] Letra grega Gama
+% \end{simbolos}
+
+% --- Sumário ---
+\pdfbookmark[0]{\contentsname}{toc}
+\tableofcontents*
+\cleardoublepage
+
+% ================================================================
+% ELEMENTOS TEXTUAIS
+% ================================================================
+\textual
+\pagestyle{simple}
+
+% ----------------------------------------------------------------
+\input{capítulos/0.Introdução}
+\input{capítulos/1.RevisãoDaLiteratura}
+\input{capítulos/2.Metodologia}
+\input{capítulos/3.Resultados}
+%\input{capítulos/3.ValidaçãoExperimental}
+%\input{capítulos/4.ConsideraçõesFinais}
+
+% ================================================================
+% ELEMENTOS PÓS-TEXTUAIS
+% ================================================================
+\postextual
+
+% --- Referências ---
+\bibliography{referencias}
+
+\end{document}

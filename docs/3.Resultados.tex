@@ -78,9 +78,9 @@ Quanto à memória do próprio WAF --- a VNF monitorada ---, os três cenários 
 
 \section{Consumo de CPU do Observador}
 
-O consumo de CPU do próprio observador mostrou-se a métrica de medição mais delicada, devido à sua baixa magnitude frente ao ruído de amostragem. O resultado mais limpo foi obtido em $N = 100$ mil: o coletor eBPF consumiu, em média, apenas $0{,}05\% \pm 0{,}01$ de CPU, valor uma a duas ordens de grandeza inferior ao dos coletores em espaço de usuário ($4{,}66\%$ no Sysstat e $2{,}37\%$ no Prometheus) e, sobretudo, muito mais estável. Esse contraste reforça o argumento central: a leitura de contadores diretamente dos mapas do \textit{kernel} é substancialmente mais barata, em termos de CPU, do que a leitura periódica e o \textit{parsing} de arquivos do \texttt{/proc}.
+O consumo de CPU do próprio observador mostrou-se a métrica de medição mais delicada, devido à sua baixa magnitude frente ao ruído de amostragem. O resultado mais limpo foi obtido em $N = 100$ mil: o coletor eBPF consumiu, em média, apenas $0{,}05\% \pm 0{,}01$ de CPU, valor uma a duas ordens de grandeza inferior ao dos coletores em espaço de usuário ($4{,}66\%$ no Sysstat e $2{,}37\%$ no Prometheus) e, sobretudo, muito mais estável. Esse contraste é compatível com o argumento central de que a leitura de contadores diretamente dos mapas do \textit{kernel} é mais barata, em termos de CPU, do que a leitura periódica e o \textit{parsing} de arquivos do \texttt{/proc}; contudo, os intervalos de confiança do Sysstat ($\pm 6{,}54$) e do Prometheus ($\pm 4{,}72$) incluem o valor do eBPF, de modo que a diferença não é estatisticamente significativa.
 
-Nos volumes maiores, entretanto, as medições de CPU do observador apresentaram desvios-padrão muito elevados em relação às médias (por exemplo, $0{,}82\% \pm 1{,}58$ no eBPF em $N = 1$ milhões), o que as torna pouco conclusivas isoladamente. Essa instabilidade decorre da granularidade da amostragem via \texttt{psutil} sobre intervalos curtos e da contenção de CPU entre os contêineres que compartilham os mesmos núcleos, conforme apontado nas limitações da metodologia. Por esse motivo, o consumo de CPU do observador é interpretado neste trabalho como evidência qualitativa complementar, e não como base para comparações quantitativas precisas entre as ferramentas.
+Nos volumes maiores, entretanto, as medições de CPU do observador apresentaram desvios-padrão muito elevados em relação às médias (por exemplo, $0{,}82\% \pm 1{,}58$ no eBPF em $N = 1$ milhão), o que as torna pouco conclusivas isoladamente. Essa instabilidade decorre da granularidade da amostragem via \texttt{psutil} sobre intervalos curtos e da contenção de CPU entre os contêineres que compartilham os mesmos núcleos, conforme apontado nas limitações da metodologia. Por esse motivo, o consumo de CPU do observador é interpretado neste trabalho como evidência qualitativa complementar, e não como base para comparações quantitativas precisas entre as ferramentas.
 
 \section{Métricas de Validação}
 
@@ -90,7 +90,7 @@ Os contadores de bytes RX/TX, por outro lado, não são diretamente comparáveis
 
 \section{Síntese dos Resultados}
 
-A Tabela~\ref{tab:sintese} resume o desempenho das três abordagens nas dimensões avaliadas. O eBPF foi a ferramenta de menor sobrecarga na métrica primária (tempo de resposta) em todos os volumes, com diferença estatisticamente significativa, e a de menor consumo de CPU pelo próprio coletor. O Sysstat destacou-se pelo menor consumo de memória, enquanto o Prometheus apresentou o maior custo de memória, em razão do servidor HTTP, sem oferecer vantagem de desempenho no escopo testado, no qual o \textit{endpoint} de métricas permanece disponível, mas não é raspado ativamente.
+A Tabela~\ref{tab:sintese} resume o desempenho das três abordagens nas dimensões avaliadas. O eBPF foi a ferramenta de menor sobrecarga na métrica primária (tempo de resposta) em todos os volumes, com diferença estatisticamente significativa. Na CPU do próprio observador, as diferenças entre as ferramentas não foram conclusivas, devido à alta variabilidade entre as execuções. O Sysstat destacou-se pelo menor consumo de memória, enquanto o Prometheus apresentou o maior custo de memória, em razão do servidor HTTP, sem oferecer vantagem de desempenho no escopo testado, no qual o \textit{endpoint} de métricas permanece disponível, mas não é raspado ativamente.
 
 \begin{table}[htbp]
 \centering
@@ -103,9 +103,9 @@ A Tabela~\ref{tab:sintese} resume o desempenho das três abordagens nas dimensõ
 Tempo de resposta (RTT UDP) & Menor & Intermediário & Maior \\
 CPU do WAF & Equivalente & Equivalente & Equivalente \\
 Memória do observador & Intermediária ($\sim$15 MB) & Menor ($\sim$14 MB) & Maior ($\sim$24 MB) \\
-CPU do observador & Menor (mais estável) & Maior/ruidosa & Maior/ruidosa \\
+CPU do observador & Inconclusiva (mais estável em $N = 100$ mil) & Inconclusiva (ruidosa) & Inconclusiva (ruidosa) \\
 \hline
 \end{tabularx}
 \end{table}
 
-Os resultados confirmam a hipótese formulada na introdução: por operar em nível de \textit{kernel}, o eBPF apresenta menor tempo de resposta na coleta de métricas e menor consumo de CPU do coletor em comparação às abordagens de \textit{polling} em espaço de usuário, sem impor sobrecarga adicional ao WAF monitorado. A vantagem do eBPF no tempo de resposta, embora consistente e estatisticamente significativa, é de magnitude moderada (8\% a 15\%) e acompanhada de maior variabilidade entre execuções, fatores que devem ser ponderados na escolha da ferramenta em conjunto com os requisitos operacionais de cada cenário, discutidos no capítulo seguinte.
+Os resultados confirmam a hipótese formulada na introdução: por operar em nível de \textit{kernel}, o eBPF apresenta menor tempo de resposta na coleta de métricas em comparação às abordagens de \textit{polling} em espaço de usuário, sem impor sobrecarga adicional ao WAF monitorado. A vantagem do eBPF no tempo de resposta, embora consistente e estatisticamente significativa, é de magnitude moderada (8\% a 15\%) e acompanhada de maior variabilidade entre execuções, fatores que devem ser ponderados na escolha da ferramenta em conjunto com os requisitos operacionais de cada cenário, discutidos no capítulo seguinte.

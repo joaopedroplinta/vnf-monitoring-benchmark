@@ -1,6 +1,6 @@
 # TCC — Gerenciamento e Monitoramento de Rede
 
-**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 17/05/2026 — rev 11)
+**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 23/09/2026 — rev 12)
 
 ---
 
@@ -232,7 +232,7 @@ Variáveis de ambiente relevantes:
 - **N=100k**: as três ferramentas apresentam tempos de resposta estatisticamente equivalentes — IC95 se sobrepõem. Sem dominância clara.
 - **N=500k**: eBPF se destaca com menor tempo de resposta médio (1.338 ms vs 1.405 ms sysstat vs 1.438 ms Prometheus) e IC95 que não se sobrepõem — diferença estatisticamente significativa nesse volume.
 - **N=1M**: eBPF mantém o menor tempo de resposta (1.098 ms), com IC95 que não se sobrepõem em relação às demais — diferença estatisticamente significativa. Prometheus supera sysstat nesse volume (1.277 ms vs 1.314 ms). CPU do WAF com Prometheus é ~5 pp maior (70.2% vs ~65%), indicando overhead do endpoint HTTP sob carga alta.
-- **Tendência com N crescente**: eBPF apresenta tempo de resposta inversamente proporcional ao volume (1.225 → 1.338 → 1.098 ms), sugerindo que os kprobes amortizam o custo fixo de inicialização sob cargas maiores. sysstat e Prometheus crescem monotonicamente (polling `/proc` se torna mais custoso relativamente).
+- **Tendência com N crescente**: eBPF apresenta tempo de resposta inversamente proporcional ao volume (1.225 → 1.338 → 1.098 ms), sugerindo que os kprobes amortizam o custo fixo de inicialização sob cargas maiores. sysstat e Prometheus crescem monotonicamente (polling `/proc` se torna mais custoso relativamente). *[Revisão 23/09/2026: essa explicação é hipótese não verificada, e esses valores são da coleta de 26–27/04, substituída pela recoleta de 16–17/05/2026.]*
 - **CPU do WAF** com eBPF é maior em N=500k (72.1% vs ~68%), reflexo da interferência dos kprobes no processo monitorado sob carga contínua.
 - **CPU do coletor** apresenta IC95 superior à média em N=100k (~43s de execução), refletindo ruído em execuções curtas. Em N=500k (~157s) e N=1M (~300s) a variância cai significativamente.
 - **Memória do coletor** estável entre execuções: eBPF ~196 MB (BCC carrega runtime do kernel em userspace), sysstat ~13 MB, Prometheus ~24 MB.
@@ -833,7 +833,7 @@ Os dados anteriores de N=1M (coletados em 27/04/2026) foram descartados por inco
 
 #### Achado relevante: overhead do eBPF escala com volume
 
-O tempo de resposta do eBPF aumentou de N=1M para N=2M (+0.040ms, +8.2%), enquanto o sysstat permaneceu praticamente estável (+0.002ms, +0.3%). Isso ocorre porque os kprobes (`tcp_sendmsg`, `tcp_cleanup_rbuf`) disparam por pacote — com 2× o tráfego, há 2× as interrupções no kernel. O sysstat lê `/proc/net/dev` uma vez por segundo, independente do volume. A vantagem do eBPF em tempo de resposta encolheu de 85µs (N=1M) para 47µs (N=2M).
+O tempo de resposta do eBPF aumentou de N=1M para N=2M (+0.040ms, +8.2%), enquanto o sysstat permaneceu praticamente estável (+0.002ms, +0.3%). A causa não foi determinada. A explicação anterior (kprobes disparando por pacote, com 2× o tráfego gerando 2× as interrupções) não se sustenta: para N ≥ 500k o WAF satura em ~7,3–7,8 mil msg/s, então o que dobra de 1M para 2M é a duração da execução, não a taxa de eventos por segundo (ver "Revisão do texto da tese e análise dos dados (23/09/2026)"). A vantagem do eBPF em tempo de resposta encolheu de 85µs (N=1M) para 47µs (N=2M).
 
 #### Anomalias documentadas: execuções com inspect_count=0
 
@@ -1002,3 +1002,91 @@ Adicionada seção explícita em **Requisitos**:
 pip install matplotlib numpy   # geração de gráficos (plot_results.py)
 ```
 Com nota de que `psutil` e `prometheus_client` são instalados automaticamente pelos Dockerfiles dos contêineres.
+
+---
+
+## Revisão do texto da tese e análise dos dados (23/09/2026)
+
+Revisão do PDF do TCC (versão da pré-banca, 38 páginas) contra o código (`src/`) e os JSONs de `results/`. Este bloco registra o que foi alterado, o que foi apontado e não alterado, os novos achados nos dados e as propostas. **Itens marcados como "para o orientador" precisam de decisão dele antes de ir para a versão final.**
+
+### 1. Alterações feitas em `docs/` (a validar com o orientador)
+
+| Arquivo / seção | Antes | Depois | Motivo |
+|---|---|---|---|
+| `2.Metodologia.tex` §3.3.1 | Contadores em "mapas `HASH`, chaveados pelo identificador da conexão" | "mapa `ARRAY` com duas posições (RX e TX), que agrega os bytes de todas as conexões da porta 8080, sem distinção por conexão individual" | `ebpf_kern.c` usa `BPF_MAP_TYPE_ARRAY` com `max_entries = 2`. O `BPF_HASH` só existiu nas versões BCC antigas (`git log -S BPF_HASH`, commits v13–v23), anteriores à migração para libbpf que gerou os 360 resultados |
+| `1.RevisaoDaLiteratura.tex` §2.4 | "acumula os contadores de bytes por conexão" / "métricas de vazão por porta com granularidade de conexão" | "por conexão" e "com granularidade de conexão" removidos | A implementação não separa por conexão. A afirmação geral de que kprobes *permitem* contabilizar por conexão (§2.3) foi mantida, pois descreve a técnica e não o observador |
+| `1.RevisaoDaLiteratura.tex` §2.1.1 | Parágrafo "O monitoramento individual de cada VNF da cadeia…" aparecia duas vezes (págs. 11–12) | Uma cópia removida; a frase de trabalhos futuros (SFCs completas) foi movida para o fim da cópia mantida | Duplicação |
+| `1.RevisaoDaLiteratura.tex` Tabela 1 | "Sathyaseelan et al. (2024)" | "Kannan et al. (2024)" | Texto e `.bib` (`kannan2024designing`) já citavam Kannan |
+| `3.Resultados.tex` Tabela 4 | CPU do observador: "Menor (mais estável) / Maior/ruidosa / Maior/ruidosa" | "Inconclusiva" nas três ferramentas (eBPF com nota "mais estável em N = 100 mil") | Ver tabela abaixo: os dados não sustentam "menor" |
+| `3.Resultados.tex` §4.6 | "…e a de menor consumo de CPU pelo próprio coletor"; hipótese confirmada também por "menor consumo de CPU do coletor" | Trecho removido; acrescentado que as diferenças de CPU do observador não foram conclusivas | Idem; a hipótese original (§1.2) nunca falava de CPU do observador e segue confirmada pelo tempo de resposta |
+| `3.Resultados.tex` §4.4 | "Esse contraste reforça o argumento central… substancialmente mais barata" | "é compatível com o argumento central…", com os IC95 do Sysstat (±6,54) e do Prometheus (±4,72), que incluem o valor do eBPF | Consistência com a Tabela 4 corrigida |
+| `3.Resultados.tex` §4.4 | "N = 1 milhões" | "N = 1 milhão" | Concordância |
+
+**CPU do observador (%, média ± IC95%, 30 execuções, calculada dos JSONs):**
+
+| N | eBPF | Sysstat | Prometheus |
+|---|---|---|---|
+| 100k | **0,051 ± 0,010** | 4,663 ± 6,543 | 2,373 ± 4,720 |
+| 500k | 3,515 ± 3,976 | **1,152 ± 2,244** | 3,484 ± 5,226 |
+| 1M | 0,819 ± 1,578 | 1,423 ± 1,945 | **0,742 ± 1,398** |
+| 2M | 0,471 ± 0,867 | **0,461 ± 0,836** | 0,801 ± 1,053 |
+
+O eBPF só tem a menor média em N=100k, e mesmo ali os IC95 do Sysstat e do Prometheus incluem o valor dele. Em 500k é o pior; em 1M e 2M os três estão empatados.
+
+**Fora do repositório (Overleaf):** o capítulo de Revisão da Literatura havia sido sobrescrito pelo conteúdo de Resultados (log: rótulos `multiply defined` e referências indefinidas; PDF com 32 páginas) e foi restaurado. A Figura 1 (C4) passou a usar `\includesvg` (pacote `svg`) com o SVG do diagrama, pois `\includegraphics` do pdfLaTeX não aceita `.svg`. No repositório o SVG está em `docs/C4model.drawio.svg` e a Metodologia continua referenciando o PNG.
+
+### 2. Apontado e não alterado
+
+- **Bibliografia:** acento quebrado em "VENÂNCIO" (BibTeX) e "OLIVEIRA; JR.; FULBER-GARCIA" tratado como três autores (campo `Jr.` do `.bib`).
+- **Figura 1:** o quadro do WAF diz "[Component: …]" (deveria ser "Componente"); o contêiner do `probe.py` se chama "Coletor", mas o capítulo 3 chama de "coletores" o eBPF, o Sysstat e o Prometheus (que na figura são o "Observador"); textos claros pequenos têm pouco contraste.
+- **Sysstat/Prometheus:** a §2.2 descreve amostragem "a cada segundo" (polling), mas os observadores leem `/proc/net/dev` sob demanda, a cada requisição UDP do probe (1 req/s).
+- **Escopo da métrica primária:** o RTT mede o tempo de resposta do observador, não o impacto do monitoramento no WAF. A afirmação "sem impor sobrecarga adicional ao WAF" repousa apenas na CPU do WAF (equivalente entre as ferramentas). Sugestão: explicitar isso.
+
+### 3. Novos achados nos dados (para o orientador)
+
+#### 3.1 A explicação "kprobes disparam por pacote" não se sustenta
+
+O relatório e o README atribuíam a subida do RTT do eBPF de 1M para 2M (0,489 → 0,528 ms) a "2× o tráfego = 2× as interrupções". Mensagens processadas por segundo (`inspect_count` ÷ `observador_samples`, média das execuções com `inspect_count > 0`):
+
+| N | eBPF | Sysstat | Prometheus |
+|---|---|---|---|
+| 500k | 7.647 | 7.258 | 7.258 |
+| 1M | 7.844 | 7.315 | 7.583 |
+| 2M | 7.083 | 7.283 | 7.207 |
+
+- De 500k a 2M o WAF satura em ~7,3–7,8 mil msg/s (CPU do WAF ≈ 108%). Dobrar N dobra a **duração**, não a **taxa** de eventos por segundo.
+- Dentro das 30 execuções do eBPF com N=2M, a correlação entre RTT e vazão é r = −0,74 (menor vazão ↔ maior RTT). Se o custo viesse dos kprobes, o RTT subiria com mais eventos. Isso sugere interferência do sistema, mas não prova. Em N=1M, r = +0,07.
+- **Lotes não intercalados:** cada combinação ferramenta × N foi coletada em sequência. Em N=1M, o eBPF rodou em 17/05 das 03:37 às 04:30 e o Sysstat/Prometheus das 17:31 às 19:16 (~14 h depois). Em N=2M: eBPF 20:42–22:07, Sysstat 22:10–23:34, Prometheus 23:37–01:01. Não há deriva dentro dos lotes (diferença entre as 10 primeiras e as 10 últimas execuções ≤ 0,012 ms), mas ferramenta e estado da máquina ficam misturados.
+
+Textos corrigidos: `relatorio_projeto.md` ("Achado relevante" de N=2M e a observação de "Tendência com N crescente", esta última marcada como hipótese não verificada de uma coleta antiga) e `README.md` (Observações gerais). A tese **não** contém essa explicação: a §4.1 atribui a não monotonicidade ao aquecimento em N=100k.
+
+#### 3.2 N nominal ≠ mensagens processadas (Equação 3.1 da tese)
+
+`DURATION = ⌊N/15000⌋ + 20`. O divisor 15.000 foi estimado após a migração de hardware (~15.000–20.000 msg/s, ver "Decisões estratégicas") e não corresponde ao medido (~7,5 mil msg/s). Como a execução termina ao fim da duração, o WAF processa só uma fração de N:
+
+| N nominal | eBPF | Sysstat | Prometheus |
+|---|---|---|---|
+| 100k | 100.000 (100%) | 100.000 (100%) | 100.000 (100%) |
+| 500k | 405.313 (81%) | 384.682 (77%) | 384.690 (77%) |
+| 1M | 674.607 (67%) | 629.103 (63%) | 652.167 (65%) |
+| 2M | 1.083.740 (54%) | 1.114.290 (56%) | 1.102.603 (55%) |
+
+(`inspect_count` é gravado a cada 100 requisições, então subestima em até 100. As 5 execuções com `inspect_count = 0` foram excluídas: Sysstat 500k n=28, Sysstat 1M n=29, Sysstat 2M n=29, Prometheus 2M n=29.)
+
+A Metodologia (§3.4) diz que 15.000 msg/s é a taxa "sustentada empiricamente" e que o valor "garante que o cliente complete o envio de todas as cargas". Para N ≥ 500k isso não é verdade.
+
+#### 3.3 A carga efetiva difere entre ferramentas no mesmo N
+
+Com o WAF saturado, o eBPF processou ~5% mais msg/s em 500k, +3% a +7% em 1M e −2% a −3% em 2M. As ferramentas não foram comparadas sob carga idêntica. Isso não invalida a comparação de RTT (o eBPF teve menor RTT mesmo com maior vazão em 500k e 1M), mas deve constar como limitação.
+
+### 4. Propostas (decisão do orientador)
+
+- **A. Textos do relatório e do README (feito nesta revisão):** a explicação por pacote foi trocada por "causa não determinada" com o motivo.
+- **B. Ajustes na tese (a decidir):**
+  1. §3.4: corrigir a frase do divisor 15.000 e a de "garante que o cliente complete o envio", tratando N como volume **nominal** e informando as mensagens efetivamente processadas (tabela 3.2).
+  2. §3.5 (limitações): acrescentar que os lotes ferramenta × N não foram intercalados e que a vazão efetiva difere entre ferramentas com o WAF saturado.
+  3. Discussão (ainda não escrita): apresentar a subida do eBPF de 1M para 2M como observação com hipóteses, sem afirmar causa; e explicitar o escopo do RTT (§2, último item).
+- **C. Testes adicionais (opcional, horas):**
+  1. Medir o custo real dos kprobes: `sysctl -w kernel.bpf_stats_enabled=1` e `bpftool prog show` (campos `run_cnt` e `run_time_ns` por programa) durante uma execução.
+  2. Reexecutar N=2M (e eventualmente 1M) **intercalando** as ferramentas, por exemplo 10 rodadas de eBPF → Sysstat → Prometheus. Estimativa: ~190 s por execução (153 s de duração + ~35 s de overhead), ou ~1,6 h para 10 rodadas × 3 ferramentas.
+- **D. Sem novo experimento:** manter os dados atuais e reportar apenas o que sustentam (eBPF com menor RTT em todos os N, vantagem de 8% a 15%, não monotonicidade sem causa determinada), registrando as limitações de B.2.

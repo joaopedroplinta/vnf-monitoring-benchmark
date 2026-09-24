@@ -14,9 +14,9 @@
 </p>
 
 <p align="center">
-  <a href="#resultados">Resultados</a> ·
   <a href="#como-funciona">Como funciona</a> ·
   <a href="#início-rápido">Início rápido</a> ·
+  <a href="#resultados">Resultados</a> ·
   <a href="#limitações">Limitações</a> ·
   <a href="#sobre-o-trabalho">Sobre o trabalho</a>
 </p>
@@ -32,29 +32,6 @@ Benchmark reprodutível que mede o **overhead de três abordagens de monitoramen
 | **Prometheus** | igual ao Sysstat, com um endpoint HTTP `/metrics` ativo |
 
 A métrica principal é o **tempo de resposta do observador**: o RTT de um probe UDP mostra quanto tempo cada ferramenta leva para entregar suas métricas. CPU e memória do WAF e do observador são métricas secundárias.
-
-## Resultados
-
-360 execuções (3 ferramentas × 4 volumes × 30 repetições), com média ± IC95%.
-
-**Tempo de resposta médio do observador (ms, menor é melhor):**
-
-| Volume de mensagens | eBPF | Sysstat | Prometheus |
-|---|:---:|:---:|:---:|
-| 100.000 | **0,541** | 0,601 | 0,621 |
-| 500.000 | **0,504** | 0,572 | 0,584 |
-| 1.000.000 | **0,489** | 0,573 | 0,568 |
-| 2.000.000 | **0,528** | 0,575 | 0,593 |
-
-- O **eBPF teve o menor tempo de resposta nos quatro volumes**, com IC95 sem sobreposição. A vantagem é de 8% a 15%, com maior dispersão entre execuções.
-- **Memória do observador:** Sysstat ~14 MB, eBPF ~15 MB, Prometheus ~24 MB (o custo do servidor HTTP).
-- **CPU do WAF** equivalente entre as ferramentas. **CPU do observador** inconclusiva.
-
-<p align="center">
-  <img src="results/plots/tempo_resposta_por_n.png" width="560" alt="Tempo de resposta médio do observador por volume de mensagens">
-</p>
-
-Tabelas completas por volume, gráficos e observações: **[docs/resultados.md](docs/resultados.md)**.
 
 ## Como funciona
 
@@ -87,6 +64,29 @@ python3 src/compare.py 100000                     # compara as três ferramentas
 ```
 
 A bateria completa (30 execuções por ferramenta e volume, ~10 h) e as variáveis de ambiente estão em **[docs/reproducao.md](docs/reproducao.md)**.
+
+## Resultados
+
+360 execuções (3 ferramentas × 4 volumes × 30 repetições), com média ± IC95%.
+
+**Tempo de resposta médio do observador (ms, menor é melhor):**
+
+| Volume de mensagens | eBPF | Sysstat | Prometheus |
+|---|:---:|:---:|:---:|
+| 100.000 | **0,541** | 0,601 | 0,621 |
+| 500.000 | **0,504** | 0,572 | 0,584 |
+| 1.000.000 | **0,489** | 0,573 | 0,568 |
+| 2.000.000 | **0,528** | 0,575 | 0,593 |
+
+- O **eBPF teve o menor tempo de resposta nos quatro volumes**, com IC95 sem sobreposição. A vantagem é de 8% a 15%, com maior dispersão entre execuções.
+- **Memória do observador:** Sysstat ~14 MB, eBPF ~15 MB, Prometheus ~24 MB (o custo do servidor HTTP).
+- **CPU do WAF** equivalente entre as ferramentas. **CPU do observador** inconclusiva.
+
+<p align="center">
+  <img src="results/plots/tempo_resposta_por_n.png" width="560" alt="Tempo de resposta médio do observador por volume de mensagens">
+</p>
+
+Tabelas completas por volume, gráficos e observações: **[docs/resultados.md](docs/resultados.md)**.
 
 ## Estrutura do repositório
 

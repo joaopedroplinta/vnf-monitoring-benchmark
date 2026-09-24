@@ -16,6 +16,7 @@
 <p align="center">
   <a href="#como-funciona">Como funciona</a> ·
   <a href="#início-rápido">Início rápido</a> ·
+  <a href="#estrutura-do-repositório">Estrutura</a> ·
   <a href="#resultados">Resultados</a> ·
   <a href="#limitações">Limitações</a> ·
   <a href="#sobre-o-trabalho">Sobre o trabalho</a>
@@ -65,6 +66,23 @@ python3 src/compare.py 100000                     # compara as três ferramentas
 
 A bateria completa (30 execuções por ferramenta e volume, ~10 h) e as variáveis de ambiente estão em **[docs/reproducao.md](docs/reproducao.md)**.
 
+## Estrutura do repositório
+
+| Pasta | Conteúdo |
+|---|---|
+| [`src/`](src) | WAF, observadores (eBPF, Sysstat, Prometheus), cliente, probe e comparador |
+| [`scripts/`](scripts) | geração de payloads, execução dos testes e gráficos |
+| [`configs/`](configs) | Dockerfiles |
+| [`results/`](results) | resultados brutos (JSON) e agregados (CSV/JSON) das execuções |
+| [`docs/`](docs) | tese em LaTeX, diagrama C4, apresentações e documentação detalhada |
+
+Documentação detalhada:
+[Reprodução](docs/reproducao.md) ·
+[Resultados](docs/resultados.md) ·
+[Métricas e observadores](docs/metricas-e-observadores.md) ·
+[Arquitetura](docs/architecture.md) ·
+[Diário do projeto](relatorio_projeto.md)
+
 ## Resultados
 
 360 execuções (3 ferramentas × 4 volumes × 30 repetições), com média ± IC95%.
@@ -87,23 +105,6 @@ A bateria completa (30 execuções por ferramenta e volume, ~10 h) e as variáve
 </p>
 
 Tabelas completas por volume, gráficos e observações: **[docs/resultados.md](docs/resultados.md)**.
-
-## Estrutura do repositório
-
-| Pasta | Conteúdo |
-|---|---|
-| [`src/`](src) | WAF, observadores (eBPF, Sysstat, Prometheus), cliente, probe e comparador |
-| [`scripts/`](scripts) | geração de payloads, execução dos testes e gráficos |
-| [`configs/`](configs) | Dockerfiles |
-| [`results/`](results) | resultados brutos (JSON) e agregados (CSV/JSON) das execuções |
-| [`docs/`](docs) | tese em LaTeX, diagrama C4, apresentações e documentação detalhada |
-
-Documentação detalhada:
-[Reprodução](docs/reproducao.md) ·
-[Resultados](docs/resultados.md) ·
-[Métricas e observadores](docs/metricas-e-observadores.md) ·
-[Arquitetura](docs/architecture.md) ·
-[Diário do projeto](relatorio_projeto.md)
 
 ## Limitações
 

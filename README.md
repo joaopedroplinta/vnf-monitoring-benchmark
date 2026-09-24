@@ -12,7 +12,7 @@ O foco é medir o **overhead do monitoramento** (tempo de resposta do observador
 
 ## Arquitetura
 
-![Diagrama C4 — Container Diagram (Nível 2)](docs/arquitetura_c4.svg)
+![Diagrama de contêineres (C4, Nível 2)](docs/C4model.drawio.svg)
 
 - O **WAF** inspeciona cada payload (SQLi, XSS, PathTraversal, RCE, NullByte) via `asyncio` + `ThreadPoolExecutor`, registra o tempo de inspeção e responde ao cliente. Protocolo: framing com 4 bytes de comprimento por mensagem (conexões persistentes).
 - O **Observador** coleta métricas do WAF usando a ferramenta correspondente (eBPF / sysstat / Prometheus) e responde a qualquer request UDP com um JSON de métricas.
@@ -56,7 +56,7 @@ vnf-monitoring-benchmark/
 │   └── run_multi.sh               # Executa N repetições sequenciais de uma ferramenta (ebpf|sysstat|prometheus)
 ├── docs/
 │   ├── architecture.md            # Documentação de arquitetura
-│   ├── arquitetura_c4.svg         # Diagrama C4 da arquitetura
+│   ├── C4model.drawio.svg         # Diagrama C4 da arquitetura (fonte: C4model.drawio)
 │   ├── main.tex                   # Documento LaTeX do TCC
 │   ├── ifpr-pinhais.cls           # Classe LaTeX IFPR Pinhais
 │   └── referencias.bib            # Referências bibliográficas

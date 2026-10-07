@@ -1,0 +1,60 @@
+services:
+
+  waf:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: waf-server
+    network_mode: "host"
+    volumes:
+      - ./src/vnf:/app/vnf
+      - ./results:/app/results
+    command: ["python3", "/app/vnf/waf.py"]
+
+  observador:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: observador
+    network_mode: "host"
+    volumes:
+      - ./src/vnf:/app/vnf
+      - ./results:/app/results
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["python3", "/app/vnf/observador_docker.py"]
+    depends_on:
+      - waf
+
+  client:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile.client
+    container_name: socket-client
+    network_mode: "host"
+    environment:
+      - PAYLOADS_FILE=${PAYLOADS_FILE}
+      - WORKERS=${WORKERS:-200}
+    volumes:
+      - ./src/client:/app
+      - ./data/payloads:/app/payloads:ro
+    command: ["python3", "/app/client.py"]
+    depends_on:
+      - waf
+
+  docker-collector:
+    build:
+      context: .
+      dockerfile: configs/Dockerfile
+    container_name: docker-collector
+    network_mode: "host"
+    environment:
+      - COLLECTOR=docker
+      - RESULTS_PATH=${RESULTS_PREFIX_CONT:-/app/results}/docker_${NUM_MESSAGES:-100}_run${RUN_ID:-1}_results.json
+      - DURATION=${DURATION:-100}
+    volumes:
+      - ./src:/app/src
+      - ./results:/app/results
+    command: ["python3", "/app/src/probe.py"]
+    depends_on:
+      - observador
+

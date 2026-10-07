@@ -3,12 +3,12 @@
 Comparador — TCC Gerenciamento de Rede
 
 Modos de uso:
-  python3 compare.py <N>         Compara as 3 ferramentas para N mensagens
+  python3 compare.py <N>         Compara as ferramentas para N mensagens
                                  (usa run1). Gera comparison_<N>.csv/.json
   python3 compare.py <N> <RUNS>  Agrega RUNS repetições de N mensagens:
                                  média ± desvio entre runs.
                                  Gera comparison_<N>_<RUNS>runs.csv/.json
-  python3 compare.py             Compara as 3 ferramentas em todos os N
+  python3 compare.py             Compara as ferramentas em todos os N
                                  disponíveis. Gera comparison_all_runs.csv/.json
 """
 import json, csv, math, os, sys, re, statistics
@@ -30,8 +30,8 @@ def t_critical(df: int) -> float:
 _results_base = "/app/results" if os.path.exists("/app/results") else os.path.join(os.getcwd(), "results")
 _results_sub  = os.environ.get("RESULTS_SUBDIR", "")
 RESULTS_DIR   = os.path.join(_results_base, _results_sub) if _results_sub else _results_base
-TOOLS       = ["ebpf", "sysstat", "prometheus"]
-TOOL_LABELS = {"ebpf": "eBPF", "sysstat": "sysstat", "prometheus": "Prometheus"}
+TOOLS       = ["ebpf", "sysstat", "prometheus", "docker"]
+TOOL_LABELS = {"ebpf": "eBPF", "sysstat": "sysstat", "prometheus": "Prometheus", "docker": "Docker"}
 
 METRICS = [
     ("observador_latency_avg_ms",    "Tempo de resposta médio (ms)"),
@@ -58,7 +58,7 @@ def load(path):
         return {}
 
 def compare_single(n):
-    """Compara as 3 ferramentas para um único valor de N (run 1)."""
+    """Compara as ferramentas para um único valor de N (run 1)."""
     files = {tool: os.path.join(RESULTS_DIR, f"{tool}_{n}_run1_results.json") for tool in TOOLS}
     data  = {tool: load(path) for tool, path in files.items()}
 
@@ -82,12 +82,11 @@ def compare_single(n):
         json.dump({"n_messages": n, "tools": TOOLS, "metrics": rows, "raw": data}, f, indent=2)
 
     print(f"\n📊 Comparação — {n} mensagens:\n")
-    header = f"{'métrica':<35} {'eBPF':>12} {'sysstat':>12} {'prometheus':>12}"
+    header = f"{'métrica':<35}" + "".join(f" {TOOL_LABELS[t]:>12}" for t in TOOLS)
     print(header)
     print("-" * len(header))
     for row in rows:
-        print(f"{row['metrica']:<35} {str(row.get('eBPF','')):>12} "
-              f"{str(row.get('sysstat','')):>12} {str(row.get('Prometheus','')):>12}")
+        print(f"{row['metrica']:<35}" + "".join(f" {str(row.get(TOOL_LABELS[t], '')):>12}" for t in TOOLS))
     print(f"\n✅ Salvo em {out_csv} e {out_json}")
 
 def discover_ns():
@@ -108,7 +107,7 @@ def discover_num_runs(tool, n):
     return count
 
 def compare_all_runs():
-    """Compara as 3 ferramentas em todos os N disponíveis, usando média de todos os runs."""
+    """Compara as ferramentas em todos os N disponíveis, usando média de todos os runs."""
     ns = discover_ns()
     if not ns:
         print("⚠️  Nenhum resultado encontrado em results/")
@@ -155,19 +154,13 @@ def compare_all_runs():
         json.dump({"ns": ns, "tools": TOOLS, "metrics": cross_metrics, "data": rows}, f, indent=2)
 
     print(f"\n📊 Comparação cross-N ({len(ns)} valores: {ns}):\n")
-    header = f"{'N':>6}  {'eBPF avg':>10} {'sys avg':>10} {'prom avg':>10}  {'eBPF std':>10} {'sys std':>10} {'prom std':>10}"
+    header = f"{'N':>7} " + "".join(f" {t[:6] + ' avg':>10}" for t in TOOLS) + " " + "".join(f" {t[:6] + ' std':>10}" for t in TOOLS)
     print(header)
     print("-" * len(header))
     for row in rows:
-        print(
-            f"{row['n_messages']:>6}  "
-            f"{str(row.get('ebpf_observador_latency_avg_ms','')):>10} "
-            f"{str(row.get('sysstat_observador_latency_avg_ms','')):>10} "
-            f"{str(row.get('prometheus_observador_latency_avg_ms','')):>10}  "
-            f"{str(row.get('ebpf_observador_latency_stddev_ms','')):>10} "
-            f"{str(row.get('sysstat_observador_latency_stddev_ms','')):>10} "
-            f"{str(row.get('prometheus_observador_latency_stddev_ms','')):>10}"
-        )
+        print(f"{row['n_messages']:>7} "
+              + "".join(f" {str(row.get(f'{t}_observador_latency_avg_ms', '')):>10}" for t in TOOLS) + " "
+              + "".join(f" {str(row.get(f'{t}_observador_latency_stddev_ms', '')):>10}" for t in TOOLS))
     print(f"\n✅ Salvo em {out_csv} e {out_json}")
 
 def compare_aggregate(n, num_runs):
@@ -229,7 +222,7 @@ def compare_aggregate(n, num_runs):
                    "metrics": agg_metrics, "data": rows}, f, indent=2)
 
     print(f"\n📊 Agregação — {n} msgs × {num_runs} runs:\n")
-    header = f"{'métrica':<35} {'eBPF mean±CI95':>20} {'sysstat mean±CI95':>20} {'prom mean±CI95':>20}"
+    header = f"{'métrica':<35}" + "".join(f" {TOOL_LABELS[t] + ' mean±CI95':>22}" for t in TOOLS)
     print(header)
     print("-" * len(header))
     for row in rows:
@@ -237,7 +230,7 @@ def compare_aggregate(n, num_runs):
             tl = TOOL_LABELS[t]
             m, ci = row.get(tl, ""), row.get(f"{tl}_ci95", "")
             return f"{m}±{ci}" if m != "" else "-"
-        print(f"{row['metrica']:<35} {fmt('ebpf'):>20} {fmt('sysstat'):>20} {fmt('prometheus'):>20}")
+        print(f"{row['metrica']:<35}" + "".join(f" {fmt(t):>22}" for t in TOOLS))
     print(f"\n✅ Salvo em {out_csv} e {out_json}")
 
 

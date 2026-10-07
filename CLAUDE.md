@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Academic thesis (TCC) benchmarking three Linux network monitoring approaches around a simplified WAF (Web Application Firewall). The core question: what is the overhead of eBPF-based monitoring vs. userspace alternatives?
 
-**Tools compared:** eBPF (libbpf+CO-RE), Sysstat (`/proc/net/dev` + psutil), Prometheus (sysstat + HTTP endpoint)
+**Tools compared:** eBPF (libbpf+CO-RE), Sysstat (`/proc/net/dev` + psutil), Prometheus (sysstat + HTTP endpoint), Docker (API do Docker/cgroups via lib `docker`, 4º coletor sugerido pelo orientador; ainda sem coleta oficial)
 
 ## Running Tests
 
@@ -27,6 +27,7 @@ Each script orchestrates a full test cycle (build → run → collect → stop):
 NUM_MESSAGES=100000 bash scripts/run_ebpf.sh
 NUM_MESSAGES=100000 bash scripts/run_sysstat.sh
 NUM_MESSAGES=100000 bash scripts/run_prometheus.sh
+NUM_MESSAGES=100000 bash scripts/run_docker.sh
 ```
 
 Run multiple repetitions of a single tool:
@@ -35,7 +36,7 @@ bash scripts/run_multi.sh <tool> <num_messages> <num_runs>
 # Exemplo: bash scripts/run_multi.sh ebpf 100000 30
 # Executa N runs, exporta RUN_ID=1..N, chama compare.py ao final
 # Use --pre para salvar em results/pre_testes/ (testes preliminares)
-# Suporta: ebpf | sysstat | prometheus
+# Suporta: ebpf | sysstat | prometheus | docker
 ```
 
 Aggregate results after running tests:
@@ -86,6 +87,7 @@ Connection is persistent — multiple messages per TCP connection.
 - `src/vnf/observador_ebpf.py` — libbpf+CO-RE kprobes on `tcp_sendmsg` / `tcp_cleanup_rbuf` (sport=8080); compiled by `ebpf_entrypoint.sh`; ~15 MB RSS
 - `src/vnf/observador_sysstat.py` — polls `/proc/net/dev` (interface `lo`) in userspace
 - `src/vnf/observador_prometheus.py` — same as sysstat + HTTP metrics endpoint on port 8000
+- `src/vnf/observador_docker.py` — `container.stats(stream=False, one_shot=True)` do container `waf-server` (cgroups); CPU = delta entre probes (% de 1 núcleo, como o psutil); mem = `usage − inactive_file`; bytes RX/TX ainda via `/proc/net/dev` (WAF usa `network_mode: host`). Requer `/var/run/docker.sock` montado
 
 **Key ports:** TCP 8080 (WAF), UDP 9999 (observador telemetry), HTTP 8000 (Prometheus only)
 
@@ -96,6 +98,7 @@ Connection is persistent — multiple messages per TCP connection.
 - `configs/Dockerfile.ebpf-libbpf` — Ubuntu 24.04 with libbpf1, clang, bpftool (no BCC/LLVM); used by the eBPF stack
 - eBPF compose requires: `privileged: true`, `pid: host`, BPF filesystem mounts, `/sys/kernel/btf`
 - sysstat/Prometheus composes are unprivileged with `pid: host` for psutil process tracking
+- docker compose (`docker-compose.docker.yml`) is unprivileged, sem `pid: host`, com o socket do Docker montado no observador
 - Client container mounts `./data/payloads:/app/payloads:ro` — payload files must exist before running
 
 ## Output

@@ -15,12 +15,12 @@ NUM_RUNS=${3:-5}
 PRE_ARG="${4:-}"
 
 if [ -z "$TOOL" ]; then
-    echo "Uso: bash scripts/run_multi.sh <ebpf|sysstat|prometheus> <num_messages> <num_runs> [--pre]"
+    echo "Uso: bash scripts/run_multi.sh <ebpf|sysstat|prometheus|docker> <num_messages> <num_runs> [--pre]"
     exit 1
 fi
 
 if [ ! -f "$(dirname "$0")/run_${TOOL}.sh" ]; then
-    echo "Ferramenta inválida: '${TOOL}'. Use ebpf, sysstat ou prometheus."
+    echo "Ferramenta inválida: '${TOOL}'. Use ebpf, sysstat, prometheus ou docker."
     exit 1
 fi
 

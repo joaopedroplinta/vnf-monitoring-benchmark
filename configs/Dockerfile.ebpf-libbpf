@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir --break-system-packages psutil
+RUN pip3 install --no-cache-dir --break-system-packages psutil==7.2.2
 
 WORKDIR /app
 

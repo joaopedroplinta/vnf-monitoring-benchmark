@@ -14,7 +14,7 @@ RUN apt update && apt install -y \
     kmod \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir --break-system-packages psutil prometheus_client docker
+RUN pip3 install --no-cache-dir --break-system-packages psutil==7.2.2 prometheus_client==0.25.0 docker==7.2.0
 
 WORKDIR /app
 

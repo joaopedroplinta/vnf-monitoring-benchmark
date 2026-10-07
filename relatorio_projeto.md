@@ -1,6 +1,6 @@
 # TCC — Gerenciamento e Monitoramento de Rede
 
-**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 23/09/2026 — rev 12)
+**Relatório do Projeto** | Gerado em: 16/04/2026 (atualizado: 24/09/2026 — rev 13)
 
 ---
 
@@ -1090,3 +1090,150 @@ Com o WAF saturado, o eBPF processou ~5% mais msg/s em 500k, +3% a +7% em 1M e �
   1. Medir o custo real dos kprobes: `sysctl -w kernel.bpf_stats_enabled=1` e `bpftool prog show` (campos `run_cnt` e `run_time_ns` por programa) durante uma execução.
   2. Reexecutar N=2M (e eventualmente 1M) **intercalando** as ferramentas, por exemplo 10 rodadas de eBPF → Sysstat → Prometheus. Estimativa: ~190 s por execução (153 s de duração + ~35 s de overhead), ou ~1,6 h para 10 rodadas × 3 ferramentas.
 - **D. Sem novo experimento:** manter os dados atuais e reportar apenas o que sustentam (eBPF com menor RTT em todos os N, vantagem de 8% a 15%, não monotonicidade sem causa determinada), registrando as limitações de B.2.
+
+---
+
+## Análise de gargalos do cliente e do WAF (24/09/2026)
+
+Motivação: avaliar se migrar para Go (ou outra mudança) deixaria os experimentos mais rápidos. A investigação mostrou que o limite de vazão vem de dois gargalos em Python que se corrigem com uma linha cada. **Nada disto foi aplicado em `src/`**: os testes usaram cópias em pasta temporária. Aplicar exige recoletar os resultados, então é decisão do orientador.
+
+### 1. Evidência inicial nos resultados oficiais
+
+Média por execução, eBPF:
+
+| N | Tempo de inspeção | Teto de 1 thread | Vazão medida | CPU do WAF |
+|---|---|---|---|---|
+| 500k | 0,082 ms/msg | ≈ 12.234 msg/s | ≈ 7.647 msg/s | ≈ 107% |
+| 2M | 0,083 ms/msg | ≈ 12.081 msg/s | ≈ 7.083 msg/s | ≈ 108% |
+
+A CPU do WAF em ~1 núcleo, com o `re` do Python segurando o GIL dentro de um `ThreadPoolExecutor`, sugeria que o WAF era o limite. Os testes abaixo mostram que essa leitura estava incompleta.
+
+### 2. Método
+
+Teste em loopback, sem Docker e sem observadores, com o WAF e o cliente do repositório (cópias em pasta temporária), `data/payloads/payloads_100000_6040.bin` (100k mensagens) e 3 rodadas por configuração. A taxa é a impressa pelo próprio `client.py` (`~X msg/s`), exceto onde indicado.
+
+Ambiente do teste: notebook Intel i5-1135G7 (4 núcleos / 8 threads), Python 3.14.4. Os resultados oficiais foram coletados no Ryzen 5 5500 com Python 3.12.3 (WAF/observadores) e 3.9 (cliente). O ponto de partida deste teste (~7.300 msg/s) bate com a vazão dos resultados oficiais (~7.100–7.600 msg/s), então os **ganhos relativos** devem valer; os números absolutos podem diferir.
+
+Variantes: `waf_v0` (atual), `waf_v1` (inspeção chamada direto, sem `run_in_executor`), `waf_v2` (= v1 com N processos via `SO_REUSEPORT`, `reuse_port=True` já existe em `waf.py`), `client_c1` (leitura do payload sem `run_in_executor`).
+
+### 3. Resultados (msg/s, média das 3 rodadas)
+
+**Cliente atual, variando o WAF:** o WAF mais rápido quase não muda a vazão, porque o cliente limita.
+
+| WAF | msg/s | vs. hoje | mín–máx |
+|---|---|---|---|
+| atual (com executor) | 7.343 | 1,00× | 6.770–7.806 |
+| sem executor | 7.956 | 1,08× | 7.479–8.382 |
+| sem executor, 2 processos | 8.513 | 1,16× | 7.819–9.497 |
+| sem executor, 4 processos | 8.294 | 1,13× | 7.825–8.780 |
+
+**WAF fixo em 4 processos, variando o cliente:** o cliente era o gargalo.
+
+| Cliente | msg/s | vs. cliente atual | mín–máx |
+|---|---|---|---|
+| atual | 10.491 | 1,00× | 9.775–11.524 |
+| sem executor | 26.283 | 2,51× | 24.265–28.411 |
+| sem executor, 2 processos | 23.670 | 2,26× | 23.166–24.440 |
+| sem executor, 4 processos | 22.019 | 2,10× | 21.403–22.530 |
+
+(Aqui a taxa é total de mensagens ÷ tempo total, incluindo a inicialização dos processos do cliente. Mais processos de cliente não ajudam.)
+
+**Cliente corrigido, variando o WAF:**
+
+| WAF | msg/s | vs. hoje (7.343) | mín–máx |
+|---|---|---|---|
+| atual (com executor) | 8.683 | 1,18× | 8.643–8.711 |
+| sem executor | 10.982 | 1,50× | 10.917–11.111 |
+| sem executor, 2 processos | 19.178 | 2,61× | 18.832–19.763 |
+| sem executor, 4 processos | 27.569 | 3,75× | 25.840–30.960 |
+
+### 4. Conclusão
+
+- Há **dois gargalos em série**, ambos por causa de `run_in_executor` por mensagem: o produtor de payloads do cliente (leitura do arquivo) e a inspeção do WAF. Mandar uma tarefa de ~0,08 ms para outra thread e voltar custa mais que a tarefa, e o GIL impede qualquer ganho de paralelismo. Corrigir só um dos lados quase não muda a vazão (cliente sozinho: 1,18×; WAF sozinho: 1,08×).
+- Corrigindo os dois com uma linha cada, a vazão vai de ~7,3 mil para ~11 mil msg/s (**1,5×**), ainda com um único processo do WAF. Isso já reduz o problema do N nominal × processado (§3.2 da seção anterior), embora não o elimine.
+- Vários processos do WAF elevam a vazão (2,6× e 3,8×), mas complicam a medição: cada processo sobrescreve `waf_metrics.json`, o `psutil` teria que somar os filhos e mais processos disputam CPU com o cliente e o observador que se quer medir. Não recomendado para a tese.
+- **Correção de uma hipótese anterior:** a análise inicial (§1) atribuiu o limite só ao WAF. O cliente sozinho já limitava a ~10,5 mil msg/s, e o WAF sozinho a ~8,7 mil.
+
+Mudanças testadas (não aplicadas):
+
+```python
+# src/client/client.py — produtor de payloads
+-            payload = await loop.run_in_executor(None, _read_payload, f)
++            payload = _read_payload(f)
+
+# src/vnf/waf.py — handle_connection
+-            blocked, reason = await loop.run_in_executor(
+-                _executor, inspect_and_record, payload
+-            )
++            blocked, reason = inspect_and_record(payload)
+```
+
+### 5. Sobre migrar para Go
+
+Não é necessário para ganhar velocidade (as duas linhas acima dão 1,5× em Python) e comprometeria a comparação:
+
+- O RTT medido é o tempo de resposta do observador. A diferença entre as ferramentas (~0,05–0,09 ms) vem em boa parte do trabalho em Python de ler `/proc/net/dev` e chamar `psutil`. Observadores em Go leriam `/proc` muito mais rápido, e a vantagem do eBPF pode encolher ou sumir.
+- A memória do observador (~14 / ~15 / ~24 MB) é dominada pelo runtime do Python.
+- O eBPF em Go usaria `cilium/ebpf` em vez de `ctypes` + libbpf, o que altera a implementação descrita na Metodologia.
+- Migrar invalida os 360 resultados e o texto, com a defesa em dezembro.
+
+Sugestão: registrar como **trabalho futuro** ("replicar o experimento com WAF e observadores em Go, separando o custo da ferramenta do custo da linguagem").
+
+### 6. Implicações e propostas (decisão do orientador)
+
+Aplicar as duas linhas muda a carga do experimento, então exige recoletar os 360 resultados. A Metodologia cita `asyncio` + `ThreadPoolExecutor` (§3.2 e §3.3) e o `WAF_INSPECT_WORKERS`, que deixariam de valer. Se houver recoleta, aproveitar para corrigir o `DURATION`. Tempo para processar N **por completo** (sem margem):
+
+| N | a 7,3 mil msg/s (hoje) | a 11 mil msg/s (corrigido) |
+|---|---|---|
+| 100.000 | 14 s | 9 s |
+| 500.000 | 68 s | 45 s |
+| 1.000.000 | 137 s | 91 s |
+| 2.000.000 | 274 s | 182 s |
+
+- **A. Manter os dados atuais** e registrar como limitação o teto de vazão do cliente/WAF em Python (já descrita como "Volume nominal").
+- **B. Aplicar as duas linhas e recoletar**, corrigindo o `DURATION` ou fazendo a execução terminar quando o cliente acaba, para que N nominal = N processado. Atualizar a Metodologia.
+- **C. Go como trabalho futuro** na Conclusão.
+
+Os scripts do teste (`bench*.py`, cópias de `waf.py` e `client.py`) estão em pasta temporária da sessão e podem ser versionados em `scripts/` se o orientador quiser reproduzir a medição.
+
+## 4º coletor via Docker SDK / cgroups (06/10/2026)
+
+O orientador propôs uma quarta comparação: extrair as métricas pela API do Docker (lib `docker` do Python), que lê os dados dos cgroups. Como foi proposta por ele, **entra em todas as análises** (não como estudo complementar). Prazo: ~20 dias para implementar, coletar e escrever, e a Conclusão ainda não existe.
+
+Levantamento completo em `docs/viabilidade_coletor_docker.pdf`.
+
+### Veredito
+
+Viável, com risco moderado. Código (~1–2 dias) e coleta (~3–3,5 h por ferramenta: 30 runs × N = 100k, 500k, 1M, 2M) cabem com folga. O gargalo é a escrita: o coletor toca Introdução, Revisão, Metodologia, Resultados, resumo, slides e README.
+
+### Reuso
+
+- Novo `observador_docker.py` no mesmo molde dos outros (UDP :9999, mesmo JSON), sem mexer em WAF, cliente ou `probe.py`.
+- `docker-compose.docker.yml` e `run_docker.sh` copiados do sysstat; `run_multi.sh` já valida pelo nome do script.
+- `compare.py`: incluir a ferramenta na lista `TOOLS`.
+- Lib `docker` precisa entrar na imagem do coletor.
+- A lib acha o container pelo nome: `docker.from_env().containers.get("waf-server")` (o `container_name` já é fixo). Resolver no primeiro probe/com retry, pois o observador sobe depois do WAF. Exige montar `/var/run/docker.sock`.
+
+### Riscos
+
+1. **Latência da consulta:** `container.stats(stream=False)` costuma bloquear ~1 s (o daemon amostra a CPU duas vezes). O RTT do coletor ficaria em segundos, contra ~0,5 ms dos outros. Alternativa: thread com `stream=True` respondendo do cache, mas isso muda o que o RTT mede. **Ainda não medido**; testar na máquina dos testes.
+2. **Custo fora do processo:** quem lê o cgroup é o `dockerd`; `collector_cpu/mem` subestimam o custo real.
+3. **Memória:** cgroup inclui page cache; as outras três usam RSS (psutil). Documentar a fórmula (`usage − inactive_file`) ou usar `memory.stat` (`anon`).
+4. **Rede:** WAF em `network_mode: host`, então as stats de rede do Docker não refletem o WAF. Bytes RX/TX é métrica de validação, não de comparação.
+5. **Segurança:** o socket do Docker equivale a acesso root ao host; registrar como ressalva.
+6. **CPU:** o Docker calcula % sobre o total de CPUs; o psutil, sobre 1 núcleo (converter).
+7. **Kernel:** o PDF cita 7.0.0-38 (desta máquina) vs 7.0.0-15 (coletas), mas os testes rodam em **outra máquina**. Pode ser falso alarme: conferir `uname -r` lá. Se for o mesmo kernel, o controle do Sysstat abaixo é desnecessário.
+
+### Cronograma proposto
+
+- Dias 1–4: protótipo + teste curto (5 runs, N = 100k, `--pre`). **Decisão no dia 4**: se o risco 1 não tiver solução defensável, vira prova de conceito.
+- Controle do kernel (só se divergir): Sysstat em N = 100k e 1M, 30 runs (~1 h). Se divergir do histórico, recoletar tudo (~13 h).
+- Dias 5–8: coleta oficial à noite; de dia, escrever Revisão e Metodologia.
+- Dias 9–14: Resultados, Introdução, Conclusão. Dias 15–18: revisão com o orientador. Dias 19–20: folga.
+
+### Pendente
+
+- Orientador: o RTT do coletor Docker inclui a consulta ao daemon ou usa leitura em segundo plano? O custo do `dockerd` entra na comparação?
+- Medir a latência de `stats(stream=False)` na máquina dos testes (script de ~20 chamadas com o WAF no ar; ainda não escrito).
+- Confirmar `uname -r` da máquina dos testes.
+- Localizar o script que gera os gráficos de `docs/imagens` (não está no repositório).

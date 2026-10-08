@@ -14,6 +14,8 @@ python3 build_data.py
 
 Abra `http://localhost:8501`. A configuração visual fica em `dashboard/.streamlit/config.toml` e `dashboard/style.css`.
 
+O botão **Tema**, no canto superior direito, abre o seletor nativo para os modos **Light** (claro), **Dark** (escuro) e **System** (seguir o sistema). A preferência é salva pelo Streamlit no navegador. Os painéis, gráficos, filtros e tabelas acompanham a troca sem reiniciar a sessão. Requer Streamlit 1.65+ e um navegador moderno com suporte a CSS `light-dark()`.
+
 As seis abas oferecem uma visão geral, latência com IC95%, recursos, execuções individuais, dados para download e metodologia. Os filtros laterais são globais. O resumo da visão geral combina as execuções dos volumes selecionados; os intervalos e sua separação são calculados por ferramenta e volume. O CSV exportado contém somente o recorte selecionado, com as colunas originais.
 
 Os dados são experimentais, sem monitoramento em tempo real. A fonte Manrope é carregada pelo Google Fonts, com fallback local para sans-serif.

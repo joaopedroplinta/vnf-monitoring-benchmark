@@ -1,21 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
-:root {
-  --canvas: #0e1726;
-  --surface: #152235;
-  --line: #29384e;
-  --text: #eff4fc;
-  --muted: #a2b1c6;
-  --accent: #52d4df;
+.stApp {
+  /* color-scheme é atualizado pelo seletor nativo, sem rerun nem perda de filtros. */
+  --canvas: light-dark(#f3f6fa, #0e1726);
+  --surface: light-dark(#ffffff, #152235);
+  --sidebar: light-dark(#e9eff6, #111d2e);
+  --line: light-dark(#d4dfea, #29384e);
+  --text: light-dark(#18283d, #eff4fc);
+  --muted: light-dark(#52647c, #a2b1c6);
+  --accent: light-dark(#007e8c, #52d4df);
+  --strip: light-dark(#eaf0f7, #111e30);
+  --track: light-dark(#dde6ef, #24344b);
+  --tag-bg: light-dark(#d9edf1, #203e4c);
+  --tag-text: light-dark(#185563, #d1f7fa);
+  --tag-border: light-dark(#a8ced6, #365766);
 }
 html, body, .stApp, .stApp button, .stApp input, .stApp textarea,
 .stApp [data-testid="stMarkdownContainer"] { font-family: 'Manrope', sans-serif; }
 .stApp { background: var(--canvas); color: var(--text); }
+.stApp .js-plotly-plot .xtick text, .stApp .js-plotly-plot .ytick text,
+.stApp .js-plotly-plot .legendtext, .stApp .js-plotly-plot .xtitle, .stApp .js-plotly-plot .ytitle {
+  fill: var(--muted) !important;
+}
 .stMainBlockContainer { max-width: 1480px; padding: 2.1rem 2.5rem 2rem; }
 header[data-testid="stHeader"] { background: transparent; }
-#MainMenu, footer { display: none; }
+footer { display: none; }
+#MainMenu { display: block; }
+[data-testid="stMainMenuButton"] { min-height: 44px; gap: 8px; padding: 8px 12px; }
+[data-testid="stMainMenuButton"]::before { content: 'Tema'; font-size: 13px; font-weight: 600; }
 [data-testid="stAppDeployButton"] { display: none; }
-section[data-testid="stSidebar"] { background: #111d2e; border-right: 1px solid var(--line); }
+section[data-testid="stSidebar"] { background: var(--sidebar); border-right: 1px solid var(--line); }
 section[data-testid="stSidebar"] > div:first-child { padding-top: 1.2rem; }
 [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 1.1rem; }
 .brand { display: flex; gap: 12px; align-items: center; padding: 12px 0 22px; border-bottom: 1px solid var(--line); }
@@ -37,15 +51,15 @@ section[data-testid="stSidebar"] > div:first-child { padding-top: 1.2rem; }
 .tool-key span { display: inline-flex; align-items: center; gap: 7px; }
 .tool-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tool-color); display: inline-block; flex-shrink: 0; }
 [data-testid="stSidebar"] [data-tag], [data-testid="stSidebar"] [data-baseweb="tag"] {
-  background: #203e4c; color: #d1f7fa; border: 1px solid #365766;
+  background: var(--tag-bg); color: var(--tag-text); border: 1px solid var(--tag-border);
 }
-[data-testid="stSidebar"] [data-tag] button { color: #d1f7fa; }
+[data-testid="stSidebar"] [data-tag] button { color: var(--tag-text); }
 .masthead { display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 13px; margin: 4px 0 23px; }
 .masthead .context { display: flex; align-items: center; gap: 10px; }
 .status { padding: 6px 11px; border: 1px solid var(--line); border-radius: 6px; font-size: 12px; white-space: nowrap; }
 .hero h1 { font-size: clamp(27px, 3vw, 40px); line-height: 1.2; font-weight: 800; letter-spacing: -1.6px; padding: 0; margin: 0 0 12px; color: var(--text); }
 .hero p { color: var(--muted); font-size: 14px; line-height: 1.7; margin: 0; max-width: 740px; }
-.study-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 10px; margin: 22px 0 8px; padding: 17px 0; background: #111e30; }
+.study-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 10px; margin: 22px 0 8px; padding: 17px 0; background: var(--strip); }
 .study-strip > div { padding: 0 22px; border-right: 1px solid var(--line); }
 .study-strip > div:last-child { border: 0; }
 .study-strip strong { display: block; font-size: 24px; font-weight: 700; letter-spacing: -.8px; font-variant-numeric: tabular-nums; }
@@ -69,7 +83,7 @@ section[data-testid="stSidebar"] > div:first-child { padding-top: 1.2rem; }
 .rank-head .name { display: flex; align-items: center; gap: 8px; font-weight: 600; }
 .rank-head strong { font-size: 19px; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
 .rank-head small { font-size: 11px; font-weight: 400; color: var(--muted); }
-.rank-track { background: #24344b; height: 6px; border-radius: 5px; margin: 8px 0 6px; overflow: hidden; }
+.rank-track { background: var(--track); height: 6px; border-radius: 5px; margin: 8px 0 6px; overflow: hidden; }
 .rank-fill { background: var(--tool-color); width: var(--bar-width); height: 100%; border-radius: 5px; }
 .rank-note { display: flex; justify-content: space-between; gap: 6px; color: var(--muted); font-size: 11px; }
 .winner { color: var(--accent); }

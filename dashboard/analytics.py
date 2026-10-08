@@ -2,7 +2,6 @@
 import pandas as pd
 
 LABEL = {"ebpf": "eBPF", "sysstat": "Sysstat", "prometheus": "Prometheus", "docker": "Docker"}
-COLOR = {"eBPF": "#52d4df", "Sysstat": "#f2bd68", "Prometheus": "#a8b2ff", "Docker": "#f58c9b"}
 T95 = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571, 6: 2.447,
        7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228, 11: 2.201, 12: 2.179,
        13: 2.16, 14: 2.145, 15: 2.131, 16: 2.12, 17: 2.11, 18: 2.101,

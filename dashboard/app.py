@@ -6,9 +6,11 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from analytics import COLOR, LABEL, confidence_separated, number, summary, volume
+from analytics import LABEL, confidence_separated, number, summary, volume
 
 ROOT = Path(__file__).parent
+# Tons consistentes com contraste nas superfícies dos dois temas.
+COLOR = {"eBPF": "#20a0b0", "Sysstat": "#b98423", "Prometheus": "#8184de", "Docker": "#ce667c"}
 METRICS = {
     "cpu_waf": "CPU do WAF (%)", "mem_waf_mb": "Memória do WAF (MB)",
     "cpu_obs": "CPU do observador (%)", "mem_obs_mb": "Memória do observador (MB)",
@@ -18,7 +20,7 @@ CHART_CONFIG = {
     "modeBarButtonsToRemove": ["lasso2d", "select2d"],
     "toImageButtonOptions": {"format": "png", "scale": 2},
 }
-NETWORK_ICON = '<svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M10 10L30 10L20 30Z" stroke="currentColor" stroke-width="1.5"/><path d="M10 10L20 18L30 10M20 18V30" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="4" fill="#111d2e" stroke="currentColor" stroke-width="2"/><circle cx="30" cy="10" r="4" fill="#111d2e" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="30" r="4" fill="#111d2e" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="18" r="2" fill="currentColor"/></svg>'
+NETWORK_ICON = '<svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M10 10L30 10L20 30Z" stroke="currentColor" stroke-width="1.5"/><path d="M10 10L20 18L30 10M20 18V30" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="4" fill="var(--sidebar)" stroke="currentColor" stroke-width="2"/><circle cx="30" cy="10" r="4" fill="var(--sidebar)" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="30" r="4" fill="var(--sidebar)" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="18" r="2" fill="currentColor"/></svg>'
 
 st.set_page_config(page_title="VNF Lab | Benchmark de monitoramento", page_icon="◈", layout="wide", initial_sidebar_state="expanded")
 st.markdown(f"<style>{(ROOT / 'style.css').read_text()}</style>", unsafe_allow_html=True)
@@ -36,22 +38,22 @@ def title(text, sub="", direction=""):
 
 def style(fig, height=310, legend=True):
     fig.update_layout(
-        template="plotly_dark", height=height, paper_bgcolor="rgba(0,0,0,0)",
+        template=None, height=height, paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)", separators=",.",
-        font=dict(family="Manrope, sans-serif", color="#a2b1c6", size=12),
+        font=dict(family="Manrope, sans-serif", size=12),
         margin=dict(l=10, r=15, t=20, b=10), showlegend=legend,
         legend=dict(orientation="h", y=1.16, x=0, title=None, font_size=11),
-        hoverlabel=dict(bgcolor="#111d2e", font_size=12, font_color="#eff4fc"),
+        hoverlabel=dict(font_size=12),
         bargap=0.3, bargroupgap=0.1,
     )
-    fig.update_xaxes(showgrid=False, linecolor="#29384e", title=None, automargin=True)
-    fig.update_yaxes(gridcolor="#29384e", zeroline=False, automargin=True, title_font_size=11)
+    fig.update_xaxes(showgrid=False, title=None, automargin=True)
+    fig.update_yaxes(zeroline=False, automargin=True, title_font_size=11)
     return fig
 
 
 def plot(fig, key, height=310, legend=True):
     st.plotly_chart(style(fig, height, legend), width="stretch", config=CHART_CONFIG,
-                    theme=None, key=key)
+                    theme="streamlit", key=key)
 
 
 @st.cache_data
@@ -75,7 +77,7 @@ def bar_chart(data, metric, logarithmic=False):
                  category_orders={"N": list(s["N"].unique()), "Ferramenta": list(LABEL.values())},
                  custom_data=["count", "ci"])
     fig.update_traces(marker_line_width=0,
-                      error_y=dict(color="#dbe4f2", thickness=1.2, width=3),
+                      error_y=dict(thickness=1.2, width=3),
                       hovertemplate="%{x}<br>Média: %{y:.3f}<br>IC95%: ±%{customdata[1]:.3f}<br>%{customdata[0]} execuções<extra>%{fullData.name}</extra>")
     if logarithmic:
         fig.update_yaxes(type="log")
@@ -93,6 +95,7 @@ st.session_state.setdefault("volumes", all_volumes)
 
 with st.sidebar:
     html(f'<div class="brand">{NETWORK_ICON}<div><strong>VNF Lab</strong><span>Benchmark de monitoramento</span></div></div>')
+    st.caption("Claro ou escuro: escolha no menu Tema, no canto superior direito.")
     html('<div class="sidebar-label">Explore o experimento</div><div class="sidebar-note">Compare as ferramentas sob diferentes volumes de carga.</div>')
     tools = st.multiselect("Ferramentas", list(LABEL.values()), key="tools")
     ns = st.multiselect("Volume nominal de mensagens", all_volumes,

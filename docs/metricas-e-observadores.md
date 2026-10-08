@@ -10,9 +10,9 @@ Cada execução gera um JSON em `results/` com estes campos:
 | `observador_latency_stddev_ms` | probe | Desvio padrão do tempo de resposta |
 | `observador_latency_max_ms` | probe | Tempo de resposta máximo observado |
 | `observador_samples` | probe | Número de amostras coletadas |
-| `bytes_rx / bytes_tx` | observador | eBPF: kprobe `sport=8080`; sysstat/Prometheus: `/proc/net/dev` |
-| `cpu_avg_pct` | observador (psutil) | Uso médio de CPU do processo WAF |
-| `mem_avg_mb` | observador (psutil) | Uso médio de memória do processo WAF |
+| `bytes_rx / bytes_tx` | observador | eBPF: kprobe `sport=8080`; sysstat/Prometheus/Docker: `/proc/net/dev` |
+| `cpu_avg_pct` | observador (psutil; Docker: cgroup) | Uso médio de CPU do processo WAF |
+| `mem_avg_mb` | observador (psutil; Docker: cgroup) | Uso médio de memória do WAF (RSS; no Docker, `usage − inactive_file`, não comparável) |
 | `collector_cpu_avg_pct` | observador (psutil) | Uso médio de CPU do próprio observador |
 | `collector_mem_avg_mb` | observador (psutil) | Uso médio de memória do próprio observador |
 | `inspect_count` | WAF → observador | Total de mensagens inspecionadas na execução |
@@ -44,5 +44,12 @@ Cada execução gera um JSON em `results/` com estes campos:
 - Expõe Gauges em `:8000/metrics` via `prometheus_client`. Nenhum servidor Prometheus externo consulta o endpoint durante os testes: o experimento mede só o custo de manter o exporter ativo.
 - O bind do UDP `:9999` é feito antes do HTTP `:8000` para evitar falha por TIME_WAIT entre execuções.
 - Requer `pid: host`.
+
+### Docker — `observador_docker.py`
+
+- Consulta `container.stats(stream=False, one_shot=True)` do contêiner `waf-server` pelo SDK Python (`docker==7.2.0`), a cada request UDP: observador → `/var/run/docker.sock` → dockerd → cgroup → JSON. Essa consulta faz parte do RTT medido (~2,5 ms).
+- CPU do WAF = delta de `cpu_usage.total_usage` entre sondagens, dividido pelo tempo decorrido (% de 1 núcleo, como o psutil); memória = `usage − inactive_file` (fórmula do `docker stats`).
+- Bytes RX/TX via `/proc/net/dev` (`lo`), porque o WAF usa `network_mode: host` e as estatísticas de rede do cgroup não se aplicam.
+- Não usa `pid: host`; monta `/var/run/docker.sock` (acesso privilegiado ao daemon).
 
 Para a visão geral dos componentes, veja [architecture.md](architecture.md).

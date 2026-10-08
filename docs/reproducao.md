@@ -1,6 +1,6 @@
 # Reprodução dos experimentos
 
-Guia completo para reproduzir a bateria de 360 execuções. Para uma execução rápida, veja o [início rápido](../README.md#início-rápido).
+Guia completo para reproduzir a bateria de 480 execuções. Para uma execução rápida, veja o [início rápido](../README.md#início-rápido).
 
 ## Ambiente
 
@@ -11,7 +11,8 @@ Guia completo para reproduzir a bateria de 360 execuções. Para uma execução 
 | CPU | AMD Ryzen 5 5500 (6 núcleos / 12 threads, até 4,27 GHz, L3 16 MB) |
 | RAM | 16 GB |
 | SO | Ubuntu 26.04 LTS (Resolute Raccoon) |
-| Kernel | 7.0.0-15-generic |
+| Kernel | 7.0.0-38-generic (modo texto, `multi-user.target`) |
+| Docker Engine | 29.8.2 |
 
 **Requisitos mínimos:**
 
@@ -26,7 +27,7 @@ Guia completo para reproduzir a bateria de 360 execuções. Para uma execução 
 pip install matplotlib numpy          # geração de gráficos (plot_results.py)
 ```
 
-> `psutil` e `prometheus_client` são instalados apenas dentro dos contêineres.
+> `psutil`, `prometheus_client` e `docker` (SDK Python) são instalados apenas dentro dos contêineres, com versões fixadas nos Dockerfiles (7.2.2, 0.25.0 e 7.2.0).
 
 ## Passo 1 — Gerar os payloads (uma vez)
 
@@ -55,6 +56,7 @@ Cada script sobe a stack completa (WAF + observador + cliente + probe), aguarda 
 NUM_MESSAGES=100000 bash scripts/run_ebpf.sh
 NUM_MESSAGES=100000 bash scripts/run_sysstat.sh
 NUM_MESSAGES=100000 bash scripts/run_prometheus.sh
+NUM_MESSAGES=100000 bash scripts/run_docker.sh   # requer /var/run/docker.sock
 ```
 
 O script deriva o arquivo de payloads a partir de `NUM_MESSAGES`. Se o arquivo não existir, aborta com a instrução de geração.
@@ -81,6 +83,7 @@ bash scripts/run_multi.sh <ferramenta> <num_messages> <num_runs> [--pre]
 bash scripts/run_multi.sh ebpf       100000 5
 bash scripts/run_multi.sh sysstat    100000 5
 bash scripts/run_multi.sh prometheus 100000 5
+bash scripts/run_multi.sh docker     100000 5
 
 # Com a flag --pre: salva em results/pre_testes/ (testes preliminares)
 bash scripts/run_multi.sh prometheus 100000 5 --pre
@@ -91,12 +94,14 @@ Cada repetição é salva como `<ferramenta>_<N>_run<ID>_results.json`, e a agre
 ## Gerar o comparativo
 
 ```bash
-python3 src/compare.py 100000        # compara as 3 ferramentas para N=100000 (run 1)
+python3 src/compare.py 100000        # compara as 4 ferramentas para N=100000 (run 1)
 python3 src/compare.py 100000 5      # agrega 5 runs de N=100000 (média ± IC95%)
 python3 src/compare.py               # cross-N com todos os valores disponíveis
 ```
 
 Para gerar os gráficos: `python3 scripts/plot_results.py` (saída em `results/plots/`).
+
+Se o resumo de alguma execução vier com `inspect_count = 0` (condição de corrida corrigida no commit `c7b305e`, presente em coletas anteriores), recalcule os campos `inspect_*` com `python3 scripts/fix_inspect.py <pasta>`.
 
 ## Tempo de execução
 
@@ -109,4 +114,4 @@ Tempo medido nos resultados oficiais para um lote de 30 execuções de **uma** f
 | 1.000.000 | ~1,8 min | ~54 min |
 | 2.000.000 | ~2,9 min | ~87 min |
 
-A bateria completa (3 ferramentas × 4 volumes × 30 execuções) leva cerca de **10 horas** de execução contínua.
+A bateria completa (4 ferramentas × 4 volumes × 30 execuções) leva cerca de **13 horas** de execução contínua.

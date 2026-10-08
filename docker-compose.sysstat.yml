@@ -6,6 +6,8 @@ services:
       dockerfile: configs/Dockerfile
     container_name: waf-server
     network_mode: "host"
+    environment:
+      - WAF_PROCESSES=${WAF_PROCESSES:-1}
     volumes:
       - ./src/vnf:/app/vnf
       - ./results:/app/results

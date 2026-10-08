@@ -1,0 +1,29 @@
+\chapter{Considerações Finais}
+\label{chap:consideracoes_finais}
+
+Este trabalho comparou o custo de monitoramento de uma função de rede virtualizada (um WAF simplificado) por quatro abordagens: eBPF (libbpf com CO-RE), Sysstat (leitura de \texttt{/proc} e \texttt{psutil}), Prometheus (a mesma coleta acrescida de um \textit{endpoint} HTTP) e a API do Docker (estatísticas de \textit{cgroups} obtidas pelo SDK Python). A métrica primária foi o tempo de resposta do observador (RTT UDP), complementada pelo consumo de CPU e de memória do WAF e do próprio coletor. Foram realizadas 480 execuções (quatro coletores, quatro volumes de mensagens, 30 repetições cada), com intervalos de confiança de 95\% pela distribuição \textit{t} de Student.
+
+\section{Conclusões}
+
+O eBPF apresentou o menor tempo de resposta em todos os volumes, com intervalos de confiança que não se sobrepõem aos das demais ferramentas: cerca de 13\% a menos que o Sysstat, 15\% a menos que o Prometheus e 80\% a menos que a API do Docker. A hipótese formulada, de que o eBPF apresenta menor sobrecarga de monitoramento que as abordagens em espaço de usuário, foi confirmada para a métrica primária. A diferença para Sysstat e Prometheus, embora consistente, é de magnitude moderada (da ordem de $0{,}08$ a $0{,}09$ ms); entre o Sysstat e o Prometheus a diferença é ainda menor (cerca de 2\%), mas também consistente. A API do Docker apresentou tempo de resposta de cerca de $2{,}5$ ms, aproximadamente cinco vezes o do eBPF, coerente com o fato de que cada requisição envolve a consulta ao \textit{daemon} do Docker.
+
+Quanto ao consumo de recursos, nenhuma abordagem alterou de forma perceptível a CPU do WAF. Na memória do observador, o Sysstat foi o mais econômico ($\sim$14 MB), seguido do eBPF ($\sim$15 MB), do Prometheus ($\sim$25 MB) e da API do Docker ($\sim$31 MB). A CPU do próprio observador não permitiu conclusões, devido à baixa magnitude e à alta variabilidade entre as execuções.
+
+Em termos de escolha, os resultados sugerem que o ganho de tempo de resposta do eBPF sobre o \textit{polling} em espaço de usuário é real, porém pequeno em termos absolutos, e precisa ser ponderado frente à maior complexidade de implementação (programa em C, compilação, privilégios no \textit{kernel}). A API do Docker oferece a vantagem de operar sem privilégios no \textit{kernel} e de expor as métricas por contêiner, ao custo de maior tempo de resposta e de maior consumo de memória do coletor.
+
+\section{Limitações}
+
+Os resultados devem ser lidos com as seguintes ressalvas, além das limitações da metodologia (Capítulo~\ref{chap:metodologia}):
+
+\begin{itemize}
+  \item o tempo de resposta do Docker inclui a consulta ao \textit{daemon} a cada requisição UDP; a decomposição desse tempo entre as etapas da cadeia não foi medida, e a alternativa de consultar o \textit{daemon} em segundo plano não foi avaliada;
+  \item a memória e a CPU do WAF no cenário Docker provêm da contabilidade do \textit{cgroup}, e não do processo, portanto não são diretamente comparáveis às dos demais cenários;
+  \item a CPU do observador é muito ruidosa e não sustenta comparação quantitativa;
+  \item 22\% das execuções tiveram o resumo das métricas de inspeção zerado por uma condição de execução na leitura de \texttt{waf\_metrics.json}; os campos foram recalculados a partir das amostras (Seção~\ref{sec:protocolo}), e a correção do código do WAF não foi aplicada aos dados coletados;
+  \item a contagem de inspeções ao fim da janela de coleta ficou abaixo de $N$ nos volumes maiores, o que indica que a premissa de vazão usada para dimensionar a janela deve ser reavaliada;
+  \item os experimentos foram conduzidos em uma única máquina e com um único WAF simplificado, de modo que a generalização para outros ambientes e outras VNFs não está assegurada.
+\end{itemize}
+
+\section{Trabalhos Futuros}
+
+Como continuidade, propõem-se: (i) decompor o tempo de resposta do coletor Docker, comparando a consulta via API com a leitura direta dos arquivos de \textit{cgroup} e com uma coleta em segundo plano; (ii) corrigir a escrita do arquivo de métricas do WAF e repetir a coleta; (iii) avaliar o efeito do monitoramento sobre a vazão e a latência das requisições processadas pelo próprio WAF; e (iv) estender a comparação a outras VNFs e a ambientes com mais de um contêiner monitorado.

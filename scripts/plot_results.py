@@ -28,9 +28,9 @@ RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "results")
 PLOTS_DIR   = os.path.join(RESULTS_DIR, "plots")
 os.makedirs(PLOTS_DIR, exist_ok=True)
 
-TOOLS       = ["ebpf", "sysstat", "prometheus"]
-TOOL_LABELS = {"ebpf": "eBPF", "sysstat": "sysstat", "prometheus": "Prometheus"}
-COLORS      = {"ebpf": "#2196F3", "sysstat": "#FF9800", "prometheus": "#4CAF50"}
+TOOLS       = ["ebpf", "sysstat", "prometheus", "docker"]
+TOOL_LABELS = {"ebpf": "eBPF", "sysstat": "sysstat", "prometheus": "Prometheus", "docker": "Docker"}
+COLORS      = {"ebpf": "#2196F3", "sysstat": "#FF9800", "prometheus": "#4CAF50", "docker": "#9C27B0"}
 NS          = [100_000, 500_000, 1_000_000, 2_000_000]
 NS_LABELS   = {100_000: "100k", 500_000: "500k", 1_000_000: "1M", 2_000_000: "2M"}
 
@@ -75,8 +75,8 @@ def plot_tempo_resposta_por_n():
 
     x = np.arange(1, len(NS) + 1)
     x_labels = [NS_LABELS[n] for n in NS]
-    width = 0.22
-    offsets = {"ebpf": -width, "sysstat": 0, "prometheus": width}
+    width = 0.18
+    offsets = {t: (i - 1.5) * width for i, t in enumerate(TOOLS)}
 
     for tool in TOOLS:
         means, cis = [], []
@@ -103,7 +103,8 @@ def plot_tempo_resposta_por_n():
     ax.set_xlabel("Número de mensagens (N)")
     ax.set_ylabel("Tempo de resposta médio (ms)")
     ax.set_title("Tempo de resposta do observador por N\n(média ± IC95%, 30 execuções)")
-    ax.legend()
+    ax.legend(loc="upper center", ncol=len(TOOLS), fontsize=9)
+    ax.set_ylim(top=ax.get_ylim()[1] * 1.15)
     fig.tight_layout()
     out = os.path.join(PLOTS_DIR, "tempo_resposta_por_n.png")
     fig.savefig(out)
@@ -113,34 +114,33 @@ def plot_tempo_resposta_por_n():
 # ── Gráfico 2: Boxplot de tempo de resposta por ferramenta × N ───────────────
 
 def plot_boxplot_tempo_resposta():
-    fig, axes = plt.subplots(1, len(NS), figsize=(4 * len(NS), 5), sharey=True)
+    # linha 1: as quatro ferramentas; linha 2: sem o Docker (~2,5 ms comprime as demais na escala)
+    fig, axes = plt.subplots(2, len(NS), figsize=(4 * len(NS), 8), sharey="row")
 
-    for ax, n in zip(axes, NS):
-        data_per_tool = []
-        for tool in TOOLS:
-            runs = load_individual_runs(tool, n)
-            values = [r.get("observador_latency_avg_ms", 0) for r in runs if r]
-            data_per_tool.append(values)
+    for row, tools in enumerate((TOOLS, [t for t in TOOLS if t != "docker"])):
+        for ax, n in zip(axes[row], NS):
+            data_per_tool = [
+                [r.get("observador_latency_avg_ms", 0) for r in load_individual_runs(tool, n) if r]
+                for tool in tools
+            ]
+            bp = ax.boxplot(
+                data_per_tool,
+                patch_artist=True,
+                medianprops={"color": "black", "linewidth": 1.5},
+                whiskerprops={"linewidth": 1.2},
+                capprops={"linewidth": 1.2},
+                flierprops={"marker": "o", "markersize": 4, "alpha": 0.5},
+            )
+            for patch, tool in zip(bp["boxes"], tools):
+                patch.set_facecolor(COLORS[tool])
+                patch.set_alpha(0.75)
+            ax.set_xticks(range(1, len(tools) + 1))
+            ax.set_xticklabels([TOOL_LABELS[t] for t in tools])
+            ax.set_title(f"N = {NS_LABELS[n]}" + ("" if row == 0 else " (sem Docker)"))
+        axes[row][0].set_ylabel("Tempo de resposta por execução (ms)")
+    axes[1][0].set_xlabel("")
 
-        bp = ax.boxplot(
-            data_per_tool,
-            patch_artist=True,
-            medianprops={"color": "black", "linewidth": 1.5},
-            whiskerprops={"linewidth": 1.2},
-            capprops={"linewidth": 1.2},
-            flierprops={"marker": "o", "markersize": 4, "alpha": 0.5},
-        )
-        for patch, tool in zip(bp["boxes"], TOOLS):
-            patch.set_facecolor(COLORS[tool])
-            patch.set_alpha(0.75)
-
-        ax.set_xticks([1, 2, 3])
-        ax.set_xticklabels([TOOL_LABELS[t] for t in TOOLS])
-        ax.set_title(f"N = {NS_LABELS[n]}")
-        ax.set_xlabel("Ferramenta")
-
-    axes[0].set_ylabel("Tempo de resposta por execução (ms)")
-    fig.suptitle("Distribuição do tempo de resposta do observador (30 execuções)", y=1.01)
+    fig.suptitle("Distribuição do tempo de resposta do observador (30 execuções)", y=1.0)
     fig.tight_layout()
     out = os.path.join(PLOTS_DIR, "boxplot_tempo_resposta.png")
     fig.savefig(out, bbox_inches="tight")
@@ -154,8 +154,8 @@ def plot_memoria_observador():
 
     x = np.arange(1, len(NS) + 1)
     x_labels = [NS_LABELS[n] for n in NS]
-    width = 0.22
-    offsets = {"ebpf": -width, "sysstat": 0, "prometheus": width}
+    width = 0.18
+    offsets = {t: (i - 1.5) * width for i, t in enumerate(TOOLS)}
 
     for tool in TOOLS:
         means, cis = [], []
@@ -187,7 +187,8 @@ def plot_memoria_observador():
     ax.set_xlabel("Número de mensagens (N)")
     ax.set_ylabel("Memória média (MB)")
     ax.set_title("Memória do observador por N\n(média ± IC95%, 30 execuções)")
-    ax.legend()
+    ax.legend(loc="upper center", ncol=len(TOOLS), fontsize=9)
+    ax.set_ylim(top=ax.get_ylim()[1] * 1.15)
     fig.tight_layout()
     out = os.path.join(PLOTS_DIR, "memoria_observador.png")
     fig.savefig(out)
@@ -201,8 +202,8 @@ def plot_cpu_waf():
 
     x = np.arange(1, len(NS) + 1)
     x_labels = [NS_LABELS[n] for n in NS]
-    width = 0.22
-    offsets = {"ebpf": -width, "sysstat": 0, "prometheus": width}
+    width = 0.18
+    offsets = {t: (i - 1.5) * width for i, t in enumerate(TOOLS)}
 
     for tool in TOOLS:
         means, cis = [], []
@@ -235,7 +236,8 @@ def plot_cpu_waf():
     ax.set_ylabel("CPU média (%)")
     ax.set_title("CPU média do WAF por N\n(média ± IC95%, 30 execuções)")
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
-    ax.legend()
+    ax.legend(loc="upper center", ncol=len(TOOLS), fontsize=9)
+    ax.set_ylim(top=ax.get_ylim()[1] * 1.15)
     fig.tight_layout()
     out = os.path.join(PLOTS_DIR, "cpu_waf.png")
     fig.savefig(out)

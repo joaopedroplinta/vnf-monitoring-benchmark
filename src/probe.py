@@ -3,7 +3,7 @@
 Probe UDP — TCC Gerenciamento de Rede
 Mede o tempo de resposta do monitoramento (round-trip UDP) de qualquer observador.
 Configurado via variáveis de ambiente:
-  COLLECTOR    — nome da ferramenta (ebpf | sysstat | prometheus)
+  COLLECTOR    — nome da ferramenta (ebpf | sysstat | prometheus | docker)
   RESULTS_PATH — caminho do JSON de saída
   DURATION     — duração da coleta em segundos (padrão: 60)
   OBSERVADOR_HOST — host do observador (padrão: 127.0.0.1)

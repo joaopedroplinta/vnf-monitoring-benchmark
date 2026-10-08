@@ -37,8 +37,10 @@ def _flush(s: dict) -> None:
         "inspect_max_ms": round(s["max_ms"], 6),
     }
     try:
-        with open(_METRICS_PATH, "w") as f:
+        tmp = _METRICS_PATH + ".tmp"
+        with open(tmp, "w") as f:
             json.dump(data, f)
+        os.replace(tmp, _METRICS_PATH)  # atômico: o observador nunca lê o JSON cortado
     except Exception as e:
         print(f"[WARN] waf_metrics: {e}")
 

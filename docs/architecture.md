@@ -2,7 +2,7 @@
 
 ## Visão Geral
 
-O sistema avalia três abordagens de monitoramento aplicadas a uma VNF (WAF TCP).
+O sistema avalia quatro abordagens de monitoramento aplicadas a uma VNF (WAF TCP).
 Cada ferramenta é testada isoladamente em sua própria stack Docker, com a mesma
 carga de tráfego e duração, para garantir comparação justa.
 
@@ -38,6 +38,12 @@ carga de tráfego e duração, para garantir comparação justa.
 │                    │  → psutil CPU/mem do processo WAF        │  │
 │                    │  → psutil CPU/mem do próprio coletor     │  │
 │                    │  → HTTP :8000/metrics                    │  │
+│                    │                                          │  │
+│                    │  docker variant   observador_docker.py   │  │
+│                    │  → container.stats() do waf-server       │  │
+│                    │    (API do Docker, cgroups)              │  │
+│                    │  → /proc/net/dev (interface lo)          │  │
+│                    │  → psutil CPU/mem do próprio coletor     │  │
 │                    └──────────────────┬───────────────────────┘  │
 │                                       │                          │
 │                          request/response UDP (1/s)              │
@@ -46,7 +52,7 @@ carga de tráfego e duração, para garantir comparação justa.
 │                              ┌────────┴────────┐                 │
 │                              │    probe.py      │                 │
 │                              │  (mesmo para os │                 │
-│                              │   3 variantes)  │                 │
+│                              │   4 variantes)  │                 │
 │                              └────────┬────────┘                 │
 │                                       │                          │
 │                    <ferramenta>_<N>_run<ID>_results.json         │
@@ -69,20 +75,21 @@ carga de tráfego e duração, para garantir comparação justa.
 - Inspeciona cada payload com 5 regras: SQLi, XSS, PathTraversal, RCE, NullByte; escreve timing em `waf_metrics.json` a cada 100 requisições.
 - Não expõe UDP — métricas coletadas externamente pelo Observador.
 
-### Observador — `src/vnf/observador_ebpf.py` | `observador_sysstat.py` | `observador_prometheus.py`
+### Observador — `src/vnf/observador_ebpf.py` | `observador_sysstat.py` | `observador_prometheus.py` | `observador_docker.py`
 - Servidor UDP na porta 9999.
 - Coleta métricas do WAF usando a ferramenta correspondente.
 - Responde cada request UDP com JSON contendo:
   - `bytes_rx`, `bytes_tx` — tráfego do WAF
-  - `cpu_pct`, `mem_mb` — CPU e memória do processo WAF (psutil)
+  - `cpu_pct`, `mem_mb` — CPU e memória do WAF (psutil; no Docker, do cgroup do contêiner)
   - `collector_cpu_pct`, `collector_mem_mb` — overhead do próprio coletor (psutil)
-- O que muda entre variantes é **como** os bytes RX/TX são coletados:
+- O que muda entre variantes é **como** as métricas são coletadas:
   - **eBPF**: kprobes no kernel (`tcp_sendmsg`, `tcp_cleanup_rbuf`), filtrando `sport=8080`. Requer `privileged: true`, `pid: host`.
   - **sysstat**: polling de `/proc/net/dev` (interface `lo`), delta desde o início. Requer `pid: host`.
   - **Prometheus**: igual ao sysstat + expõe HTTP `:8000/metrics`. Requer `pid: host`. O socket UDP 9999 é vinculado **antes** do HTTP 8000 para evitar falha de coleta quando a porta HTTP está em TIME_WAIT.
+  - **Docker**: `container.stats(stream=False, one_shot=True)` do contêiner `waf-server` pelo SDK Python (daemon → cgroups). CPU = delta entre sondagens (% de 1 núcleo); memória = `usage − inactive_file`. Bytes RX/TX via `/proc/net/dev` (o WAF usa `network_mode: host`). Não usa `pid: host`; monta `/var/run/docker.sock`.
 
 ### Probe UDP — `src/probe.py`
-- Script único compartilhado pelas 3 variantes, configurado via env vars (`COLLECTOR`, `RESULTS_PATH`, `DURATION`, `MONITOR_HOST`, `MONITOR_PORT`).
+- Script único compartilhado pelas 4 variantes, configurado via env vars (`COLLECTOR`, `RESULTS_PATH`, `DURATION`, `MONITOR_HOST`, `MONITOR_PORT`).
 - Aguarda o monitor estar pronto (`wait_ready`) antes de iniciar — evita perda de amostras no startup do BPF.
 - Handler SIGTERM registrado no início: garante que `finally: save()` é executado mesmo quando `docker compose down` encerra o container antes de DURATION expirar.
 - Envia request UDP ao Observador a cada 1s e mede o tempo de resposta (RTT UDP).
@@ -100,7 +107,7 @@ Três modos de uso:
 
 | Comando | Descrição | Saída |
 |---------|-----------|-------|
-| `python3 src/compare.py <N>` | Compara 3 ferramentas para N mensagens (run 1) | `comparison_<N>.csv/.json` |
+| `python3 src/compare.py <N>` | Compara as 4 ferramentas para N mensagens (run 1) | `comparison_<N>.csv/.json` |
 | `python3 src/compare.py <N> <RUNS>` | Agrega RUNS repetições (média ± desvio) | `comparison_<N>_<RUNS>runs.csv/.json` |
 | `python3 src/compare.py` | Cross-N com todos os valores disponíveis | `comparison_all_runs.csv/.json` |
 
@@ -108,14 +115,14 @@ Três modos de uso:
 
 ## Comparação Técnica
 
-| Recurso | eBPF | sysstat | Prometheus |
-|---------|------|---------|------------|
-| **Ponto de coleta de bytes** | Kernel (kprobe, sport=8080) | Userspace (/proc/net/dev, lo) | Userspace (/proc/net/dev, lo) |
-| **CPU/mem do WAF** | psutil (pid: host) | psutil (pid: host) | psutil (pid: host) |
-| **CPU/mem do coletor** | psutil (self) | psutil (self) | psutil (self) |
-| **Exposição de métricas** | UDP :9999 | UDP :9999 | UDP :9999 + HTTP :8000 |
-| **Overhead de setup** | Alto (privilégios, headers, BCC) | Baixo | Médio (runtime prometheus_client) |
-| **Bytes medidos** | Só tráfego WAF (sport=8080) | Todo tráfego loopback | Todo tráfego loopback |
+| Recurso | eBPF | sysstat | Prometheus | Docker |
+|---------|------|---------|------------|--------|
+| **Ponto de coleta de bytes** | Kernel (kprobe, sport=8080) | Userspace (/proc/net/dev, lo) | Userspace (/proc/net/dev, lo) | Userspace (/proc/net/dev, lo) |
+| **CPU/mem do WAF** | psutil (pid: host) | psutil (pid: host) | psutil (pid: host) | API do Docker (cgroup) |
+| **CPU/mem do coletor** | psutil (self) | psutil (self) | psutil (self) | psutil (self) |
+| **Exposição de métricas** | UDP :9999 | UDP :9999 | UDP :9999 + HTTP :8000 | UDP :9999 |
+| **Overhead de setup** | Alto (privilégios, BTF, clang) | Baixo | Médio (runtime prometheus_client) | Médio (socket do Docker, SDK) |
+| **Bytes medidos** | Só tráfego WAF (sport=8080) | Todo tráfego loopback | Todo tráfego loopback | Todo tráfego loopback |
 
 ---
 
@@ -134,6 +141,7 @@ Três modos de uso:
 ## Limitações Conhecidas
 
 - Bytes RX/TX são incomparáveis entre eBPF e os demais: eBPF filtra `sport=8080` no kernel e mede apenas o tráfego do WAF; sysstat/Prometheus lêem `/proc/net/dev` (interface `lo`) e capturam todo o tráfego loopback, incluindo as próprias probes UDP.
+- O RTT do Docker (~2,5 ms) inclui a consulta ao daemon a cada requisição UDP; memória e CPU do WAF vêm do cgroup e não são comparáveis às medidas por psutil nas demais variantes.
 - O overhead de CPU do Prometheus inclui o custo do servidor HTTP (:8000/metrics), não apenas da coleta de bytes.
 - CPU/mem via psutil requer `pid: host` — o Observador enxerga o processo WAF via namespace de PID do host.
 - A taxa efetiva de inspeção é limitada pelo WAF (Python GIL + regex); aumentar `WORKERS` além de 200 não eleva o throughput pois o gargalo está na inspeção, não no transporte.

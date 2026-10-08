@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Academic thesis (TCC) benchmarking three Linux network monitoring approaches around a simplified WAF (Web Application Firewall). The core question: what is the overhead of eBPF-based monitoring vs. userspace alternatives?
+Academic thesis (TCC) benchmarking four Linux network monitoring approaches around a simplified WAF (Web Application Firewall). The core question: what is the overhead of eBPF-based monitoring vs. userspace alternatives?
 
-**Tools compared:** eBPF (libbpf+CO-RE), Sysstat (`/proc/net/dev` + psutil), Prometheus (sysstat + HTTP endpoint)
+**Tools compared:** eBPF (libbpf+CO-RE), Sysstat (`/proc/net/dev` + psutil), Prometheus (sysstat + HTTP endpoint), Docker (API do Docker/cgroups via lib `docker`, 4º coletor sugerido pelo orientador)
 
 ## Running Tests
 
@@ -27,6 +27,7 @@ Each script orchestrates a full test cycle (build → run → collect → stop):
 NUM_MESSAGES=100000 bash scripts/run_ebpf.sh
 NUM_MESSAGES=100000 bash scripts/run_sysstat.sh
 NUM_MESSAGES=100000 bash scripts/run_prometheus.sh
+NUM_MESSAGES=100000 bash scripts/run_docker.sh
 ```
 
 Run multiple repetitions of a single tool:
@@ -35,7 +36,7 @@ bash scripts/run_multi.sh <tool> <num_messages> <num_runs>
 # Exemplo: bash scripts/run_multi.sh ebpf 100000 30
 # Executa N runs, exporta RUN_ID=1..N, chama compare.py ao final
 # Use --pre para salvar em results/pre_testes/ (testes preliminares)
-# Suporta: ebpf | sysstat | prometheus
+# Suporta: ebpf | sysstat | prometheus | docker
 ```
 
 Aggregate results after running tests:
@@ -61,7 +62,7 @@ python3 src/compare.py            # → results/comparison_all_runs.csv/.json
 
 ## Architecture
 
-Three independent Docker Compose stacks share the same topology:
+Four independent Docker Compose stacks share the same topology:
 
 ```
 Client → WAF (TCP :8080) → Observador (UDP :9999)
@@ -86,6 +87,7 @@ Connection is persistent — multiple messages per TCP connection.
 - `src/vnf/observador_ebpf.py` — libbpf+CO-RE kprobes on `tcp_sendmsg` / `tcp_cleanup_rbuf` (sport=8080); compiled by `ebpf_entrypoint.sh`; ~15 MB RSS
 - `src/vnf/observador_sysstat.py` — polls `/proc/net/dev` (interface `lo`) in userspace
 - `src/vnf/observador_prometheus.py` — same as sysstat + HTTP metrics endpoint on port 8000
+- `src/vnf/observador_docker.py` — `container.stats(stream=False, one_shot=True)` do container `waf-server` (cgroups); CPU = delta entre probes (% de 1 núcleo, como o psutil); mem = `usage − inactive_file`; bytes RX/TX ainda via `/proc/net/dev` (WAF usa `network_mode: host`). Requer `/var/run/docker.sock` montado
 
 **Key ports:** TCP 8080 (WAF), UDP 9999 (observador telemetry), HTTP 8000 (Prometheus only)
 
@@ -96,6 +98,7 @@ Connection is persistent — multiple messages per TCP connection.
 - `configs/Dockerfile.ebpf-libbpf` — Ubuntu 24.04 with libbpf1, clang, bpftool (no BCC/LLVM); used by the eBPF stack
 - eBPF compose requires: `privileged: true`, `pid: host`, BPF filesystem mounts, `/sys/kernel/btf`
 - sysstat/Prometheus composes are unprivileged with `pid: host` for psutil process tracking
+- docker compose (`docker-compose.docker.yml`) is unprivileged, sem `pid: host`, com o socket do Docker montado no observador
 - Client container mounts `./data/payloads:/app/payloads:ro` — payload files must exist before running
 
 ## Output
@@ -149,7 +152,7 @@ This project has custom agents (`.claude/agents/`) and slash commands (`.claude/
 |---|---|
 | `/validate-env` | Check Docker, kernel, ports before running |
 | `/run-experiment <tool>` | Run a single collector |
-| `/run-all [duration]` | Run all three in sequence |
+| `/run-all [duration]` | Run all four in sequence |
 | `/check-results` | Quick summary of current result JSONs |
 | `/generate-report` | Run compare.py and format output |
 | `/analyze-anomalies` | Deep anomaly investigation |
@@ -162,10 +165,13 @@ This project has custom agents (`.claude/agents/`) and slash commands (`.claude/
 | **CPU** | AMD Ryzen 5 5500 (6 cores / 12 threads, up to 4.27 GHz, L3 16 MB) |
 | **RAM** | 16 GB |
 | **OS** | Ubuntu 26.04 LTS (Resolute Raccoon) |
-| **Kernel** | 7.0.0-15-generic |
+| **Kernel** | 7.0.0-38-generic (text mode, `multi-user.target`) |
+| **Docker Engine** | 29.8.2 |
 
-## Current Status (17/05/2026)
+## Current Status (08/10/2026)
 
-- Official results collected: N=100k, 500k, 1M, 2M — 30 runs each (AMD Ryzen 5 5500, Ubuntu 26.04)
-- All data collected with libbpf+CO-RE (no BCC), WORKERS=200
+- Official results: 480 runs (eBPF, Sysstat, Prometheus, Docker × N=100k, 500k, 1M, 2M × 30), kernel 7.0.0-38, text mode, in `results/`; the previous 360-run collection (kernel 7.0.0-15) is in `results/arquivo_kernel15/`
+- `inspect_*` summaries zeroed in 106/480 runs by a non-atomic `waf_metrics.json` write; recomputed with `scripts/fix_inspect.py`. Fixed in `waf.py` (commit `c7b305e`); a verification recollection runs in `results/coleta_final_waffix/` on the test machine (not yet official)
+- Libbpf+CO-RE (no BCC), WORKERS=200, pinned psutil/prometheus_client/docker versions
 - **Runs per N:** 30 (fixed by advisor)
+- Thesis chapters: `docs/capítulos/` (accented names, compiled on Overleaf)

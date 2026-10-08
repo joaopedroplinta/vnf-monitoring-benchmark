@@ -2,7 +2,7 @@
 
 <p align="center">
   <b>Quanto custa monitorar uma função de rede virtualizada?</b><br>
-  Comparação de desempenho entre <b>eBPF</b>, <b>Sysstat</b> e <b>Prometheus</b> aplicados a um WAF.
+  Comparação de desempenho entre <b>eBPF</b>, <b>Sysstat</b>, <b>Prometheus</b> e <b>API do Docker</b> aplicados a um WAF.
 </p>
 
 <p align="center">
@@ -24,13 +24,14 @@
 
 ---
 
-Benchmark reprodutível que mede o **overhead de três abordagens de monitoramento** enquanto um WAF simplificado processa carga:
+Benchmark reprodutível que mede o **overhead de quatro abordagens de monitoramento** enquanto um WAF simplificado processa carga:
 
 | Abordagem | Como coleta |
 |---|---|
 | **eBPF** (libbpf + CO-RE) | kprobes no kernel (`tcp_sendmsg`, `tcp_cleanup_rbuf`), sem BCC/LLVM em runtime |
 | **Sysstat** | leitura em espaço de usuário de `/proc/net/dev` |
 | **Prometheus** | igual ao Sysstat, com um endpoint HTTP `/metrics` ativo |
+| **Docker** | `container.stats()` da API do Docker (cgroups) pelo SDK Python, via `/var/run/docker.sock` |
 
 A métrica principal é o **tempo de resposta do observador**: o RTT de um probe UDP mostra quanto tempo cada ferramenta leva para entregar suas métricas. CPU e memória do WAF e do observador são métricas secundárias.
 
@@ -43,7 +44,7 @@ A métrica principal é o **tempo de resposta do observador**: o RTT de um probe
 - O **cliente** envia payloads pré-gerados (60% benignos, 40% maliciosos) ao **WAF** por conexões TCP persistentes.
 - O **WAF** inspeciona cada payload (SQLi, XSS, Path Traversal, RCE, Null Byte) com `asyncio` + `ThreadPoolExecutor`.
 - O **observador** coleta métricas do WAF com a ferramenta em teste e responde a requisições UDP com um JSON.
-- O **probe** envia uma requisição UDP por segundo e mede o RTT. O mesmo script é usado nas três ferramentas.
+- O **probe** envia uma requisição UDP por segundo e mede o RTT. O mesmo script é usado nas quatro ferramentas.
 
 > [!NOTE]
 > O RTT mede o tempo que o *observador* leva para responder. O impacto sobre o *WAF* é avaliado pela CPU e pela memória do WAF.
@@ -61,16 +62,17 @@ python3 scripts/gen_payloads.py 100000            # gera os payloads (uma vez)
 NUM_MESSAGES=100000 bash scripts/run_ebpf.sh
 NUM_MESSAGES=100000 bash scripts/run_sysstat.sh
 NUM_MESSAGES=100000 bash scripts/run_prometheus.sh
-python3 src/compare.py 100000                     # compara as três ferramentas
+NUM_MESSAGES=100000 bash scripts/run_docker.sh
+python3 src/compare.py 100000                     # compara as quatro ferramentas
 ```
 
-A bateria completa (30 execuções por ferramenta e volume, ~10 h) e as variáveis de ambiente estão em **[docs/reproducao.md](docs/reproducao.md)**.
+A bateria completa (30 execuções por ferramenta e volume, ~14 h) e as variáveis de ambiente estão em **[docs/reproducao.md](docs/reproducao.md)**.
 
 ## Estrutura do repositório
 
 | Pasta | Conteúdo |
 |---|---|
-| [`src/`](src) | WAF, observadores (eBPF, Sysstat, Prometheus), cliente, probe e comparador |
+| [`src/`](src) | WAF, observadores (eBPF, Sysstat, Prometheus, Docker), cliente, probe e comparador |
 | [`scripts/`](scripts) | geração de payloads, execução dos testes e gráficos |
 | [`configs/`](configs) | Dockerfiles |
 | [`results/`](results) | resultados brutos (JSON) e agregados (CSV/JSON) das execuções |
@@ -85,19 +87,19 @@ Documentação detalhada:
 
 ## Resultados
 
-360 execuções (3 ferramentas × 4 volumes × 30 repetições), com média ± IC95%.
+480 execuções (4 ferramentas × 4 volumes × 30 repetições), com média ± IC95%, no kernel 7.0.0-38 em modo texto.
 
 **Tempo de resposta médio do observador (ms, menor é melhor):**
 
-| Volume de mensagens | eBPF | Sysstat | Prometheus |
-|---|:---:|:---:|:---:|
-| 100.000 | **0,541** | 0,601 | 0,621 |
-| 500.000 | **0,504** | 0,572 | 0,584 |
-| 1.000.000 | **0,489** | 0,573 | 0,568 |
-| 2.000.000 | **0,528** | 0,575 | 0,593 |
+| Volume de mensagens | eBPF | Sysstat | Prometheus | Docker |
+|---|:---:|:---:|:---:|:---:|
+| 100.000 | **0,531** | 0,614 | 0,625 | 2,577 |
+| 500.000 | **0,497** | 0,576 | 0,589 | 2,507 |
+| 1.000.000 | **0,499** | 0,574 | 0,587 | 2,508 |
+| 2.000.000 | **0,497** | 0,576 | 0,587 | 2,508 |
 
-- O **eBPF teve o menor tempo de resposta nos quatro volumes**, com IC95 sem sobreposição. A vantagem é de 8% a 15%, com maior dispersão entre execuções.
-- **Memória do observador:** Sysstat ~14 MB, eBPF ~15 MB, Prometheus ~24 MB (o custo do servidor HTTP).
+- O **eBPF teve o menor tempo de resposta nos quatro volumes**, com IC95 sem sobreposição. A vantagem é de 13% a 16% sobre Sysstat e Prometheus e de ~80% sobre o Docker, cujo RTT (~2,5 ms) inclui a consulta ao daemon.
+- **Memória do observador:** Sysstat ~14 MB, eBPF ~15 MB, Prometheus ~25 MB (o custo do servidor HTTP), Docker ~31 MB.
 - **CPU do WAF** equivalente entre as ferramentas. **CPU do observador** inconclusiva.
 
 <p align="center">
@@ -111,8 +113,9 @@ Tabelas completas por volume, gráficos e observações: **[docs/resultados.md](
 - **Loopback:** o tráfego passa pela interface `lo`, sem o overhead de drivers de NIC físico; valores absolutos seriam diferentes em rede real.
 - **Recursos compartilhados:** cliente, WAF e observador dividem kernel e núcleos de CPU.
 - **WAF simplificado:** implementação em Python, idêntica em todos os experimentos, então as diferenças refletem o custo de cada ferramenta.
-- **Volume nominal:** para N ≥ 500k o WAF processa só 54% a 81% de N; veja [resultados](docs/resultados.md#n-nominal--mensagens-processadas).
+- **Volume nominal:** para N ≥ 500k o WAF processa só 62% a 87% de N; veja [resultados](docs/resultados.md#n-nominal--mensagens-processadas).
 - **Lotes não intercalados:** cada combinação ferramenta × volume foi coletada em sequência, o que mistura a ferramenta com o estado da máquina naquele momento.
+- **Docker:** memória e CPU do WAF vêm do cgroup, não do processo, e não são comparáveis às das demais ferramentas; o socket do Docker exige privilégio.
 - **Prometheus sem scraping:** é avaliado só como exporter; nenhum servidor consulta o endpoint durante os testes.
 
 ## Sobre o trabalho

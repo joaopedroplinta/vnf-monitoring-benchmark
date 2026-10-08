@@ -18,7 +18,7 @@ Além disso, arquiteturas híbridas de WAF dividem as responsabilidades de inspe
 
 Conforme discutido na Seção~\ref{subsec:requisitos_monitoramento}, há uma particularidade dos ambientes de NFV diretamente relacionada ao escopo deste trabalho: o observador não atua como um agente externo à infraestrutura, mas executa co-localizado à VNF, compartilhando os mesmos núcleos de CPU e a mesma memória do \textit{host}. Em consequência, a sobrecarga imposta pela própria ferramenta de monitoramento --- e não apenas o impacto indireto que ela provoca sobre a VNF --- constitui objeto central de comparação: um coletor que consuma recursos em excesso compete diretamente com a função de rede que deveria apenas observar, degradando justamente o serviço que se pretende proteger \cite{10.1145/3397022}. Por essa razão, as métricas de tempo de resposta, CPU e memória do próprio observador, e não somente as do WAF, são tratadas como variáveis dependentes centrais neste estudo.
 
-Os experimentos foram conduzidos em uma máquina física com processador AMD Ryzen 5 5500 (6 núcleos e 12 \textit{threads}, frequência máxima de 4,27 GHz, \textit{cache} L3 de 16 MB), 16 GB de memória RAM, sistema operacional Ubuntu 26.04 LTS (\textit{Resolute Raccoon}) e kernel Linux versão 7.0.0-15-\textit{generic}. Os principais componentes de software utilizados estão descritos na Tabela~\ref{tab:versoes_software}.
+Os experimentos foram conduzidos em uma máquina física com processador AMD Ryzen 5 5500 (6 núcleos e 12 \textit{threads}, frequência máxima de 4,27 GHz, \textit{cache} L3 de 16 MB), 16 GB de memória RAM, sistema operacional Ubuntu 26.04 LTS (\textit{Resolute Raccoon}) e kernel Linux versão 7.0.0-38-\textit{generic}, operando em modo texto (\texttt{multi-user.target} do \textit{systemd}), sem interface gráfica, para reduzir processos concorrentes durante as medições. Os principais componentes de software utilizados estão descritos na Tabela~\ref{tab:versoes_software}.
 
 \begin{table}[htbp]
 \centering
@@ -28,20 +28,23 @@ Os experimentos foram conduzidos em uma máquina física com processador AMD Ryz
 \hline
 \textbf{Componente} & \textbf{Versão / Origem} \\
 \hline
-Kernel Linux (host e contêineres) & 7.0.0-15-\textit{generic} (Ubuntu 26.04 LTS; compartilhado por todos os contêineres Docker) \\
+Kernel Linux (host e contêineres) & 7.0.0-38-\textit{generic} (Ubuntu 26.04 LTS; compartilhado por todos os contêineres Docker) \\
+% TODO: reconferir as versões de Python, libbpf e clang dentro das imagens reconstruídas (após o fim da coleta)
 Python, observadores e WAF & 3.12.3 (\texttt{ubuntu:24.04}) \\
 Python, cliente           & 3.9 (\texttt{python:3.9-slim}) \\
 libbpf                     & 1.3.0 (\texttt{libbpf1} 1:1.3.0-2build2, repositório Ubuntu 24.04) \\
 Compilador eBPF            & clang 18.1.3 (\texttt{1ubuntu1}, repositório Ubuntu 24.04) \\
 psutil                     & 7.2.2 (via pip, instalada no contêiner) \\
 prometheus\_client         & 0.25.0 (via pip, instalada no contêiner) \\
-docker (SDK Python)         & \textbf{[PREENCHER: versão instalada via pip no contêiner do coletor Docker]} \\
+docker (SDK Python)         & 7.2.0 (via pip, instalada no contêiner) \\
 matplotlib                 & 3.10.9 (via pip, instalada no host para geração de gráficos) \\
 numpy                      & 2.4.6 (via pip, instalada no host para geração de gráficos) \\
-Docker Engine              & 29.5.3 (repositório oficial Docker CE) \\
+Docker Engine              & 29.8.2 (repositório oficial Docker CE) \\
 \hline
 \end{tabularx}
 \end{table}
+
+As versões das bibliotecas Python (\texttt{psutil}, \texttt{prometheus\_client} e \texttt{docker}) foram fixadas nos \textit{Dockerfiles}, de modo que reconstruir as imagens não altere o ambiente de medição. Todos os resultados apresentados foram obtidos nesse ambiente, com os quatro coletores executados sob as mesmas condições. Uma coleta anterior das três primeiras ferramentas, realizada com o \textit{kernel} 7.0.0-15, o Docker Engine 29.5.3 e o sistema em modo gráfico, foi substituída por uma recoleta completa após a atualização do sistema, a fim de que nenhum coletor fosse medido em ambiente distinto dos demais. Como verificação, as médias de tempo de resposta da recoleta diferiram das da coleta anterior em até cerca de 6\% e preservaram a mesma ordem entre as ferramentas em todos os volumes.
 
 O isolamento entre os experimentos é garantido por quatro pilhas Docker Compose independentes, cada qual em seus próprios contêineres: o cliente, o WAF e o observador. O contêiner do coletor eBPF requer modo privilegiado (\texttt{privileged: true}), acesso ao PID do host (\texttt{pid: host}) e montagem do sistema de arquivos BPF (\texttt{/sys/fs/bpf}), necessários para carregar e executar programas no kernel. Os coletores Sysstat e Prometheus operam em modo não privilegiado, mas também com \texttt{pid: host}, para que a biblioteca \texttt{psutil} possa localizar e monitorar o processo WAF em execução na máquina alvo. O coletor Docker também opera em modo não privilegiado e dispensa o \texttt{pid: host}, pois localiza o WAF pelo nome do contêiner; em contrapartida, requer a montagem do \textit{socket} do Docker (\texttt{/var/run/docker.sock}) no contêiner do observador, o que lhe concede acesso à API do Docker Engine.
 

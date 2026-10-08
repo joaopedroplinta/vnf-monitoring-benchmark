@@ -94,7 +94,7 @@ A cada requisição UDP recebida, o observador consulta o contêiner com \texttt
 
 Duas métricas não seguem a lógica do Docker. Primeiro, os bytes RX/TX são lidos de \texttt{/proc/net/dev}, como no Sysstat, porque o WAF executa com \texttt{network\_mode: host} e as estatísticas de rede do contêiner não representam o tráfego do WAF. Segundo, o CPU e a memória do próprio observador são obtidos pelo \texttt{psutil}, como nos outros coletores, o que mantém essas duas métricas comparáveis entre as quatro abordagens.
 
-O código-fonte dos quatro coletores, da geração de carga e da análise estatística está disponível publicamente no GitHub\footnote{https://github.com/joaopedroplinta/vnf-monitoring-benchmark}.
+O código-fonte dos quatro coletores, da geração de carga e da análise estatística está disponível publicamente no GitHub\footnote{https://github.com/joaopedroplinta/vnf-monitoring-benchmark}. Os resultados das 480 execuções também podem ser explorados em um painel interativo, desenvolvido em Python com as bibliotecas Streamlit, Plotly e \textit{pandas} e publicado na internet\footnote{\url{https://vnf-lab.up.railway.app}}. O painel exibe o tempo de resposta e o consumo de recursos de cada ferramenta por volume de mensagens, com os intervalos de confiança de 95\%, as execuções individuais e a exportação dos dados, e utiliza os mesmos arquivos de resultados analisados neste trabalho.
 
 \section{Protocolo de Testes e Geração de Carga}
 \label{sec:protocolo}

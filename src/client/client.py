@@ -12,10 +12,14 @@ from typing import Optional
 import struct
 import time
 import os
+import multiprocessing
 
-WAF_HOST      = 'localhost'
-WAF_PORT      = 8080
+WAF_HOST      = os.environ.get("WAF_HOST", 'localhost')
+WAF_PORT      = int(os.environ.get("WAF_PORT", 8080))
 WORKERS       = int(os.environ.get("WORKERS", 200))
+# 1 = comportamento original (um processo). >1 = N processos, cada um com WORKERS/N conexões
+# e uma fatia dos payloads (índice % N), para o cliente não limitar a vazão com o GIL.
+PROCESSES     = int(os.environ.get("CLIENT_PROCESSES", 1))
 PAYLOADS_FILE = os.environ.get("PAYLOADS_FILE", "")
 QUEUE_SIZE    = int(os.environ.get("QUEUE_SIZE", 2000))
 
@@ -29,7 +33,7 @@ def _read_payload(f) -> Optional[bytes]:
     return f.read(length)
 
 
-async def payload_producer(path: str, queue: asyncio.Queue, num_workers: int) -> int:
+async def payload_producer(path: str, queue: asyncio.Queue, num_workers: int, shard: int = 0, shards: int = 1) -> int:
     """
     Coroutine produtora: lê payloads do arquivo binário de forma lazy e os coloca
     na queue. Ao terminar, enfileira `num_workers` sentinelas None para sinalizar
@@ -42,7 +46,14 @@ async def payload_producer(path: str, queue: asyncio.Queue, num_workers: int) ->
         header_bytes = await loop.run_in_executor(None, f.read, 4)
         (count,) = struct.unpack(">I", header_bytes)
 
-        for _ in range(count):
+        for i in range(count):
+            if shards > 1 and i % shards != shard:
+                # payload de outra fatia: pula sem ler o conteúdo
+                header = await loop.run_in_executor(None, f.read, 4)
+                if len(header) < 4:
+                    break
+                f.seek(struct.unpack(">I", header)[0], 1)
+                continue
             payload = await loop.run_in_executor(None, _read_payload, f)
             if payload is None:
                 break
@@ -110,34 +121,67 @@ async def connection_worker(payload_queue: asyncio.Queue, counters: dict) -> Non
         except Exception:
             pass
 
-async def main_async() -> None:
-    if not await wait_for_server(WAF_HOST, WAF_PORT):
-        print("❌ WAF não respondeu. Encerrando.")
-        return
-
+async def run_shard(shard: int = 0, shards: int = 1) -> tuple:
+    """Envia a fatia `shard` de `shards` dos payloads. Retorna (count enviado, counters)."""
+    workers = max(1, WORKERS // shards)
     payload_queue: asyncio.Queue = asyncio.Queue(maxsize=QUEUE_SIZE)
     counters = {"allowed": 0, "blocked": 0, "errors": 0}
 
-    print(f"\n🚀 Iniciando envio...")
-    t_start = time.time()
-
     # Inicia produtor e workers concorrentemente
     producer_task = asyncio.create_task(
-        payload_producer(PAYLOADS_FILE, payload_queue, WORKERS)
+        payload_producer(PAYLOADS_FILE, payload_queue, workers, shard, shards)
     )
     worker_tasks = [
         asyncio.create_task(connection_worker(payload_queue, counters))
-        for _ in range(WORKERS)
+        for _ in range(workers)
     ]
 
     # Aguarda produtor terminar e depois todos os workers drenarem
     count = await producer_task
     await asyncio.gather(*worker_tasks)
+    return count, counters
 
+
+def _shard_main(shard: int, shards: int, out) -> None:
+    out.put(asyncio.run(run_shard(shard, shards)))
+
+
+def report(count: int, counters: dict, t_start: float) -> None:
     elapsed = round(time.time() - t_start, 2)
     rate = round(count / elapsed, 1) if elapsed > 0 else 0
     print(f"\n✅ Concluído em {elapsed}s (~{rate} msg/s) — "
           f"ALLOW:{counters['allowed']} BLOCK:{counters['blocked']} ERRO:{counters['errors']}")
+
+
+async def main_async() -> None:
+    if not await wait_for_server(WAF_HOST, WAF_PORT):
+        print("❌ WAF não respondeu. Encerrando.")
+        return
+
+    print(f"\n🚀 Iniciando envio...")
+    t_start = time.time()
+    count, counters = await run_shard()
+    report(count, counters, t_start)
+
+
+def main_multiprocess() -> None:
+    # o fork acontece fora do event loop, senão os filhos herdam o loop em execução
+    if not asyncio.run(wait_for_server(WAF_HOST, WAF_PORT)):
+        print("❌ WAF não respondeu. Encerrando.")
+        return
+
+    print(f"\n🚀 Iniciando envio ({PROCESSES} processos)...")
+    t_start = time.time()
+    ctx = multiprocessing.get_context("fork")
+    out = ctx.Queue()
+    procs = [ctx.Process(target=_shard_main, args=(k, PROCESSES, out)) for k in range(PROCESSES)]
+    for p in procs:
+        p.start()
+    results = [out.get() for _ in procs]
+    for p in procs:
+        p.join()
+    total = {k: sum(r[1][k] for r in results) for k in ("allowed", "blocked", "errors")}
+    report(sum(r[0] for r in results), total, t_start)
 
 def main():
     if not PAYLOADS_FILE:
@@ -148,7 +192,7 @@ def main():
 
     print("=" * 50)
     print(f"  Cliente TCP — WAF {WAF_HOST}:{WAF_PORT}")
-    print(f"  Arquivo: {PAYLOADS_FILE} | Workers: {WORKERS} | Queue: {QUEUE_SIZE} | asyncio + conexões persistentes")
+    print(f"  Arquivo: {PAYLOADS_FILE} | Workers: {WORKERS} | Processos: {PROCESSES} | Queue: {QUEUE_SIZE} | asyncio + conexões persistentes")
     print("=" * 50)
 
     # Lê apenas o header para exibir o count sem carregar tudo na memória
@@ -156,7 +200,10 @@ def main():
         (count,) = struct.unpack(">I", f.read(4))
     print(f"  {count:,} payloads no arquivo (streaming, RAM ~ QUEUE_SIZE={QUEUE_SIZE}).")
 
-    asyncio.run(main_async())
+    if PROCESSES > 1:
+        main_multiprocess()
+    else:
+        asyncio.run(main_async())
 
 if __name__ == "__main__":
     main()

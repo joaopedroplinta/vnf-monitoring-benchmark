@@ -95,30 +95,25 @@
 %   \end{flushright}
 % \end{epigrafe}
 
-% --- Resumo em português --- (pendente: escrever após Desenvolvimento)
-% \begin{resumo}
-%   Conter de 150 e 500 palavras, em parágrafo único com espaçamento simples,
-%   tamanho 12, sem recuo na primeira linha. Deve-se ressaltar sucintamente o
-%   conteúdo de um texto: os objetivos, os métodos empregados, os resultados
-%   preliminares e as conclusões. Recomenda-se para documento técnico e científico
-%   o resumo informativo.
-%
-%   \vspace{\onelineskip}
-%   \noindent
-%   \textbf{Palavras-chave}: palavra 1; palavra 2; palavra 3; palavra 4; palavra 5.
-% \end{resumo}
+% --- Resumo em português ---
+\begin{resumo}
+  A virtualização de funções de rede (NFV) exige monitoramento contínuo das funções virtualizadas (VNFs), mas o próprio coletor consome recursos do mesmo \textit{host} e pode degradar o serviço monitorado. Este trabalho compara o custo de quatro abordagens de monitoramento de um \textit{Web Application Firewall} (WAF) simplificado: eBPF (libbpf com CO-RE), Sysstat (leitura de \texttt{/proc} e \texttt{psutil}), Prometheus e API do Docker (estatísticas de \textit{cgroups}). Cada coletor foi executado em contêineres com a mesma topologia e carga, em quatro volumes de mensagens (100 mil a 2 milhões), com 30 repetições por combinação, totalizando 480 execuções. A métrica primária foi o tempo de resposta do observador (RTT UDP), complementada pelo consumo de CPU e de memória, com intervalos de confiança de 95\%. O eBPF apresentou o menor tempo de resposta em todos os volumes, cerca de 13\% abaixo do Sysstat, 15\% abaixo do Prometheus e 80\% abaixo da API do Docker, com diferenças estatisticamente significativas; a diferença para Sysstat e Prometheus, porém, é de magnitude moderada. Nenhuma abordagem alterou perceptivelmente a CPU do WAF, e a CPU do observador foi inconclusiva. O Sysstat teve o menor consumo de memória, e a API do Docker, o maior. Os resultados sustentam a hipótese de menor sobrecarga do eBPF no tempo de resposta e indicam que a escolha da ferramenta deve ponderar a complexidade de implementação.
 
-% --- Abstract (resumo em inglês) --- (pendente)
-% \begin{resumo}[Abstract]
-%   \begin{otherlanguage*}{english}
-%     Mandatory element, written preferably in English. It must contain the same
-%     information as the Portuguese abstract, including keywords.
-%
-%     \vspace{\onelineskip}
-%     \noindent
-%     \textbf{Keywords}: word 1; word 2; word 3; word 4; word 5.
-%   \end{otherlanguage*}
-% \end{resumo}
+  \vspace{\onelineskip}
+  \noindent
+  \textbf{Palavras-chave}: eBPF; monitoramento de redes; NFV; sobrecarga; Docker.
+\end{resumo}
+
+% --- Abstract (resumo em inglês) ---
+\begin{resumo}[Abstract]
+  \begin{otherlanguage*}{english}
+    Network Functions Virtualization (NFV) requires continuous monitoring of virtualized network functions (VNFs), but the collector itself consumes resources on the same host and may degrade the monitored service. This work compares the cost of four approaches to monitoring a simplified Web Application Firewall (WAF): eBPF (libbpf with CO-RE), Sysstat (\texttt{/proc} and \texttt{psutil}), Prometheus, and the Docker API (cgroup statistics). Each collector ran in containers with the same topology and workload, at four message volumes (100 thousand to 2 million), with 30 repetitions per combination, for a total of 480 runs. The primary metric was the observer response time (UDP RTT), complemented by CPU and memory consumption, with 95\% confidence intervals. eBPF showed the lowest response time at every volume, about 13\% below Sysstat, 15\% below Prometheus and 80\% below the Docker API, with statistically significant differences; the gap to Sysstat and Prometheus, however, is moderate in magnitude. No approach noticeably changed the WAF CPU usage, and the observer CPU was inconclusive. Sysstat had the lowest memory footprint and the Docker API the highest. The results support the hypothesis that eBPF has lower response-time overhead and indicate that tool choice should weigh implementation complexity.
+
+    \vspace{\onelineskip}
+    \noindent
+    \textbf{Keywords}: eBPF; network monitoring; NFV; overhead; Docker.
+  \end{otherlanguage*}
+\end{resumo}
 
 % --- Lista de Figuras (a partir de 5 figuras) ---
 \pdfbookmark[0]{\listfigurename}{lof}
@@ -177,8 +172,7 @@
 \input{capítulos/1.RevisãoDaLiteratura}
 \input{capítulos/2.Metodologia}
 \input{capítulos/3.Resultados}
-%\input{capítulos/3.ValidaçãoExperimental}
-%\input{capítulos/4.ConsideraçõesFinais}
+\input{capítulos/4.ConsideraçõesFinais}
 
 % ================================================================
 % ELEMENTOS PÓS-TEXTUAIS

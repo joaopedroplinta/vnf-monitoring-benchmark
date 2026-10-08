@@ -9,6 +9,7 @@ Esta pesquisa é classificada como \textbf{aplicada}, pois tem como finalidade g
 
 
 \section{Contexto Experimental}
+\label{sec:ambiente}
 
 As VNFs voltadas para a segurança, como os WAF e os IDS, são os elementos mais beneficiados pelo uso do eBPF \cite{technologies12080122}. Em um WAF tradicional, a análise de pacotes exige que todo o tráfego passe por validações de assinaturas no espaço do usuário, sobrecarregando a CPU sob ataques DDoS, por exemplo.
 
@@ -29,7 +30,6 @@ Os experimentos foram conduzidos em uma máquina física com processador AMD Ryz
 \textbf{Componente} & \textbf{Versão / Origem} \\
 \hline
 Kernel Linux (host e contêineres) & 7.0.0-38-\textit{generic} (Ubuntu 26.04 LTS; compartilhado por todos os contêineres Docker) \\
-% TODO: reconferir as versões de Python, libbpf e clang dentro das imagens reconstruídas (após o fim da coleta)
 Python, observadores e WAF & 3.12.3 (\texttt{ubuntu:24.04}) \\
 Python, cliente           & 3.9 (\texttt{python:3.9-slim}) \\
 libbpf                     & 1.3.0 (\texttt{libbpf1} 1:1.3.0-2build2, repositório Ubuntu 24.04) \\
@@ -97,6 +97,7 @@ Duas métricas não seguem a lógica do Docker. Primeiro, os bytes RX/TX são li
 O código-fonte dos quatro coletores, da geração de carga e da análise estatística está disponível publicamente no GitHub\footnote{https://github.com/joaopedroplinta/vnf-monitoring-benchmark}.
 
 \section{Protocolo de Testes e Geração de Carga}
+\label{sec:protocolo}
 
 Neste experimento, o volume de mensagens N constitui a variável independente, assumindo quatro níveis: 100.000, 500.000, 1.000.000 e 2.000.000. A variável dependente primária é o tempo de resposta do observador (RTT UDP); CPU e memória do WAF e do coletor são variáveis dependentes secundárias, utilizadas para caracterizar a sobrecarga de cada abordagem.
 
@@ -109,7 +110,7 @@ As cargas são geradas previamente pelo script \texttt{gen\_payloads.py}, que pr
 
 O divisor 15.000 corresponde à taxa de vazão sustentada empiricamente pelas 200 corrotinas assíncronas no ambiente de testes, expressa em mensagens por segundo; os 20 segundos adicionais constituem uma margem de segurança para a inicialização e o encerramento dos contêineres. Esse valor garante que o cliente complete o envio de todas as cargas e que o observador capture amostras suficientes para a análise. Para cada combinação de coletor e volume N, foram realizadas \textbf{30 repetições} independentes, totalizando 480 execuções (4 coletores $\times$ 4 volumes $\times$ 30 repetições). Cada repetição executa o ciclo completo: inicialização dos contêineres, aquecimento do observador, coleta de dados e encerramento controlado via \texttt{docker compose down}.
 
-Em cinco das 360 execuções, verificou-se \texttt{inspect\_count = 0} e \texttt{inspect\_avg\_ms = 0}, causados por uma condição de execução na leitura do arquivo \texttt{waf\_metrics.json}: o \texttt{probe.py} encerrou a coleta antes de o WAF gravar o arquivo pela primeira vez naquela execução. O critério adotado foi o seguinte: como a condição de execução afeta exclusivamente a leitura do arquivo \texttt{waf\_metrics.json} e não o mecanismo de requisição UDP, as medições de tempo de resposta UDP dessas execuções são válidas e estão incluídas nas agregações da métrica primária, preservando o tamanho amostral de 30 repetições para essa métrica; as métricas de inspeção (\texttt{inspect\_count}, \texttt{inspect\_avg\_ms}, \texttt{inspect\_min\_ms}, \texttt{inspect\_max\_ms}) dessas cinco execuções, cujos valores são zero por definição e não refletem o comportamento real do WAF, são desconsideradas nas análises de inspeção do WAF para não distorcer as médias.
+Em 106 das 480 execuções (22\%), todas com $N \geq 500$ mil e distribuídas de forma semelhante entre os coletores (de 23 a 30 execuções por coletor), o resumo da execução registrou \texttt{inspect\_count = 0} e \texttt{inspect\_avg\_ms = 0}. A causa provável é uma condição de execução na leitura do arquivo \texttt{waf\_metrics.json}: o WAF o grava diretamente, sem escrita atômica, e o observador, ao lê-lo no instante da gravação, obtém um conteúdo incompleto e devolve zeros. Nas amostras individuais, 27\% (10.152 de 38.160) apresentaram o mesmo valor nulo, intercaladas com amostras válidas, o que é compatível com essa explicação, embora ela não tenha sido verificada isoladamente. Como o resumo adota a última amostra da execução, o zero a contamina sempre que coincide com ela. O critério adotado foi o seguinte: como a condição afeta exclusivamente a leitura do arquivo \texttt{waf\_metrics.json} e não o mecanismo de requisição UDP, as medições de tempo de resposta, de CPU e de memória dessas execuções são válidas e estão incluídas nas agregações, preservando o tamanho amostral de 30 repetições; os campos de inspeção do resumo foram recalculados a partir da última amostra com \texttt{inspect\_count} maior que zero (\texttt{scripts/fix\_inspect.py}), o que foi possível em todas as 480 execuções, e as amostras brutas foram mantidas inalteradas. Como a condição ocorre em todos os coletores, ela não enviesa a comparação entre eles.
 
 \section{Métricas Coletadas e Análise Estatística}
 

@@ -160,9 +160,11 @@ O presente trabalho tem como objetivo suprir essa lacuna ao comparar experimenta
 
         Shahinfar et al. (2025) & Degradação de performance e isolamento no eBPF & eBPF & \textit{Throughput}, Latência & Sim (Concorrência) & Host / Rede \\
 
+        Dinga et al. (2023) & Overhead energético e de desempenho de ferramentas de monitoramento & ELK Stack, Netdata, Prometheus e Zipkin & Consumo de energia, desempenho & Sim (carga e frequência de coleta variadas) & Microsserviços em Docker \\
+
         Oliveira et al. (2026) & Impacto da latência de coleta na orquestração & Sysstat (\textit{/proc}) & Latência de coleta, Reação do MANO & Sim (DPI simulado) & NFV / Orquestração \\
 
-        \textbf{Este trabalho} & \textbf{Benchmarking de impacto de ferramentas na VNF} & \textbf{eBPF, Sysstat, Prometheus} & \textbf{CPU, RAM, RTT UDP (ns)} & \textbf{Sim (100k a 2M msgs)} & \textbf{VNF (WAF Isolado)} \\
+        \textbf{Este trabalho} & \textbf{Benchmarking de impacto de ferramentas na VNF} & \textbf{eBPF, Sysstat, Prometheus, API do Docker} & \textbf{CPU, RAM, RTT UDP (ms)} & \textbf{Sim (100k a 2M msgs)} & \textbf{VNF (WAF Isolado)} \\
         \bottomrule
     \end{tabular}
     }

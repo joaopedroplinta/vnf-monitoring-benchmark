@@ -18,6 +18,7 @@
   <a href="#início-rápido">Início rápido</a> ·
   <a href="#estrutura-do-repositório">Estrutura</a> ·
   <a href="#resultados">Resultados</a> ·
+  <a href="https://vnf-lab.up.railway.app">Dashboard online</a> ·
   <a href="#limitações">Limitações</a> ·
   <a href="#sobre-o-trabalho">Sobre o trabalho</a>
 </p>
@@ -81,6 +82,8 @@ A bateria completa (30 execuções por ferramenta e volume, ~14 h) e as variáve
 
 ## Dashboard
 
+**Acesse online: [https://vnf-lab.up.railway.app](https://vnf-lab.up.railway.app)**
+
 Os resultados podem ser explorados em um dashboard interativo (Streamlit + Plotly), com filtros por ferramenta e volume, IC95%, execuções individuais, download dos dados e modo claro/escuro:
 
 ```bash
@@ -90,7 +93,7 @@ python3 -m venv .venv
 .venv/bin/streamlit run app.py
 ```
 
-Abra `http://localhost:8501`. Detalhes, testes e instruções de hospedagem na Railway em **[dashboard/README.md](dashboard/README.md)**.
+Para rodar localmente, abra `http://localhost:8501`. Detalhes, testes e instruções de hospedagem na Railway em **[dashboard/README.md](dashboard/README.md)**.
 
 Documentação detalhada:
 [Reprodução](docs/reproducao.md) ·

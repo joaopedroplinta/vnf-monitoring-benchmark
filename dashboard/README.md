@@ -1,5 +1,7 @@
 # VNF Lab
 
+Online: https://vnf-lab.up.railway.app
+
 Dashboard interativo dos resultados do TCC, feito com Streamlit, Plotly e pandas.
 
 Execute a partir da pasta `dashboard/` (o Streamlit lê o tema de `dashboard/.streamlit/config.toml` na pasta de execução):
@@ -28,4 +30,4 @@ cd dashboard && .venv/bin/python -m unittest discover -s tests -v
 
 ## Hospedagem na Railway
 
-Crie um serviço a partir do repositório e defina **Root Directory = `dashboard`**. O `railway.json` define o comando de início (`streamlit run app.py` na porta `$PORT`) e o *healthcheck*; as dependências vêm do `requirements.txt`. Gere o domínio público em *Settings → Networking → Generate Domain*. Para atualizar os dados, rode `build_data.py`, faça commit do `data.csv` e envie para a branch do serviço.
+O serviço `vnf-lab` está publicado na Railway (https://vnf-lab.up.railway.app), a partir da branch `main`. Para recriá-lo, crie um serviço a partir do repositório e defina **Root Directory = `dashboard`**. O `railway.json` define o comando de início (`streamlit run app.py` na porta `$PORT`) e o *healthcheck*; as dependências vêm do `requirements.txt`. Gere o domínio público em *Settings → Networking → Generate Domain*. Para atualizar os dados, rode `build_data.py`, faça commit do `data.csv` e envie para a branch do serviço.

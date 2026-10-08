@@ -1,0 +1,3 @@
+streamlit>=1.65
+plotly>=6
+pandas>=2

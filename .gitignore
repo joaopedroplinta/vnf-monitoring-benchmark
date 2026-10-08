@@ -14,3 +14,5 @@ results/waf_metrics.json
 # Variáveis de ambiente locais
 .env
 *.env
+dashboard/.venv/
+__pycache__/

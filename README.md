@@ -75,8 +75,22 @@ A bateria completa (30 execuções por ferramenta e volume, ~14 h) e as variáve
 | [`src/`](src) | WAF, observadores (eBPF, Sysstat, Prometheus, Docker), cliente, probe e comparador |
 | [`scripts/`](scripts) | geração de payloads, execução dos testes e gráficos |
 | [`configs/`](configs) | Dockerfiles |
+| [`dashboard/`](dashboard) | dashboard interativo (Streamlit) com os resultados das 480 execuções |
 | [`results/`](results) | resultados brutos (JSON) e agregados (CSV/JSON) das execuções |
 | [`docs/`](docs) | tese em LaTeX, diagrama C4, apresentações e documentação detalhada |
+
+## Dashboard
+
+Os resultados podem ser explorados em um dashboard interativo (Streamlit + Plotly), com filtros por ferramenta e volume, IC95%, execuções individuais, download dos dados e modo claro/escuro:
+
+```bash
+cd dashboard
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/streamlit run app.py
+```
+
+Abra `http://localhost:8501`. Detalhes, testes e instruções de hospedagem na Railway em **[dashboard/README.md](dashboard/README.md)**.
 
 Documentação detalhada:
 [Reprodução](docs/reproducao.md) ·

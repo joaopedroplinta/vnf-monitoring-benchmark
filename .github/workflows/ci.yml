@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  dashboard:
+    name: Testes do dashboard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: dashboard/requirements.txt
+      - run: pip install -r dashboard/requirements.txt
+      - run: python -m unittest discover -s tests -v
+        working-directory: dashboard
+
+  sintaxe:
+    name: Sintaxe Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # o cliente roda em python:3.9-slim; o resto, em Python 3.12 (ubuntu:24.04)
+          - python: "3.9"
+            paths: src/client
+          - python: "3.12"
+            paths: src scripts dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m compileall -q ${{ matrix.paths }}
+
+  compose:
+    name: Docker Compose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          for f in docker-compose.*.yml; do
+            echo "== $f"
+            docker compose -f "$f" config -q
+          done
+        env:
+          # variáveis que os scripts run_*.sh exportam; aqui só precisam existir
+          NUM_MESSAGES: "100000"
+          PAYLOADS_FILE: /app/payloads/payloads_100000_6040.bin
+
+  latex:
+    name: Compilar a dissertação
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar tectonic
+        run: |
+          curl -sSL "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-musl.tar.gz" | tar xz
+          sudo mv tectonic /usr/local/bin/
+      - name: Logos ausentes do repositório
+        # os logos institucionais só existem no Overleaf; um PNG qualquer basta para compilar
+        run: |
+          for f in logo-ifpr logo-mec; do
+            [ -f docs/imagens/$f.png ] || cp docs/imagens/C4model.drawio.png docs/imagens/$f.png
+          done
+      - run: tectonic -X compile main.tex
+        working-directory: docs

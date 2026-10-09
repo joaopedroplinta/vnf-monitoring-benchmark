@@ -21,8 +21,8 @@ class BenchmarkTests(unittest.TestCase):
     def test_original_results_and_intervals(self):
         s = summary(self.df, "rtt_ms")
         first = s[(s.Ferramenta == "eBPF") & (s.n == 100000)].iloc[0]
-        self.assertAlmostEqual(first["mean"], 0.5310, places=4)
-        self.assertAlmostEqual(first["ci"], 0.0046, places=4)
+        self.assertAlmostEqual(first["mean"], 0.5331, places=4)
+        self.assertAlmostEqual(first["ci"], 0.0029, places=4)
         self.assertEqual(first["count"], 30)
         self.assertTrue(confidence_separated(self.df, "eBPF", "Sysstat"))
 

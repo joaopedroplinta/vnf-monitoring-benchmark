@@ -69,10 +69,14 @@ O script deriva o arquivo de payloads a partir de `NUM_MESSAGES`. Se o arquivo n
 | `DURATION` | `NUM_MESSAGES/15000 + 20` | Duração da coleta (segundos) |
 | `RUN_ID` | 1 | Identificador da execução |
 | `WORKERS` | 200 | Conexões assíncronas do cliente (corrotinas asyncio) |
+| `WAF_PROCESSES` | 1 | Processos do WAF na porta 8080 (`SO_REUSEPORT`). 1 = comportamento original; >1 = variante multiprocesso para testes de sensibilidade à carga (não usada nos resultados oficiais) |
+| `CLIENT_PROCESSES` | 1 | Processos do cliente (cada um com `WORKERS/N` conexões e uma fatia dos payloads). 1 = comportamento original; >1 só para testes de sensibilidade à carga |
 | `PAYLOADS_FILE_HOST` | `data/payloads/payloads_<N>_6040.bin` | Caminho do arquivo de payloads no host (sobrescreve o padrão) |
 
 > [!WARNING]
 > A execução termina quando `DURATION` acaba, e o divisor 15.000 é maior que a vazão real medida (~7,5 mil msg/s). Por isso, para N ≥ 500k o WAF processa só parte de N. Veja a tabela em [resultados](resultados.md#n-nominal--mensagens-processadas).
+
+Para conferir que a variante multiprocesso responde igual ao WAF original e agrega `inspect_count` corretamente: `python3 scripts/check_waf_variants.py 4`; o mesmo para o cliente multiprocesso: `python3 scripts/check_client_variants.py 4`. A vazão que eles imprimem é só indicativa.
 
 ## Passo 3 — Múltiplas repetições
 
@@ -101,7 +105,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 Para gerar os gráficos: `python3 scripts/plot_results.py` (saída em `results/plots/`).
 
-Se o resumo de alguma execução vier com `inspect_count = 0` (condição de corrida corrigida no commit `c7b305e`, presente em coletas anteriores), recalcule os campos `inspect_*` com `python3 scripts/fix_inspect.py <pasta>`.
+Se o resumo de alguma execução vier com `inspect_count = 0` (condição de corrida corrigida no commit `c7b305e`, presente na primeira coleta, arquivada em `results/arquivo_primeira_coleta/`), recalcule os campos `inspect_*` com `python3 scripts/fix_inspect.py <pasta>`.
 
 ## Tempo de execução
 

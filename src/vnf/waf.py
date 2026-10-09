@@ -14,9 +14,14 @@ import json
 import os
 import time
 import threading
+import multiprocessing
+import signal
 
 HOST             = '0.0.0.0'
-PORT             = 8080
+PORT             = int(os.environ.get("WAF_PORT", 8080))
+# 1 = comportamento original (um processo, GIL). >1 = N processos na mesma porta (SO_REUSEPORT),
+# estatísticas agregadas em memória compartilhada. O observador soma CPU/RSS de todos os "waf.py".
+_PROCESSES       = int(os.environ.get("WAF_PROCESSES", 1))
 _METRICS_PATH    = os.environ.get("WAF_METRICS_PATH", "/app/results/waf_metrics.json")
 _WRITE_EVERY     = 100
 _INSPECT_WORKERS = int(os.environ.get("WAF_INSPECT_WORKERS", os.cpu_count() or 4))
@@ -25,6 +30,7 @@ _stats_lock = threading.Lock()
 _stats = {"count": 0, "total_ms": 0.0, "min_ms": None, "max_ms": 0.0}
 
 _executor = concurrent.futures.ThreadPoolExecutor(max_workers=_INSPECT_WORKERS)
+_shared = None  # multiprocessing.Array [count, total_ms, min_ms (-1 = nenhum), max_ms]; só com WAF_PROCESSES > 1
 
 
 def _flush(s: dict) -> None:
@@ -45,7 +51,25 @@ def _flush(s: dict) -> None:
         print(f"[WARN] waf_metrics: {e}")
 
 
+def _record_shared(elapsed_ms: float) -> None:
+    snapshot = None
+    with _shared.get_lock():
+        _shared[0] += 1
+        _shared[1] += elapsed_ms
+        if _shared[2] < 0 or elapsed_ms < _shared[2]:
+            _shared[2] = elapsed_ms
+        if elapsed_ms > _shared[3]:
+            _shared[3] = elapsed_ms
+        if int(_shared[0]) % _WRITE_EVERY == 0:
+            snapshot = {"count": int(_shared[0]), "total_ms": _shared[1],
+                        "min_ms": None if _shared[2] < 0 else _shared[2], "max_ms": _shared[3]}
+    if snapshot is not None:
+        _flush(snapshot)
+
+
 def _record(elapsed_ms: float) -> None:
+    if _shared is not None:
+        return _record_shared(elapsed_ms)
     snapshot = None
     with _stats_lock:
         _stats["count"]    += 1
@@ -117,13 +141,34 @@ async def main_async() -> None:
         await server.serve_forever()
 
 
+def _worker() -> None:
+    asyncio.run(main_async())
+
+
 def main():
+    global _shared
     print("=" * 50)
     print(f"  WAF TCP — porta {PORT}")
     print(f"  Regras: SQLi, XSS, PathTraversal, RCE, NullByte")
-    print(f"  Modo: asyncio + ThreadPoolExecutor({_INSPECT_WORKERS})")
+    print(f"  Modo: asyncio + ThreadPoolExecutor({_INSPECT_WORKERS}) x {_PROCESSES} processo(s)")
     print("=" * 50)
-    asyncio.run(main_async())
+    if _PROCESSES <= 1:
+        return _worker()
+    ctx = multiprocessing.get_context("fork")  # fork: o Array compartilhado é herdado pelos filhos
+    _shared = ctx.Array("d", [0.0, 0.0, -1.0, 0.0])
+    procs = [ctx.Process(target=_worker, daemon=True) for _ in range(_PROCESSES)]
+    for p in procs:
+        p.start()
+
+    def stop(*_):
+        for p in procs:
+            p.terminate()
+        raise SystemExit(0)
+
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+    for p in procs:
+        p.join()
 
 
 if __name__ == "__main__":

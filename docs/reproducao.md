@@ -105,7 +105,7 @@ python3 src/compare.py               # cross-N com todos os valores disponíveis
 
 Para gerar os gráficos: `python3 scripts/plot_results.py` (saída em `results/plots/`).
 
-Se o resumo de alguma execução vier com `inspect_count = 0` (condição de corrida corrigida no commit `c7b305e`, presente em coletas anteriores), recalcule os campos `inspect_*` com `python3 scripts/fix_inspect.py <pasta>`.
+Se o resumo de alguma execução vier com `inspect_count = 0` (condição de corrida corrigida no commit `c7b305e`, presente na primeira coleta, arquivada em `results/arquivo_primeira_coleta/`), recalcule os campos `inspect_*` com `python3 scripts/fix_inspect.py <pasta>`.
 
 ## Tempo de execução
 

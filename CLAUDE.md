@@ -168,10 +168,10 @@ This project has custom agents (`.claude/agents/`) and slash commands (`.claude/
 | **Kernel** | 7.0.0-38-generic (text mode, `multi-user.target`) |
 | **Docker Engine** | 29.8.2 |
 
-## Current Status (08/10/2026)
+## Current Status (09/10/2026)
 
-- Official results: 480 runs (eBPF, Sysstat, Prometheus, Docker × N=100k, 500k, 1M, 2M × 30), kernel 7.0.0-38, text mode, in `results/`; the previous 360-run collection (kernel 7.0.0-15) is in `results/arquivo_kernel15/`
-- `inspect_*` summaries zeroed in 106/480 runs by a non-atomic `waf_metrics.json` write; recomputed with `scripts/fix_inspect.py`. Fixed in `waf.py` (commit `c7b305e`); a verification recollection runs in `results/coleta_final_waffix/` on the test machine (not yet official)
+- Official results: 480 runs (eBPF, Sysstat, Prometheus, Docker × N=100k, 500k, 1M, 2M × 30), kernel 7.0.0-38, text mode, in `results/` (recollection, 08–09/10/2026); the previous 360-run collection (kernel 7.0.0-15) is in `results/arquivo_kernel15/`
+- Official results are the recollection with the WAF fixed (atomic `waf_metrics.json` write, commit `c7b305e`): 0/480 runs with `inspect_count=0`. The first 480-run collection (106 zeroed `inspect_*` summaries, recomputed with `scripts/fix_inspect.py`) is in `results/arquivo_primeira_coleta/`; RTT and memory agree between the two within IC95%
 - Libbpf+CO-RE (no BCC), WORKERS=200, pinned psutil/prometheus_client/docker versions
 - **Runs per N:** 30 (fixed by advisor)
 - Thesis chapters: `docs/capítulos/` (accented names, compiled on Overleaf)

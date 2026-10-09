@@ -104,7 +104,7 @@ Documentação detalhada:
 
 ## Resultados
 
-480 execuções (4 ferramentas × 4 volumes × 30 repetições), com média ± IC95%, no kernel 7.0.0-38 em modo texto.
+480 execuções (4 ferramentas × 4 volumes × 30 repetições), com média ± IC95%, no kernel 7.0.0-38 em modo texto (recoleta com o WAF corrigido; a primeira coleta está arquivada em `results/arquivo_primeira_coleta/`).
 
 **Tempo de resposta médio do observador (ms, menor é melhor):**
 

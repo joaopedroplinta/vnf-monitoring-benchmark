@@ -25,7 +25,7 @@ Os experimentos foram conduzidos em uma máquina física com processador AMD Ryz
 \centering
 \caption{Versões dos componentes de software utilizados nos experimentos.}
 \label{tab:versoes_software}
-\begin{tabularx}{\textwidth}{lX}
+\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X}
 \hline
 \textbf{Componente} & \textbf{Versão / Origem} \\
 \hline
@@ -61,7 +61,7 @@ A topologia adotada é composta por três elementos principais: cliente, WAF e o
 
 \begin{figure}[htbp]
     \centering
-    \includesvg[width=0.85\textwidth]{imagens/C4model.drawio.svg}
+    \includegraphics[width=0.85\textwidth]{imagens/C4model.drawio.png}
     \caption{Diagrama de contêineres (C4, Nível 2) da topologia experimental.}
     \label{fig:arquitetura_c4}
 \end{figure}
@@ -90,7 +90,7 @@ O coletor Prometheus adota a mesma lógica de coleta do Sysstat (leitura de \tex
 
 O coletor Docker obtém as métricas do WAF por meio da API do Docker Engine, acessada pela biblioteca \texttt{docker} (SDK Python) através do \textit{socket} Unix do daemon. O Docker extrai essas métricas dos grupos de controle (\textit{cgroups}) do \textit{kernel}, mecanismo que organiza processos hierarquicamente e distribui recursos entre eles \cite{kernel_cgroup_v2, docker_runmetrics}. O contêiner do WAF é localizado pelo nome (\texttt{waf-server}), sem necessidade de enumerar processos do \textit{host}.
 
-A cada requisição UDP recebida, o observador consulta o contêiner com \texttt{stats(stream=False, one\_shot=True)}, que retorna uma única amostra sem aguardar os dois ciclos de amostragem que o daemon executa por padrão. Assim, como nos demais coletores, o custo da coleta está contido no tempo de resposta medido pelo \texttt{probe.py}. Como a amostra única não traz a leitura anterior de CPU, o consumo é calculado a partir da variação do tempo acumulado de CPU do \textit{cgroup} (\texttt{total\_usage}, em nanossegundos) entre requisições consecutivas, dividida pelo intervalo de relógio decorrido; o resultado é expresso em percentual de um núcleo, mesma escala do \texttt{psutil}, em que valores acima de 100\% indicam uso de mais de um núcleo lógico. A memória é calculada como o uso do \textit{cgroup} subtraído do cache inativo de arquivos (\texttt{inactive\_file}), a mesma conta apresentada pelo comando \texttt{docker stats}.
+A cada requisição UDP recebida, o observador consulta o contêiner com o método \texttt{stats(stream=\allowbreak False,\allowbreak{} one\_shot=\allowbreak True)}, que retorna uma única amostra sem aguardar os dois ciclos de amostragem que o daemon executa por padrão. Assim, como nos demais coletores, o custo da coleta está contido no tempo de resposta medido pelo \texttt{probe.py}. Como a amostra única não traz a leitura anterior de CPU, o consumo é calculado a partir da variação do tempo acumulado de CPU do \textit{cgroup} (\texttt{total\_usage}, em nanossegundos) entre requisições consecutivas, dividida pelo intervalo de relógio decorrido; o resultado é expresso em percentual de um núcleo, mesma escala do \texttt{psutil}, em que valores acima de 100\% indicam uso de mais de um núcleo lógico. A memória é calculada como o uso do \textit{cgroup} subtraído do cache inativo de arquivos (\texttt{inactive\_file}), a mesma conta apresentada pelo comando \texttt{docker stats}.
 
 Duas métricas não seguem a lógica do Docker. Primeiro, os bytes RX/TX são lidos de \texttt{/proc/net/dev}, como no Sysstat, porque o WAF executa com \texttt{network\_mode: host} e as estatísticas de rede do contêiner não representam o tráfego do WAF. Segundo, o CPU e a memória do próprio observador são obtidos pelo \texttt{psutil}, como nos outros coletores, o que mantém essas duas métricas comparáveis entre as quatro abordagens.
 
@@ -108,7 +108,7 @@ As cargas são geradas previamente pelo script \texttt{gen\_payloads.py}, que pr
 \label{eq:duration}
 \end{equation}
 
-O divisor 15.000 corresponde à taxa de vazão sustentada empiricamente pelas 200 corrotinas assíncronas no ambiente de testes, expressa em mensagens por segundo; os 20 segundos adicionais constituem uma margem de segurança para a inicialização e o encerramento dos contêineres. Esse valor garante que o cliente complete o envio de todas as cargas e que o observador capture amostras suficientes para a análise. Para cada combinação de coletor e volume N, foram realizadas \textbf{30 repetições} independentes, totalizando 480 execuções (4 coletores $\times$ 4 volumes $\times$ 30 repetições). Cada repetição executa o ciclo completo: inicialização dos contêineres, aquecimento do observador, coleta de dados e encerramento controlado via \texttt{docker compose down}.
+O divisor 15.000 é uma taxa nominal de mensagens por segundo adotada para dimensionar a janela; os 20 segundos adicionais constituem uma margem de segurança para a inicialização e o encerramento dos contêineres. Na prática, o ambiente descrito sustentou cerca de 7 a 8 mil mensagens por segundo, de modo que, nos volumes maiores, o WAF inspeciona apenas parte das $N$ mensagens dentro da janela (Seção~\ref{sec:sensibilidade}). A carga efetivamente observada é a mesma para as quatro ferramentas, o que preserva a comparação entre elas. Para cada combinação de coletor e volume N, foram realizadas \textbf{30 repetições} independentes, totalizando 480 execuções (4 coletores $\times$ 4 volumes $\times$ 30 repetições). Cada repetição executa o ciclo completo: inicialização dos contêineres, aquecimento do observador, coleta de dados e encerramento controlado via \texttt{docker compose down}.
 
 Na primeira bateria de 480 execuções, 106 (22\%), todas com $N \geq 500$ mil e distribuídas de forma semelhante entre os coletores (de 23 a 30 execuções por coletor), registraram \texttt{inspect\_count = 0} e \texttt{inspect\_avg\_ms = 0} no resumo. A causa foi uma condição de execução na leitura do arquivo \texttt{waf\_metrics.json}: o WAF o gravava diretamente, sem escrita atômica, e o observador, ao lê-lo no instante da gravação, obtinha um conteúdo incompleto e devolvia zeros; como o resumo adota a última amostra da execução, o zero o contaminava sempre que coincidia com ela. A condição afetava exclusivamente a leitura desse arquivo, e não o mecanismo de requisição UDP, de modo que as demais métricas eram válidas. O WAF foi então corrigido (gravação em arquivo temporário seguida de renomeação atômica) e toda a bateria de 480 execuções foi repetida nas mesmas condições. Na repetição, nenhuma execução apresentou \texttt{inspect\_count = 0}, e é essa bateria que fundamenta os resultados deste trabalho. A primeira bateria, com os campos de inspeção recalculados a partir da última amostra com \texttt{inspect\_count} maior que zero (\texttt{scripts/fix\_inspect.py}), foi mantida como verificação: os tempos de resposta e a memória do observador e do WAF coincidem entre as duas baterias dentro dos intervalos de confiança de 95\% nos 16 grupos, e a CPU do WAF difere em no máximo cerca de 0,9 ponto percentual; as contagens de inspeção recalculadas confirmam as da repetição.
 

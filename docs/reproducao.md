@@ -71,6 +71,7 @@ O script deriva o arquivo de payloads a partir de `NUM_MESSAGES`. Se o arquivo n
 | `WORKERS` | 200 | Conexões assíncronas do cliente (corrotinas asyncio) |
 | `WAF_PROCESSES` | 1 | Processos do WAF na porta 8080 (`SO_REUSEPORT`). 1 = comportamento original; >1 = variante multiprocesso para testes de sensibilidade à carga (não usada nos resultados oficiais) |
 | `CLIENT_PROCESSES` | 1 | Processos do cliente (cada um com `WORKERS/N` conexões e uma fatia dos payloads). 1 = comportamento original; >1 só para testes de sensibilidade à carga |
+| `CLIENT_DIRECT_READ` | 0 | 1 = o cliente lê o arquivo de payloads direto no laço de eventos, sem uma ida ao *thread pool* por mensagem. 0 = comportamento original (usado nos resultados oficiais); 1 só para testes de sensibilidade à carga |
 | `PAYLOADS_FILE_HOST` | `data/payloads/payloads_<N>_6040.bin` | Caminho do arquivo de payloads no host (sobrescreve o padrão) |
 
 > [!WARNING]

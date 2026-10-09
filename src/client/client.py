@@ -22,6 +22,9 @@ WORKERS       = int(os.environ.get("WORKERS", 200))
 PROCESSES     = int(os.environ.get("CLIENT_PROCESSES", 1))
 PAYLOADS_FILE = os.environ.get("PAYLOADS_FILE", "")
 QUEUE_SIZE    = int(os.environ.get("QUEUE_SIZE", 2000))
+# 1 = lê o arquivo de payloads direto no event loop (sem uma ida ao thread pool por mensagem);
+# 0 = comportamento original, usado na coleta oficial.
+DIRECT_READ   = os.environ.get("CLIENT_DIRECT_READ", "0") == "1"
 
 
 def _read_payload(f) -> Optional[bytes]:
@@ -41,20 +44,23 @@ async def payload_producer(path: str, queue: asyncio.Queue, num_workers: int, sh
     """
     loop = asyncio.get_event_loop()
 
+    async def run(fn, *args):
+        return fn(*args) if DIRECT_READ else await loop.run_in_executor(None, fn, *args)
+
     with open(path, "rb") as f:
         # Lê o header (count total) no executor para não bloquear o event loop
-        header_bytes = await loop.run_in_executor(None, f.read, 4)
+        header_bytes = await run(f.read, 4)
         (count,) = struct.unpack(">I", header_bytes)
 
         for i in range(count):
             if shards > 1 and i % shards != shard:
                 # payload de outra fatia: pula sem ler o conteúdo
-                header = await loop.run_in_executor(None, f.read, 4)
+                header = await run(f.read, 4)
                 if len(header) < 4:
                     break
                 f.seek(struct.unpack(">I", header)[0], 1)
                 continue
-            payload = await loop.run_in_executor(None, _read_payload, f)
+            payload = await run(_read_payload, f)
             if payload is None:
                 break
             await queue.put(payload)

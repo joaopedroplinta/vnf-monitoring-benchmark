@@ -37,6 +37,7 @@ services:
       - PAYLOADS_FILE=${PAYLOADS_FILE}
       - WORKERS=${WORKERS:-200}
       - CLIENT_PROCESSES=${CLIENT_PROCESSES:-1}
+      - CLIENT_DIRECT_READ=${CLIENT_DIRECT_READ:-0}
     volumes:
       - ./src/client:/app
       - ./data/payloads:/app/payloads:ro

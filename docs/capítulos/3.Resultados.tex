@@ -88,9 +88,36 @@ Essa instabilidade decorre da granularidade da amostragem via \texttt{psutil} so
 
 Além das métricas de comparação, registraram-se as métricas de validação descritas na metodologia, cujo objetivo é confirmar que as quatro ferramentas observaram a mesma carga de trabalho, e não discriminar as abordagens. O tempo médio de inspeção por carga convergiu para aproximadamente $0{,}080$ ms nas quatro abordagens (em $N = 1$ milhão, $0{,}0798$ ms no eBPF, $0{,}0797$ ms no Sysstat, $0{,}0796$ ms no Prometheus e $0{,}0798$ ms no Docker), confirmando que o custo unitário de processamento do WAF independe do coletor empregado --- comportamento esperado, dado que nenhuma abordagem interfere no caminho de inspeção das requisições. As métricas de inspeção correspondem à última amostra de cada execução, conforme descrito na Seção~\ref{sec:protocolo}.
 
-Observa-se ainda que a contagem de inspeções registrada ao fim da janela de coleta é inferior a $N$ nos volumes maiores (em média cerca de $706$ mil em $N = 1$ milhão e $1{,}25$ milhão em $N = 2$ milhões), ao passo que em $N = 100$ mil ela coincide com $N$. Esse valor é semelhante entre os coletores (por exemplo, $706.407$ no eBPF e $701.667$ no Docker em $N = 1$ milhão), de modo que a carga efetivamente observada é equivalente entre eles. O motivo de a contagem ficar abaixo de $N$ não foi investigado: é compatível com uma vazão sustentada inferior aos 15.000 mensagens por segundo usados no cálculo da duração da janela (Equação~\ref{eq:duration}), mas essa hipótese não foi verificada, e a premissa de que o cliente conclui o envio de todas as cargas dentro da janela merece ser reavaliada.
+Observa-se ainda que a contagem de inspeções registrada ao fim da janela de coleta é inferior a $N$ nos volumes maiores (em média cerca de $706$ mil em $N = 1$ milhão e $1{,}25$ milhão em $N = 2$ milhões), ao passo que em $N = 100$ mil ela coincide com $N$. Esse valor é semelhante entre os coletores (por exemplo, $706.407$ no eBPF e $701.667$ no Docker em $N = 1$ milhão), de modo que a carga efetivamente observada é equivalente entre eles. A vazão sustentada ficou em torno de 7 a 8 mil mensagens por segundo, abaixo dos 15.000 usados no cálculo da duração da janela (Equação~\ref{eq:duration}), de modo que o cliente não conclui o envio de todas as cargas dentro da janela. A origem desse limite é analisada na Seção~\ref{sec:sensibilidade}.
 
 Os contadores de bytes RX/TX, por outro lado, não são diretamente comparáveis entre as ferramentas, em razão da diferença no ponto de coleta. O coletor eBPF contabiliza exclusivamente o tráfego do WAF (porta de origem 8080), resultando em valores fortemente assimétricos --- em $N = 1$ milhão, cerca de $623$ MB recebidos contra apenas $9$ MB transmitidos, coerente com requisições volumosas e respostas curtas (\texttt{ALLOWED:OK} ou \texttt{BLOCKED}). Já o Sysstat, o Prometheus e o Docker medem todo o tráfego da interface de \textit{loopback} (no Docker, por meio de \texttt{/proc/net/dev}, já que o WAF utiliza a rede do \textit{host} e as estatísticas de rede do \textit{cgroup} não se aplicam), em que cada byte transmitido é também contabilizado como recebido, produzindo valores simétricos e mais elevados (RX $=$ TX, de aproximadamente $692$ a $704$ MB). Essa diferença é inerente ao escopo de medição de cada abordagem, e não a um erro de contabilização; por isso, os bytes RX/TX são empregados apenas para caracterização, e não como critério de comparação entre as ferramentas.
+
+\section{Análise de Sensibilidade da Vazão}
+\label{sec:sensibilidade}
+
+Como a contagem de inspeções ficou abaixo de $N$ nos volumes maiores, investigou-se o que limita a vazão. O teste foi feito com o coletor eBPF e $N = 1$ milhão, variando duas partes do ambiente: o número de processos do WAF (variável \texttt{WAF\_PROCESSES}) e o do cliente (\texttt{CLIENT\_PROCESSES}), além de uma variante do cliente que lê o arquivo de \textit{payloads} diretamente no laço de eventos, em vez de acionar o \textit{pool} de \textit{threads} a cada mensagem (\texttt{CLIENT\_DIRECT\_READ}). Os resultados estão na Tabela~\ref{tab:sensibilidade}.
+
+\begin{table}[htbp]
+\centering
+\caption{Inspeções registradas ao fim da janela de coleta (eBPF, $N = 1$ milhão), por configuração do WAF e do cliente.}
+\label{tab:sensibilidade}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X c c r r}
+\hline
+\textbf{Configuração} & \textbf{WAF} & \textbf{Cliente} & \textbf{Inspeções (média)} & \textbf{\% de $N$} \\
+\hline
+Original (coleta oficial, 30 repetições)           & 1 proc. & 1 proc. & 706.407   & 71\% \\
+Cliente com 4 processos (30 repetições)            & 1 proc. & 4 proc. & 601.527   & 60\% \\
+WAF e cliente com 4 processos (30 repetições)      & 4 proc. & 4 proc. & 650.067   & 65\% \\
+Cliente com leitura direta (3 repetições)          & 1 proc. & 1 proc. & 736.000   & 74\% \\
+Leitura direta e cliente com 4 processos (3 rep.)  & 1 proc. & 4 proc. & 734.367   & 73\% \\
+WAF com 4 processos, cliente com 4 processos e leitura direta (3 rep.) & 4 proc. & 4 proc. & 1.000.000 & 100\% \\
+\hline
+\end{tabularx}
+\end{table}
+
+Duas observações se destacam. Primeiro, multiplicar apenas os processos do cliente não aumentou a vazão e chegou a reduzi-la, e multiplicar o WAF e o cliente juntos também não bastou. No cliente original, cada processo percorre o arquivo inteiro de \textit{payloads} e, para as mensagens que não lhe cabem, ainda faz uma passagem pelo \textit{pool} de \textit{threads}; por isso o trabalho de leitura não se divide entre os processos. Segundo, quando a leitura direta foi combinada com quatro processos de WAF e de cliente, o WAF inspecionou as $N$ mensagens. Nas variantes com leitura direta e um único WAF, a CPU do WAF permaneceu em torno de $106\%$, compatível com um processo saturado. Conclui-se que o limite observado resulta de dois fatores simultâneos: o processo único do WAF e a forma como o cliente original lê os \textit{payloads}; remover apenas um deles não é suficiente.
+
+Duas ressalvas se aplicam. As variantes com leitura direta têm apenas três repetições, de modo que não permitem intervalo de confiança comparável ao das demais. Além disso, o tempo de resposta e o consumo de CPU não são comparáveis entre configurações com número diferente de processos do WAF: os observadores baseados em \texttt{psutil} consultam CPU e memória de todos os processos \texttt{waf.py} a cada sondagem, e esse custo cresce com o número de processos monitorados. Por essa razão a comparação entre as ferramentas, nas seções anteriores, foi feita sempre com a mesma configuração (um processo de WAF e um de cliente) para as quatro.
 
 \section{Síntese dos Resultados}
 
@@ -100,7 +127,7 @@ A Tabela~\ref{tab:sintese} resume o desempenho das quatro abordagens nas dimens�
 \centering
 \caption{Síntese comparativa das quatro abordagens de monitoramento.}
 \label{tab:sintese}
-\begin{tabularx}{\textwidth}{lXXXX}
+\begin{tabularx}{\textwidth}{l*{4}{>{\raggedright\arraybackslash}X}}
 \hline
 \textbf{Dimensão} & \textbf{eBPF} & \textbf{Sysstat} & \textbf{Prometheus} & \textbf{Docker} \\
 \hline

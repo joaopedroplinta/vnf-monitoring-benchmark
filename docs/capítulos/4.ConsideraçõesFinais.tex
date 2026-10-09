@@ -20,10 +20,10 @@ Os resultados devem ser lidos com as seguintes ressalvas, além das limitações
   \item a memória e a CPU do WAF no cenário Docker provêm da contabilidade do \textit{cgroup}, e não do processo, portanto não são diretamente comparáveis às dos demais cenários;
   \item a CPU do observador é muito ruidosa e não sustenta comparação quantitativa;
   \item a primeira bateria de coletas teve 22\% dos resumos de inspeção zerados por uma condição de execução na leitura de \texttt{waf\_metrics.json}; o WAF foi corrigido e a bateria foi repetida por completo (Seção~\ref{sec:protocolo}), de modo que os resultados apresentados provêm da repetição;
-  \item a contagem de inspeções ao fim da janela de coleta ficou abaixo de $N$ nos volumes maiores, o que indica que a premissa de vazão usada para dimensionar a janela deve ser reavaliada;
+  \item a contagem de inspeções ao fim da janela de coleta ficou abaixo de $N$ nos volumes maiores, o que decorre do WAF de processo único e da leitura de \textit{payloads} do cliente original (Seção~\ref{sec:sensibilidade}); a carga foi a mesma para as quatro ferramentas, mas não alcançou as $N$ mensagens previstas;
   \item os experimentos foram conduzidos em uma única máquina e com um único WAF simplificado, de modo que a generalização para outros ambientes e outras VNFs não está assegurada.
 \end{itemize}
 
 \section{Trabalhos Futuros}
 
-Como continuidade, propõem-se: (i) decompor o tempo de resposta do coletor Docker, comparando a consulta via API com a leitura direta dos arquivos de \textit{cgroup} e com uma coleta em segundo plano; (ii) verificar, com variantes multiprocesso do WAF e do cliente, qual dos dois limita a vazão observada; (iii) avaliar o efeito do monitoramento sobre a vazão e a latência das requisições processadas pelo próprio WAF; e (iv) estender a comparação a outras VNFs e a ambientes com mais de um contêiner monitorado.
+Como continuidade, propõem-se: (i) decompor o tempo de resposta do coletor Docker, comparando a consulta via API com a leitura direta dos arquivos de \textit{cgroup} e com uma coleta em segundo plano; (ii) repetir a comparação com o WAF e o cliente em múltiplos processos, de modo que as $N$ mensagens sejam inspecionadas, e discutir como o número de processos monitorados altera o custo de cada coletor; (iii) avaliar o efeito do monitoramento sobre a vazão e a latência das requisições processadas pelo próprio WAF; e (iv) estender a comparação a outras VNFs e a ambientes com mais de um contêiner monitorado.

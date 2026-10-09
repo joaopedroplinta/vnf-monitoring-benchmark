@@ -25,7 +25,7 @@ Os experimentos foram conduzidos em uma máquina física com processador AMD Ryz
 \centering
 \caption{Versões dos componentes de software utilizados nos experimentos.}
 \label{tab:versoes_software}
-\begin{tabularx}{\textwidth}{lX}
+\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X}
 \hline
 \textbf{Componente} & \textbf{Versão / Origem} \\
 \hline
@@ -61,7 +61,7 @@ A topologia adotada é composta por três elementos principais: cliente, WAF e o
 
 \begin{figure}[htbp]
     \centering
-    \includesvg[width=0.85\textwidth]{imagens/C4model.drawio.svg}
+    \includegraphics[width=0.85\textwidth]{imagens/C4model.drawio.png}
     \caption{Diagrama de contêineres (C4, Nível 2) da topologia experimental.}
     \label{fig:arquitetura_c4}
 \end{figure}
@@ -90,7 +90,7 @@ O coletor Prometheus adota a mesma lógica de coleta do Sysstat (leitura de \tex
 
 O coletor Docker obtém as métricas do WAF por meio da API do Docker Engine, acessada pela biblioteca \texttt{docker} (SDK Python) através do \textit{socket} Unix do daemon. O Docker extrai essas métricas dos grupos de controle (\textit{cgroups}) do \textit{kernel}, mecanismo que organiza processos hierarquicamente e distribui recursos entre eles \cite{kernel_cgroup_v2, docker_runmetrics}. O contêiner do WAF é localizado pelo nome (\texttt{waf-server}), sem necessidade de enumerar processos do \textit{host}.
 
-A cada requisição UDP recebida, o observador consulta o contêiner com \texttt{stats(stream=False, one\_shot=True)}, que retorna uma única amostra sem aguardar os dois ciclos de amostragem que o daemon executa por padrão. Assim, como nos demais coletores, o custo da coleta está contido no tempo de resposta medido pelo \texttt{probe.py}. Como a amostra única não traz a leitura anterior de CPU, o consumo é calculado a partir da variação do tempo acumulado de CPU do \textit{cgroup} (\texttt{total\_usage}, em nanossegundos) entre requisições consecutivas, dividida pelo intervalo de relógio decorrido; o resultado é expresso em percentual de um núcleo, mesma escala do \texttt{psutil}, em que valores acima de 100\% indicam uso de mais de um núcleo lógico. A memória é calculada como o uso do \textit{cgroup} subtraído do cache inativo de arquivos (\texttt{inactive\_file}), a mesma conta apresentada pelo comando \texttt{docker stats}.
+A cada requisição UDP recebida, o observador consulta o contêiner com o método \texttt{stats(stream=\allowbreak False,\allowbreak{} one\_shot=\allowbreak True)}, que retorna uma única amostra sem aguardar os dois ciclos de amostragem que o daemon executa por padrão. Assim, como nos demais coletores, o custo da coleta está contido no tempo de resposta medido pelo \texttt{probe.py}. Como a amostra única não traz a leitura anterior de CPU, o consumo é calculado a partir da variação do tempo acumulado de CPU do \textit{cgroup} (\texttt{total\_usage}, em nanossegundos) entre requisições consecutivas, dividida pelo intervalo de relógio decorrido; o resultado é expresso em percentual de um núcleo, mesma escala do \texttt{psutil}, em que valores acima de 100\% indicam uso de mais de um núcleo lógico. A memória é calculada como o uso do \textit{cgroup} subtraído do cache inativo de arquivos (\texttt{inactive\_file}), a mesma conta apresentada pelo comando \texttt{docker stats}.
 
 Duas métricas não seguem a lógica do Docker. Primeiro, os bytes RX/TX são lidos de \texttt{/proc/net/dev}, como no Sysstat, porque o WAF executa com \texttt{network\_mode: host} e as estatísticas de rede do contêiner não representam o tráfego do WAF. Segundo, o CPU e a memória do próprio observador são obtidos pelo \texttt{psutil}, como nos outros coletores, o que mantém essas duas métricas comparáveis entre as quatro abordagens.
 

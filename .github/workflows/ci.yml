@@ -63,11 +63,5 @@ jobs:
         run: |
           curl -sSL "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-musl.tar.gz" | tar xz
           sudo mv tectonic /usr/local/bin/
-      - name: Logos ausentes do repositório
-        # os logos institucionais só existem no Overleaf; um PNG qualquer basta para compilar
-        run: |
-          for f in logo-ifpr logo-mec; do
-            [ -f docs/imagens/$f.png ] || cp docs/imagens/C4model.drawio.png docs/imagens/$f.png
-          done
       - run: tectonic -X compile main.tex
         working-directory: docs

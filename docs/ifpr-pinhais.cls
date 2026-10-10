@@ -63,7 +63,7 @@
 %% ---- CAPA ----
 \renewcommand{\imprimircapa}{%
   \begin{capa}
-    \begin{minipage}[c]{0.75\textwidth}
+    \begin{minipage}[c]{0.70\textwidth}
       \includegraphics[width=4cm]{imagens/logo-ifpr}
     \end{minipage}%
     \hfill

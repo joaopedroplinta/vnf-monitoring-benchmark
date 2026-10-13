@@ -1,0 +1,119 @@
+% ============================================================
+% Artigo do Projeto de Curso II no modelo IEEE Access adaptado ao IFPR (logo e cabeçalho do campus, verde
+% institucional e rótulos em português), com o texto integral da dissertação: os capítulos de docs/capítulos/
+% são incluídos sem alteração (um único texto-fonte), então os números não divergem entre os dois documentos.
+% Compilar com pdfLaTeX (Overleaf ou ./compilar.sh). Figuras e .bib vêm de ../ (ou da raiz do projeto).
+% ============================================================
+\documentclass{ieeeaccess}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{textcomp}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{placeins}
+\usepackage{bm}
+% Onde estão capítulos/, imagens/ e referencias.bib: ../ se a pasta docs/ foi enviada inteira (artigo.tex em docs/ieee/),
+% ou a própria raiz do projeto se esses arquivos estiverem soltos ao lado do artigo.tex.
+\IfFileExists{../referencias.bib}{\newcommand{\docsdir}{../}}{\newcommand{\docsdir}{./}}
+\graphicspath{{\docsdir}{\docsdir imagens/}{imagens/}}
+\setlength{\emergencystretch}{3em}
+\sloppy
+\let\citeonline\cite  % estilo numérico: "[3] mostram"
+\hyphenation{Pro-me-theus Sys-stat}
+
+% Os capítulos da dissertação são incluídos sem alteração: \chapter vira seção, \section vira subseção
+% e \subsection vira subsubseção.
+\let\ieeesection\section
+\let\ieeesubsection\subsection
+\let\ieeesubsubsection\subsubsection
+\let\chapter\ieeesection
+\let\section\ieeesubsection
+\let\subsection\ieeesubsubsection
+
+% Nos capítulos, as larguras dos flutuantes são dadas em \textwidth (página inteira); em duas colunas,
+% dentro de figure e table elas passam a valer a largura da coluna.
+\let\origfigure\figure \let\endorigfigure\endfigure
+\renewenvironment{figure}[1][tbp]{\origfigure[#1]\setlength{\textwidth}{\columnwidth}}{\endorigfigure}
+\let\origtable\table \let\endorigtable\endtable
+\renewenvironment{table}[1][tbp]{\origtable[#1]\setlength{\textwidth}{\columnwidth}\small}{\endorigtable}
+% As tabelas largas (revisão da literatura e resultados) ocupam as duas colunas, na largura total da página.
+\newcommand{\widetables}{\renewenvironment{table}[1][tbp]{\csname table*\endcsname[t]\small}{\csname endtable*\endcsname}}
+\newcommand{\narrowtables}{\renewenvironment{table}[1][tbp]{\origtable[##1]\setlength{\textwidth}{\columnwidth}\small}{\endorigtable}}
+
+% Versão negrito da matemática, como no modelo oficial do IEEE Access.
+\makeatletter
+\AtBeginDocument{\DeclareMathVersion{bold}
+\SetSymbolFont{operators}{bold}{T1}{times}{b}{n}
+\SetSymbolFont{NewLetters}{bold}{T1}{times}{b}{it}
+\SetMathAlphabet{\mathrm}{bold}{T1}{times}{b}{n}
+\SetMathAlphabet{\mathit}{bold}{T1}{times}{b}{it}
+\SetMathAlphabet{\mathbf}{bold}{T1}{times}{b}{n}
+\SetMathAlphabet{\mathtt}{bold}{OT1}{pcr}{b}{n}
+\SetSymbolFont{symbols}{bold}{OMS}{cmsy}{b}{n}
+\renewcommand\boldmath{\@nomath\boldmath\mathversion{bold}}}
+\makeatother
+
+\begin{document}
+\newlength{\xfigwd}  % usado pela legenda da classe ieeeaccess
+\setlength{\xfigwd}{\columnwidth}
+
+\history{Bacharelado em Ciência da Computação \\ Trabalho de Projeto de Curso \\ Data da Defesa: a definir}
+
+\title{Monitoramento de Funções Virtualizadas de Redes: Um Estudo Comparativo entre Ferramentas de Extração de Comportamento}
+
+\author{
+\uppercase{João Pedro dos Santos Henrique Plinta}\authorrefmark{1}, and
+\uppercase{Rafael Correia Alves}\authorrefmark{1}}
+
+\address[1]{Orientador: Prof. Guilherme Werneck de Oliveira}
+
+\markboth
+{Bacharelado em Ciência da Computação}
+{Bacharelado em Ciência da Computação}
+
+\corresp{Autor correspondente: João Pedro dos Santos Henrique Plinta (e-mail: joaopedrohenriqueplinta@gmail.com).}
+
+\begin{abstract}
+A virtualização de funções de rede (NFV) exige monitoramento contínuo, mas o coletor executa no mesmo \textit{host} da função monitorada e compete com ela por recursos. Este trabalho compara o custo de quatro abordagens de monitoramento de um \textit{Web Application Firewall} (WAF) simplificado: eBPF (libbpf com CO-RE), Sysstat, Prometheus e API do Docker. Cada coletor foi avaliado em quatro volumes de mensagens (100 mil a 2 milhões), com 30 repetições por combinação (480 execuções). A métrica primária foi o tempo de resposta do observador (RTT UDP), complementada por CPU e memória, com intervalos de confiança de 95\%. O eBPF teve o menor tempo de resposta em todos os volumes, cerca de 13\% abaixo do Sysstat, 15\% abaixo do Prometheus e 80\% abaixo da API do Docker, com diferenças significativas; a diferença para Sysstat e Prometheus é de magnitude moderada. O Sysstat teve o menor consumo de memória e a API do Docker, o maior. Uma coleta complementar, com o WAF inspecionando todas as mensagens, preservou a ordem entre as ferramentas.
+\end{abstract}
+
+\begin{keywords}
+eBPF, monitoramento de redes, NFV, sobrecarga, Docker.
+\end{keywords}
+
+\titlepgskip=-15pt
+
+\maketitle
+
+\noindent{\sffamily\bfseries\color{accessblue}ABSTRACT}\ \footnotesize Network Functions Virtualization (NFV) requires continuous monitoring, but the collector runs on the same host as the monitored function and competes with it for resources. This work compares the cost of four approaches to monitoring a simplified Web Application Firewall (WAF): eBPF (libbpf with CO-RE), Sysstat, Prometheus and the Docker API. Each collector was evaluated at four message volumes (100 thousand to 2 million), with 30 repetitions per combination (480 runs). The primary metric was the observer response time (UDP RTT), complemented by CPU and memory usage, with 95\% confidence intervals. eBPF showed the lowest response time at every volume, about 13\% below Sysstat, 15\% below Prometheus and 80\% below the Docker API, with statistically significant differences; the gap to Sysstat and Prometheus is moderate in magnitude. Sysstat had the lowest memory footprint and the Docker API the highest. A complementary run, in which the WAF inspected every message, preserved the ranking of the tools.
+
+\noindent{\sffamily\bfseries\color{accessblue}KEYWORDS}\ eBPF, network monitoring, NFV, overhead, Docker.\normalsize
+
+\input{\docsdir capítulos/0.Introdução}
+\widetables
+\input{\docsdir capítulos/1.RevisãoDaLiteratura}
+\narrowtables
+\input{\docsdir capítulos/2.Metodologia}
+\widetables
+% Nos cabeçalhos das tabelas do capítulo de resultados, \textbf{$N$} falha com a classe ieeeaccess (a classe redefine
+% as letras matemáticas); aqui \textbf passa a só mudar a série da fonte, o que dá o mesmo resultado.
+\let\origtextbf\textbf
+\renewcommand{\textbf}[1]{{\bfseries #1}}
+\input{\docsdir capítulos/3.Resultados}
+\let\textbf\origtextbf
+\narrowtables
+\input{\docsdir capítulos/4.ConsideraçõesFinais}
+
+\bibliographystyle{IEEEtran}
+\bibliography{\docsdir referencias}
+
+%% 'ieeeaccess.cls' exige \EOD ao fim do documento
+\EOD
+\end{document}

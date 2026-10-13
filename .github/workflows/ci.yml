@@ -65,3 +65,8 @@ jobs:
           sudo mv tectonic /usr/local/bin/
       - run: tectonic -X compile main.tex
         working-directory: docs
+      - name: Instalar TeX Live (pdfLaTeX) para o artigo
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends texlive-latex-extra texlive-fonts-recommended texlive-lang-portuguese texlive-bibtex-extra poppler-utils
+      - name: Compilar o artigo (modelo IEEE Access)
+        run: ./compilar.sh
+        working-directory: docs/ieee

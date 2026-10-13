@@ -5,7 +5,7 @@
 # Roda numa cópia temporária com a mesma estrutura de pastas; o PDF vai para $1 (padrão: /tmp/artigo.pdf).
 set -e
 d=$(mktemp -d)
-cp -r ../imagens ../referencias.bib "$d"/
+cp -r ../imagens ../capítulos ../referencias.bib "$d"/
 mkdir "$d/ieee"
 cp artigo.tex ieeeaccess.cls IEEEtran.cls IEEEtran.bst bullet.png logo.png notaglinelogo.png t1* "$d/ieee/"
 if command -v pdflatex >/dev/null 2>&1; then

@@ -1,8 +1,7 @@
 % ============================================================
-% Artigo do Projeto de Curso II (Apêndice L do Regulamento de Projeto de Curso), no modelo IEEE Access
-% adaptado ao IFPR: logo e cabeçalho do campus, verde institucional e rótulos em português.
-% Seções: Introdução, Trabalhos Correlatos, Materiais e Métodos, Resultados, Conclusão e Trabalhos Futuros.
-% É uma versão condensada da dissertação (docs/main.tex), cujos capítulos não são alterados.
+% Artigo do Projeto de Curso II no modelo IEEE Access adaptado ao IFPR (logo e cabeçalho do campus, verde
+% institucional e rótulos em português), com o texto integral da dissertação: os capítulos de docs/capítulos/
+% são incluídos sem alteração (um único texto-fonte), então os números não divergem entre os dois documentos.
 % Compilar com pdfLaTeX (Overleaf ou ./compilar.sh). Figuras e .bib vêm de ../ (ou da raiz do projeto).
 % ============================================================
 \documentclass{ieeeaccess}
@@ -16,15 +15,37 @@
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage{textcomp}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{placeins}
 \usepackage{bm}
-% Onde estão imagens/ e referencias.bib: ../ se a pasta docs/ foi enviada inteira (artigo.tex em docs/ieee/),
+% Onde estão capítulos/, imagens/ e referencias.bib: ../ se a pasta docs/ foi enviada inteira (artigo.tex em docs/ieee/),
 % ou a própria raiz do projeto se esses arquivos estiverem soltos ao lado do artigo.tex.
 \IfFileExists{../referencias.bib}{\newcommand{\docsdir}{../}}{\newcommand{\docsdir}{./}}
-\graphicspath{{\docsdir imagens/}{imagens/}}
+\graphicspath{{\docsdir}{\docsdir imagens/}{imagens/}}
 \setlength{\emergencystretch}{3em}
 \sloppy
 \let\citeonline\cite  % estilo numérico: "[3] mostram"
 \hyphenation{Pro-me-theus Sys-stat}
+
+% Os capítulos da dissertação são incluídos sem alteração: \chapter vira seção, \section vira subseção
+% e \subsection vira subsubseção.
+\let\ieeesection\section
+\let\ieeesubsection\subsection
+\let\ieeesubsubsection\subsubsection
+\let\chapter\ieeesection
+\let\section\ieeesubsection
+\let\subsection\ieeesubsubsection
+
+% Nos capítulos, as larguras dos flutuantes são dadas em \textwidth (página inteira); em duas colunas,
+% dentro de figure e table elas passam a valer a largura da coluna.
+\let\origfigure\figure \let\endorigfigure\endfigure
+\renewenvironment{figure}[1][tbp]{\origfigure[#1]\setlength{\textwidth}{\columnwidth}}{\endorigfigure}
+\let\origtable\table \let\endorigtable\endtable
+\renewenvironment{table}[1][tbp]{\origtable[#1]\setlength{\textwidth}{\columnwidth}\small}{\endorigtable}
+% As tabelas largas (revisão da literatura e resultados) ocupam as duas colunas, na largura total da página.
+\newcommand{\widetables}{\renewenvironment{table}[1][tbp]{\csname table*\endcsname[t]\small}{\csname endtable*\endcsname}}
+\newcommand{\narrowtables}{\renewenvironment{table}[1][tbp]{\origtable[##1]\setlength{\textwidth}{\columnwidth}\small}{\endorigtable}}
 
 % Versão negrito da matemática, como no modelo oficial do IEEE Access.
 \makeatletter
@@ -75,204 +96,20 @@ eBPF, monitoramento de redes, NFV, sobrecarga, Docker.
 
 \noindent{\sffamily\bfseries\color{accessblue}KEYWORDS}\ eBPF, network monitoring, NFV, overhead, Docker.\normalsize
 
-\section{Introdução}
-\label{sec:intro}
-A Virtualização de Funções de Rede (NFV) desacopla as funções de rede do \textit{hardware}: as funções virtualizadas (VNFs) passam a executar como \textit{software} em servidores comuns, com ganho de flexibilidade e redução de custos operacionais \cite{mijumbi2016,oliveira2026-sbrc}. Para que essa flexibilidade se mantenha, as VNFs precisam ser monitoradas de forma contínua, por métricas como consumo de CPU e memória, latência e vazão \cite{rfc6390}. O observador, porém, executa co-localizado à VNF e compartilha seus núcleos e sua memória; um coletor que consuma recursos em excesso degrada justamente o serviço que deveria apenas observar \cite{10.1145/3397022}.
-
-Entre as tecnologias disponíveis destacam-se o eBPF \cite{gregg_bpf_2019}, o Sysstat \cite{godard2024sysstat}, o Prometheus \cite{turnbull_prometheus_2018} e a API do Docker, que extrai as métricas dos grupos de controle (\textit{cgroups}) do \textit{kernel} \cite{docker_runmetrics,kernel_cgroup_v2}. Há, porém, pouca evidência empírica que compare essas abordagens, sob uma mesma carga controlada e crescente, sobre uma VNF específica \cite{usman_observability_2022}.
-
-Este trabalho investiga quais as diferenças de desempenho entre as quatro abordagens ao monitorar uma VNF e qual delas oferece a menor sobrecarga. A hipótese é que o eBPF, por operar no \textit{kernel}, apresente o menor tempo de resposta na coleta, em relação às demais, que operam no espaço de usuário: o Sysstat e o Prometheus por \textit{polling} \cite{rfc9232} de \texttt{/proc} \cite{linux_proc_man}, e o Docker por consulta sob demanda ao \textit{daemon}. O objetivo é medir e comparar o tempo de resposta e o consumo de recursos de cada uma, com intervalos de confiança de 95\%, em quatro pilhas idênticas de contêineres em que só o coletor muda. As seções seguintes apresentam os trabalhos correlatos, os materiais e métodos, os resultados, a conclusão e os trabalhos futuros.
-
-\section{Trabalhos Correlatos}
-\label{sec:corr}
-A NFV foi formalizada pelo ETSI, com uma arquitetura de infraestrutura, VNFs e um bloco de gerenciamento e orquestração (MANO) \cite{etsi_nfv_002_2014,etsi_nfv_006_2024,mijumbi2016}. O monitoramento alimenta a orquestração e o dimensionamento das VNFs \cite{usman_observability_2022}, e a latência com que as métricas chegam afeta as decisões do orquestrador \cite{oliveira_observability_2026}. VNFs de segurança, como os WAF, são especialmente sensíveis ao custo da coleta, pois inspecionam todo o tráfego e já operam próximas da saturação de CPU.
-
-\citeonline{10.1109/NOMS47738.2020.9110434} mostram que programas eBPF com \textit{kprobes} introduzem latência de instrumentação menor que abordagens baseadas em \texttt{/proc}, mas não consideram o Prometheus nem medem a sobrecarga sobre uma VNF. \citeonline{kannan2024designing} constroem um agente de observabilidade sobre eBPF para Kubernetes, com menos CPU e memória que agentes tradicionais, porém focado em metadados de fluxo. \citeonline{shahinfar2025demystifying} alertam que programas eBPF mal projetados degradam as aplicações no mesmo servidor, o que justifica quantificar a sobrecarga de cada abordagem, e \citeonline{10.1145/3594255.3594256} agregam telemetria de fluxo no \textit{kernel}, técnica análoga à do observador eBPF deste trabalho. Em NFV, \citeonline{10.23919} e \citeonline{oliveira_observability_2026} apontam a falta de mecanismos de coleta que não comprometam a VNF monitorada, mas se limitam ao Sysstat. Em contêineres, \citeonline{dinga2023empirical} medem o custo energético e de desempenho de ferramentas como o Prometheus, e \citeonline{casalicchio2017measuring} e \citeonline{wiedner2023cgroups} caracterizam o custo dos contêineres e dos \textit{cgroups}. Nenhum desses trabalhos compara as quatro abordagens sobre a mesma VNF, sob carga controlada e crescente, que é a lacuna que este estudo preenche (Tabela~\ref{tab:rel}).
-
-\begin{table*}[t]
-\centering
-\caption{Comparação entre os trabalhos correlatos e este trabalho.}
-\label{tab:rel}
-\footnotesize
-\begin{tabular}{@{}p{2.9cm}p{4.2cm}p{3.9cm}p{3.1cm}p{1.6cm}@{}}
-\toprule
-Referência & Foco & Tecnologias & Métricas & Carga controlada \\
-\midrule
-Cassagnes et al. (2020) & eBPF versus \textit{polling} em espaço de usuário & eBPF (\textit{kprobes}) e ferramentas tradicionais & Latência de instrumentação & Sim \\
-Usman et al. (2022) & Observabilidade em microsserviços & Prometheus, Sysstat & N/A & Não \\
-Kannan et al. (2024) & Agente de rede leve & eBPF & CPU, memória & Sim \\
-Shahinfar et al. (2025) & Isolamento de desempenho no eBPF & eBPF & Vazão, latência & Sim \\
-Dinga et al. (2023) & Custo energético de monitoramento & ELK, Netdata, Prometheus, Zipkin & Energia, desempenho & Sim \\
-Oliveira et al. (2026) & Latência de coleta e orquestração & Sysstat & Latência, reação do MANO & Sim \\
-\textbf{Este trabalho} & \textbf{Benchmark de impacto sobre a VNF} & \textbf{eBPF, Sysstat, Prometheus, API do Docker} & \textbf{RTT UDP, CPU, memória} & \textbf{Sim} \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-\section{Materiais e Métodos}
-\label{sec:met}
-\subsection{Materiais utilizados}
-\subsubsection{Ambiente}
-Os experimentos rodaram em uma única máquina (AMD Ryzen 5 5500, 6 núcleos e 12 \textit{threads}, 16 GB de RAM, Ubuntu 26.04 LTS, \textit{kernel} 7.0.0-38 em modo texto, Docker Engine 29.8), com cada coletor em contêineres Docker Compose. As bibliotecas foram fixadas em versões exatas: \texttt{psutil} 7.2.2, \texttt{prometheus\_client} 0.25.0 e SDK \texttt{docker} 7.2.0, em Python 3.12, além da libbpf 1.3.0 e do clang 18. O código e os dados estão públicos\footnote{\url{https://github.com/joaopedroplinta/vnf-monitoring-benchmark}}, e os resultados das 480 execuções podem ser explorados em um painel interativo\footnote{\url{https://vnf-lab.up.railway.app}}.
-
-\subsubsection{VNF e carga}
-A VNF é um WAF simplificado em Python que inspeciona cargas em busca de injeção SQL, XSS, \textit{path traversal}, execução remota de comandos e \textit{null byte}. O cliente lê cargas pré-geradas de um arquivo e as envia ao WAF por TCP (porta 8080), com 200 conexões persistentes e prefixo de tamanho de 4 bytes, de modo que a memória do cliente não depende de $N$.
-
-\subsection{Métodos}
-\subsubsection{Arquitetura}
-A topologia é igual nas quatro pilhas (Figura~\ref{fig:c4}): cliente, WAF e observador, mais uma sonda que envia uma requisição UDP por segundo ao observador (porta 9999). O tempo de ida e volta dessa sonda (RTT UDP) é a métrica primária: como o observador só responde depois de coletar suas métricas, o custo da coleta integra o RTT.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{C4model.drawio.png}
-\caption{Diagrama de contêineres (C4, nível 2) da topologia experimental.}
-\label{fig:c4}
-\end{figure}
-
-\subsubsection{Coletores}
-O \textbf{eBPF} usa libbpf com CO-RE e dois \textit{kprobes} (\texttt{tcp\_sendmsg} e \texttt{tcp\_cleanup\_rbuf}) que acumulam os bytes da porta 8080 em um mapa do \textit{kernel}; o processo de usuário apenas lê o mapa a cada sonda. O \textbf{Sysstat} lê \texttt{/proc/net/dev} e consulta o \texttt{psutil} para CPU e memória do WAF; o \textbf{Prometheus} faz o mesmo e mantém ainda um servidor HTTP com as métricas. O \textbf{Docker} consulta o contêiner do WAF com \texttt{stats(stream=False, one\_shot=True)}, calcula a CPU pela variação do tempo acumulado do \textit{cgroup} entre sondas e a memória como uso menos cache inativo.
-
-\subsubsection{Protocolo e análise estatística}
-O volume $N$ assume os níveis 100 mil, 500 mil, 1 milhão e 2 milhões, e a janela de coleta dura $\lfloor N/15\,000\rfloor + 20$ s. Cada combinação de coletor e volume foi repetida 30 vezes (480 execuções). Uma primeira bateria teve parte dos resumos de inspeção zerada por uma condição de corrida na escrita do arquivo de métricas do WAF; ele foi corrigido e a bateria repetida por inteiro, com RTT e memória concordando dentro do IC95\%. Os resultados são reportados como média $\pm$ IC95\% (distribuição $t$ de Student); dois intervalos que não se sobrepõem são tomados como evidência de diferença ao nível $\alpha=0{,}05$.
-
-\section{Resultados}
-\label{sec:res}
-\subsection{Tempo de resposta}
-A Tabela~\ref{tab:rtt} e as Figuras~\ref{fig:rtt} e \ref{fig:box} mostram o RTT médio e sua distribuição. O eBPF foi o menor em todos os volumes: de 12,8\% a 13,4\% abaixo do Sysstat e de 14,4\% a 14,9\% abaixo do Prometheus, sem sobreposição dos IC95\%. O Prometheus ficou de 1,4\% a 2,1\% acima do Sysstat, coerente com o custo do servidor HTTP. O Docker apresentou cerca de 2,5 ms, cinco vezes o do eBPF. O RTT não depende do volume; só em $N=100$ mil há valores um pouco maiores, provavelmente pelo peso da inicialização na janela, que é curta.
-
-\begin{table}[t]
-\centering
-\caption{RTT UDP médio do observador (ms, média $\pm$ IC95\%) por volume $N$.}
-\label{tab:rtt}
-\scriptsize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-$N$ & eBPF & Sysstat & Prometheus & Docker \\
-\midrule
-100 mil   & $0{,}533\pm0{,}003$ & $0{,}614\pm0{,}005$ & $0{,}623\pm0{,}004$ & $2{,}579\pm0{,}011$ \\
-500 mil   & $0{,}496\pm0{,}003$ & $0{,}571\pm0{,}003$ & $0{,}583\pm0{,}004$ & $2{,}503\pm0{,}010$ \\
-1 milhão  & $0{,}498\pm0{,}002$ & $0{,}575\pm0{,}004$ & $0{,}585\pm0{,}003$ & $2{,}498\pm0{,}011$ \\
-2 milhões & $0{,}500\pm0{,}002$ & $0{,}573\pm0{,}002$ & $0{,}584\pm0{,}002$ & $2{,}506\pm0{,}008$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{tempo_resposta_por_n.png}
-\caption{RTT médio do observador por volume de mensagens.}
-\label{fig:rtt}
-\end{figure}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.85\textwidth]{boxplot_tempo_resposta.png}
-\caption{Distribuição do RTT por ferramenta e volume (30 execuções). A linha inferior omite o Docker e amplia o eixo.}
-\label{fig:box}
-\end{figure*}
-
-\subsection{Por que o Docker é mais lento}
-A diferença decorre da interface de coleta, e não da métrica. No Sysstat e no Prometheus, a leitura é local (\texttt{/proc} e \texttt{psutil}), e no eBPF é a leitura de um contador em memória. No Docker, cada sonda UDP dispara uma cadeia síncrona: o SDK Python monta uma requisição HTTP e a envia pelo \textit{socket} Unix; o \textit{daemon} lê os arquivos do \textit{cgroup}, monta a estrutura completa de estatísticas (CPU por núcleo, memória, rede, E/S) e a serializa em JSON; o SDK decodifica a resposta; e o observador calcula a variação de CPU. Como o observador só responde ao UDP depois dessa cadeia, todo o seu custo integra o RTT.
-
-Um microbenchmark isolado, em outra máquina e com o contêiner ocioso (script \texttt{bench\_\allowbreak docker\_\allowbreak cgroup.py}), mostra a proporção entre as etapas: a chamada \texttt{stats(one\_shot)} do SDK levou de 1,4 a 1,7 ms; uma chamada vazia ao \textit{daemon}, que mede só a ida e volta pela API, de 0,5 a 0,6 ms; e a leitura direta de \texttt{cpu.stat}, \texttt{memory.current} e \texttt{memory.stat} do \textit{cgroup}, de 0,04 a 0,05 ms, cerca de 30 vezes menos. Os cerca de 2 ms que o Docker acrescenta na coleta são maiores que a chamada isolada, o que é compatível com a competição por CPU entre o \textit{daemon} e o WAF saturado, mas essa parcela não foi decomposta. Manter a consulta em segundo plano ou guardar o último valor em \textit{cache} reduziria o RTT, mas à custa da atualidade da métrica e em desvantagem para os demais coletores, que leem seus dados na hora da requisição; por isso essas alternativas não foram implementadas.
-
-\subsection{Memória e CPU}
-O Sysstat teve o menor consumo de memória do observador (13,6 MB), seguido do eBPF (15,0 MB), do Prometheus (24,7 MB) e do Docker (30,8 MB), sem relação com o volume (Figura~\ref{fig:mem}); o acréscimo do Prometheus decorre da biblioteca cliente e do servidor HTTP, e o do Docker, do SDK e de suas dependências. A CPU do WAF saturou em torno de 104\% a 110\% de um núcleo a partir de $N=500$ mil, sem diferença prática entre os coletores (entre 105,3\% e 106,1\% em $N=1$ milhão), o que indica que a escolha do coletor não altera o custo da VNF. A CPU do próprio observador foi muito ruidosa, pela granularidade da amostragem do \texttt{psutil} sobre processos de uso muito baixo, e não sustenta comparação quantitativa.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{cpu_waf.png}
-\caption{CPU média do processo WAF por volume de mensagens.}
-\label{fig:cpu}
-\end{figure}
-
-\subsection{Métricas de validação}
-O tempo médio de inspeção por carga convergiu para cerca de 0,080 ms nas quatro abordagens, o que confirma que o custo unitário do WAF independe do coletor. Os contadores de bytes não são comparáveis entre as ferramentas, pelo ponto de coleta: o eBPF contabiliza só o tráfego do WAF (porta 8080), com valores assimétricos (em $N=1$ milhão, cerca de 623 MB recebidos e 9 MB transmitidos), enquanto os demais medem toda a interface de \textit{loopback}, em que cada byte transmitido também é recebido (RX igual a TX, de 692 a 704 MB). Essa diferença é inerente ao escopo de medição, e não um erro de contabilização.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{memoria_observador.png}
-\caption{Memória média do observador por volume de mensagens (média $\pm$ IC95\%, 30 execuções).}
-\label{fig:mem}
-\end{figure}
-
-\subsection{Análise de sensibilidade da vazão}
-Nos volumes maiores, o WAF inspecionou apenas de 62\% a 88\% das mensagens, a uma vazão de cerca de 7 a 8 mil mensagens por segundo, abaixo dos 15\,000 por segundo usados para dimensionar a janela. A origem foi investigada com o eBPF e $N=1$ milhão (Tabela~\ref{tab:sens6}): multiplicar só o cliente não aumentou a vazão, porque no cliente original cada processo percorre o arquivo de cargas inteiro; só a combinação de WAF e cliente em 4 processos com leitura direta levou o WAF a inspecionar as $N$ mensagens. O limite resulta, portanto, de dois fatores simultâneos: o processo único do WAF e a forma como o cliente lê as cargas.
-
-\begin{table}[t]
-\centering
-\caption{Inspeções ao fim da janela (eBPF, $N=1$ milhão) por configuração do WAF e do cliente.}
-\label{tab:sens6}
-\scriptsize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}p{3.9cm}ccrr@{}}
-\toprule
-Configuração & WAF & Cli. & Inspeções & \% de $N$ \\
-\midrule
-Original (30 rep.)                         & 1 & 1 & 706.407   & 71 \\
-Cliente $\times 4$ (30 rep.)               & 1 & 4 & 601.527   & 60 \\
-WAF e cliente $\times 4$ (30 rep.)         & 4 & 4 & 650.067   & 65 \\
-Leitura direta (3 rep.)                    & 1 & 1 & 736.000   & 74 \\
-Leitura direta, cliente $\times 4$ (3 rep.)& 1 & 4 & 734.367   & 73 \\
-WAF e cliente $\times 4$, leitura direta (30 rep.) & 4 & 4 & 1.000.000 & 100 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-A bateria completa foi repetida com a última configuração (480 execuções): a ordem entre as ferramentas se manteve, com IC95\% entre $\pm0{,}004$ e $\pm0{,}011$ ms. O RTT absoluto subiu (Tabela~\ref{tab:sens}), pois os observadores baseados em \texttt{psutil} passam a consultar os quatro processos do WAF a cada sondagem; o Docker, que consulta o contêiner por uma única chamada, subiu pouco. Por isso os valores absolutos da coleta principal, com um processo, são os que se reportam.
-
-\begin{table}[t]
-\centering
-\caption{RTT médio (ms) em $N=1$ milhão: coleta principal e coleta com inspeção integral (WAF e cliente em 4 processos).}
-\label{tab:sens}
-\scriptsize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lcccc@{}}
-\toprule
- & eBPF & Sysstat & Prometheus & Docker \\
-\midrule
-Principal (62--88\% inspecionado) & 0,498 & 0,575 & 0,585 & 2,498 \\
-Inspeção integral (100\%)         & 0,900 & 1,014 & 1,037 & 2,658 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Síntese}
-A Tabela~\ref{tab:sintese} resume as quatro abordagens: o eBPF teve a menor sobrecarga na métrica primária; o Sysstat, a menor memória; o Prometheus ficou próximo do Sysstat, com mais memória e um pequeno acréscimo de RTT pelo servidor HTTP; e o Docker teve o maior RTT e a maior memória.
-
-\begin{table}[t]
-\centering
-\caption{Síntese comparativa das quatro abordagens.}
-\label{tab:sintese}
-\scriptsize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Dimensão & eBPF & Sysstat & Prom. & Docker \\
-\midrule
-RTT UDP (ms)         & 0,50 & 0,57 & 0,58 & 2,5 \\
-Memória do obs. (MB) & 15   & 14   & 25   & 31 \\
-CPU do WAF           & \multicolumn{4}{c}{equivalente} \\
-CPU do observador    & \multicolumn{4}{c}{inconclusiva} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Conclusão}
-\label{sec:conc}
-Os resultados sustentam a hipótese: o eBPF apresentou o menor tempo de resposta em todos os volumes, com diferenças estatisticamente significativas em relação às demais abordagens. A vantagem sobre o Sysstat e o Prometheus é de magnitude moderada (13\% a 15\%, ou cerca de 0,07 a 0,09 ms), ao passo que a API do Docker ficou cinco vezes acima, por causa da cadeia de consulta ao \textit{daemon}. O Sysstat teve o menor consumo de memória, e a escolha do coletor não alterou a CPU do WAF; portanto, a escolha da ferramenta deve ponderar também a complexidade de implementação, em que o Sysstat e o Prometheus são mais simples que o eBPF. A análise de sensibilidade mostrou que a ordem entre as ferramentas não depende de o WAF inspecionar todas as mensagens.
-
-As limitações são o uso de uma única máquina, de um WAF simplificado em Python e de tráfego sintético em \textit{loopback}, de modo que a generalização para outros ambientes e outras VNFs não está assegurada; a CPU do observador não ter sustentado comparação; e a decomposição do tempo do Docker na máquina de coleta não ter sido feita.
-
-\section{Trabalhos Futuros}
-\label{sec:fut}
-\begin{itemize}
-\item Repetir a coleta do Docker lendo os \textit{cgroups} diretamente (em \texttt{/sys/fs/cgroup/system.slice/}), em vez de usar a biblioteca \texttt{docker}, para medir quanto do tempo de resposta decorre da API.
-\item Avaliar um WAF de maior vazão, que inspecione todas as mensagens sem recorrer a múltiplos processos, de modo que os observadores consultem um único processo.
-\item Avaliar o efeito do monitoramento sobre a vazão e a latência das requisições processadas pelo próprio WAF.
-\item Estender a comparação a outras VNFs e a ambientes com mais de um contêiner monitorado.
-\end{itemize}
+\input{\docsdir capítulos/0.Introdução}
+\widetables
+\input{\docsdir capítulos/1.RevisãoDaLiteratura}
+\narrowtables
+\input{\docsdir capítulos/2.Metodologia}
+\widetables
+% Nos cabeçalhos das tabelas do capítulo de resultados, \textbf{$N$} falha com a classe ieeeaccess (a classe redefine
+% as letras matemáticas); aqui \textbf passa a só mudar a série da fonte, o que dá o mesmo resultado.
+\let\origtextbf\textbf
+\renewcommand{\textbf}[1]{{\bfseries #1}}
+\input{\docsdir capítulos/3.Resultados}
+\let\textbf\origtextbf
+\narrowtables
+\input{\docsdir capítulos/4.ConsideraçõesFinais}
 
 \bibliographystyle{IEEEtran}
 \bibliography{\docsdir referencias}

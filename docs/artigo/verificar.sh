@@ -5,7 +5,7 @@
 # deve ser gerado com pdfLaTeX (Overleaf), com a classe original desta pasta.
 set -e
 d=$(mktemp -d)
-cp -r ../imagens ../referencias.bib "$d"/
+cp -r ../imagens ../referencias.bib ../capítulos "$d"/
 mkdir "$d/artigo"
 cp *.tex *.png *.cls "$d/artigo/"
 sed -i 's|\\RequirePackage{spotcolor}||; s|\\NewSpotColorSpace{PANTONE}||; s|\\AddSpotColor{PANTONE}.*||; s|\\SetPageColorSpace{PANTONE}%||; s|\\definecolor{accessblue}{spotcolor}.*|\\definecolor{accessblue}{cmyk}{.24,1,1,0}|' "$d/artigo/ieeeaccess.cls"

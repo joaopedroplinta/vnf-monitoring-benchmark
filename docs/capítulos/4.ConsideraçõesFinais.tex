@@ -16,7 +16,7 @@ Em termos de escolha, os resultados sugerem que o ganho de tempo de resposta do 
 Os resultados devem ser lidos com as seguintes ressalvas, além das limitações da metodologia (Capítulo~\ref{chap:metodologia}):
 
 \begin{itemize}
-  \item o tempo de resposta do Docker inclui a consulta ao \textit{daemon} a cada requisição UDP; a decomposição desse tempo entre as etapas da cadeia não foi medida, e a alternativa de consultar o \textit{daemon} em segundo plano não foi avaliada;
+  \item o tempo de resposta do Docker inclui a consulta ao \textit{daemon} a cada requisição UDP; a decomposição completa desse tempo na máquina de coleta não foi feita (um microbenchmark em outra máquina mostrou a proporção entre as etapas, Seção~\ref{sec:resultados_rtt}), e as alternativas de consultar o \textit{daemon} em segundo plano ou guardar o valor em \textit{cache} não foram avaliadas por favorecerem o Docker em relação aos demais coletores;
   \item a memória e a CPU do WAF no cenário Docker provêm da contabilidade do \textit{cgroup}, e não do processo, portanto não são diretamente comparáveis às dos demais cenários;
   \item a CPU do observador é muito ruidosa e não sustenta comparação quantitativa;
   \item a primeira bateria de coletas teve 22\% dos resumos de inspeção zerados por uma condição de execução na leitura de \texttt{waf\_metrics.json}; o WAF foi corrigido e a bateria foi repetida por completo (Seção~\ref{sec:protocolo}), de modo que os resultados apresentados provêm da repetição;
@@ -25,5 +25,6 @@ Os resultados devem ser lidos com as seguintes ressalvas, além das limitações
 \end{itemize}
 
 \section{Trabalhos Futuros}
+\label{sec:trabalhos_futuros}
 
-Como continuidade, propõem-se: (i) decompor o tempo de resposta do coletor Docker, comparando a consulta via API com a leitura direta dos arquivos de \textit{cgroup} e com uma coleta em segundo plano; (ii) avaliar um WAF de maior vazão, que inspecione as $N$ mensagens sem recorrer a múltiplos processos, de modo que os observadores consultem um único processo, e discutir como o número de processos monitorados altera o custo de cada coletor; (iii) avaliar o efeito do monitoramento sobre a vazão e a latência das requisições processadas pelo próprio WAF; e (iv) estender a comparação a outras VNFs e a ambientes com mais de um contêiner monitorado.
+Como continuidade, propõem-se: (i) repetir a coleta do Docker lendo os \textit{cgroups} diretamente (em \texttt{/sys/fs/cgroup/system.slice/}), em vez de usar a biblioteca \texttt{docker}, para medir quanto do tempo de resposta decorre da API e quanto da leitura do \textit{cgroup}; (ii) avaliar um WAF de maior vazão, que inspecione as $N$ mensagens sem recorrer a múltiplos processos, de modo que os observadores consultem um único processo, e discutir como o número de processos monitorados altera o custo de cada coletor; (iii) avaliar o efeito do monitoramento sobre a vazão e a latência das requisições processadas pelo próprio WAF; e (iv) estender a comparação a outras VNFs e a ambientes com mais de um contêiner monitorado.

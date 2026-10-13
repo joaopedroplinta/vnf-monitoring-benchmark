@@ -65,3 +65,6 @@ jobs:
           sudo mv tectonic /usr/local/bin/
       - run: tectonic -X compile main.tex
         working-directory: docs
+      - name: Compilar o artigo (modelo IEEE Access)
+        run: ./verificar.sh
+        working-directory: docs/artigo

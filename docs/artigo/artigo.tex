@@ -17,7 +17,10 @@
 \usepackage{textcomp}
 \usepackage{graphicx}
 \usepackage{url}
-\graphicspath{{../}{../imagens/}{imagens/}}
+% Onde estão capítulos/, imagens/ e referencias.bib: ../ se a pasta docs/ foi enviada inteira (artigo.tex em
+% docs/artigo/), ou a própria raiz do projeto se esses arquivos estiverem soltos ao lado do artigo.tex.
+\IfFileExists{../capítulos/0.Introdução.tex}{\newcommand{\docsdir}{../}}{\newcommand{\docsdir}{./}}
+\graphicspath{{\docsdir}{\docsdir imagens/}{imagens/}}
 \setlength{\emergencystretch}{3em}
 \sloppy
 \let\citeonline\cite  % estilo numérico: "[3] mostram"
@@ -81,18 +84,18 @@ eBPF; network monitoring; NFV; overhead; Docker.
 
 \noindent\textbf{\textit{Palavras-chave}}---eBPF; monitoramento de redes; NFV; sobrecarga; Docker.
 
-\input{../capítulos/0.Introdução}
+\input{\docsdir capítulos/0.Introdução}
 \widetables
-\input{../capítulos/1.RevisãoDaLiteratura}
+\input{\docsdir capítulos/1.RevisãoDaLiteratura}
 \narrowtables
-\input{../capítulos/2.Metodologia}
+\input{\docsdir capítulos/2.Metodologia}
 \widetables
-\input{../capítulos/3.Resultados}
+\input{\docsdir capítulos/3.Resultados}
 \narrowtables
-\input{../capítulos/4.ConsideraçõesFinais}
+\input{\docsdir capítulos/4.ConsideraçõesFinais}
 
 \bibliographystyle{IEEEtran}
-\bibliography{../referencias}
+\bibliography{\docsdir referencias}
 
 %% 'ieeeaccess.cls' exige \EOD ao fim do documento
 \EOD

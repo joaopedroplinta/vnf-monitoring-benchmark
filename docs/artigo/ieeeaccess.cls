@@ -123,11 +123,8 @@
   \definecolor{accessblue}{cmyk}{.24,1,1,0}
   \definecolor{greycolor}{cmyk}{0,0,0,1}
 \else
-  \RequirePackage{spotcolor}
-  \NewSpotColorSpace{PANTONE}
-  \AddSpotColor{PANTONE} {PANTONE3015C} {PANTONE\SpotSpace 3015\SpotSpace C} {1 0.3 0 0.2}
-  \SetPageColorSpace{PANTONE}%
-  \definecolor{accessblue}{spotcolor}{PANTONE3015C,1.0}%
+  % Adaptacao IFPR: verde institucional no lugar do azul Pantone (dispensa o pacote spotcolor, so de pdfTeX).
+  \definecolor{accessblue}{RGB}{47,158,65}%
   \definecolor{greycolor}{cmyk}{0,0,0,.8}
 \fi
 \definecolor{grey}{cmyk}{0,0,0,.1}
@@ -443,8 +440,8 @@
 \newsavebox\abstractbox
 \newsavebox\indexbox
 
-\def\abstracttitle{{\color{accessblue}\abstractheadfont ABSTRACT}\ifjtehm\quad\else\space\fi}
-\def\indextitle{{\color{accessblue}\indexheadfont INDEX TERMS}\ifjtehm\quad\else\space\fi}
+\def\abstracttitle{{\color{accessblue}\abstractheadfont RESUMO}\ifjtehm\quad\else\space\fi}
+\def\indextitle{{\color{accessblue}\indexheadfont PALAVRAS-CHAVE}\ifjtehm\quad\else\space\fi}
 \def\history#1{\gdef\@history{#1}}\let\@history\@empty%
 \def\artnum#1{\gdef\@artnum{#1}}
 \def\doi#1{\gdef\@doi{#1}}
@@ -544,7 +541,7 @@
      \begin{tabular*}{\textwidth}{@{}p{2.96pc}@{}p{\titlewidth}@{}p{3.15pc}@{}}%
      &\begin{center}\vspace*{1.2mm}\vspace*{-1.21pc}\centering%
      {\vss\historyfont\@history\vss}\vspace*{2mm}\par%
-     {\vss\doifont Digital Object Identifier\space\@doi\vss}\vspace*{7.4mm}\par%
+     \vspace*{7.4mm}\par%
      {\vss\color{accessblue}\titlefont\@title\vss}\vspace*{6mm}\par%
      \ifjtehmeditorial\else{\vss\authorfont\@author\vss}\vspace*{1mm}\par%
        \@tempdima=\absht%\the\ht99%
@@ -582,7 +579,7 @@
      \begin{minipage}{\titlewidth}%
      \raggedright\vspace*{1.2mm}%
      \ifaccesseditors\else{\vss\historyfont\@history\vss}\vspace*{2mm}\par\fi%
-     {\vss\doifont Digital Object Identifier\space\@doi\vss}\vspace*{7.4mm}\par%
+     \vspace*{7.4mm}\par%
      {\vss\color{accessblue}\titlefont\@title\vss}\vspace*{6mm}\par%
      \ifaccesseditors\vspace*{2mm}\else{\vss\authorfont\@author\vss}\vspace*{0mm}\par%
 %       \@tempdima=\absht%\the\ht99%

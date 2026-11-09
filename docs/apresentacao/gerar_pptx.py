@@ -103,6 +103,16 @@ def para(tf, runs, size=17, color=TXT, bold=False, italic=False, align=PP_ALIGN.
 
 
 def header(s, kicker, ttl, num=None):
+    # Cabeçalho e rodapé têm tamanho fixo (título 32, kicker 15, rodapé 14): o F de cada slide só vale para o conteúdo.
+    global F
+    f_slide, F = F, 1.0
+    try:
+        _header(s, kicker, ttl)
+    finally:
+        F = f_slide
+
+
+def _header(s, kicker, ttl, num=None):
     num = len(prs.slides._sldIdLst)
     # Barra superior fina verde IFPR
     topbar = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, SW, Inches(0.08))
@@ -111,7 +121,7 @@ def header(s, kicker, ttl, num=None):
 
     # Kicker pequeno em maiusculas
     tb, tf = textbox(s, Inches(0.65), Inches(0.32), Inches(9.5), Inches(0.32), autoshrink=False)
-    para(tf, [(kicker.upper(), {"size": 13, "color": IFPR_VERDE, "bold": True})], first=True)
+    para(tf, [(kicker.upper(), {"size": 15, "color": IFPR_VERDE, "bold": True})], first=True)
 
     # Logo IFPR discreto no canto superior direito
     logo_path = os.path.join(IMG, "logo-ifpr.png")
@@ -120,7 +130,7 @@ def header(s, kicker, ttl, num=None):
 
     # Titulo grande
     tb2, tf2 = textbox(s, Inches(0.62), Inches(0.62), Inches(9.7), Inches(0.85), autoshrink=True)
-    para(tf2, [(ttl, {"size": 28, "color": TXT, "bold": True})], first=True)
+    para(tf2, [(ttl, {"size": 32, "color": TXT, "bold": True})], first=True)
 
     # Regra de acento
     rule = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.65), Inches(1.48), Inches(1.3), Pt(3.5))
@@ -134,11 +144,11 @@ def header(s, kicker, ttl, num=None):
 
     # Rodape esquerda
     tb4, tf4 = textbox(s, Inches(0.65), Inches(7.02), Inches(8.5), Inches(0.35), autoshrink=False)
-    para(tf4, [("Defesa de TCC · Ciência da Computação · IFPR Campus Pinhais · 2026", {"size": 12, "color": MUT})], first=True)
+    para(tf4, [("Defesa de TCC · Ciência da Computação · IFPR Campus Pinhais · 2026", {"size": 14, "color": MUT})], first=True)
 
     # Numero do slide
     tb3, tf3 = textbox(s, Inches(11.5), Inches(7.02), Inches(1.18), Inches(0.35), autoshrink=False)
-    para(tf3, [(f"{num:02d} / {TOTAL_SLIDES:02d}", {"size": 12, "color": MUT, "bold": True})], align=PP_ALIGN.RIGHT, first=True)
+    para(tf3, [(f"{num:02d} / {TOTAL_SLIDES:02d}", {"size": 14, "color": MUT, "bold": True})], align=PP_ALIGN.RIGHT, first=True)
 
 
 def card(s, left, top, width, height, accent, heading, lines, head_size=15, line_size=13, bg_color=PANEL):
@@ -398,7 +408,7 @@ card(s, Inches(0.65), Inches(5.85), Inches(12.03), Inches(0.88), VERDE, "",
 
 # 7 - TRABALHOS RELACIONADOS
 F = 1.2
-s = slide(); header(s, "Estado da arte", "Trabalhos relacionados e lacuna na literatura", 7)
+s = slide(); header(s, "Estado da arte", "Trabalhos relacionados e lacuna", 7)
 rows = [
     ("Referência", "Foco / Tecnologias Analisadas", "Métricas de Sobrecarga", "Contexto / VNF"),
     ("Cassagnes et al. (2020)", "eBPF (kprobes) vs. polling em espaço de usuário", "Latência de instrumentação", "Rede geral / Host"),
@@ -505,7 +515,7 @@ if os.path.exists(_qr):
 
 # 11 - TEMPO DE RESPOSTA (RESULTADO PRINCIPAL)
 F = 1.0
-s = slide(); header(s, "Resultados · Métrica Primária", "Tempo de resposta do observador (RTT UDP)", 11)
+s = slide(); header(s, "Resultados · Métrica Primária", "Tempo de resposta (RTT UDP)", 11)
 plot(s, os.path.join(IMG, "tempo_resposta_por_n.png"), Inches(0.65), Inches(1.75), Inches(5.75), Inches(3.70))
 
 rows_rtt = [
@@ -528,7 +538,7 @@ caption(s, "Valores em ms (média ± IC95%, n = 30). Menor é melhor.", Inches(5
 
 # 12 - DECOMPOSICAO DO CUSTO DO DOCKER + BOXPLOT
 F = 1.0
-s = slide(); header(s, "Resultados · Dispersão e Análise do Docker", "Distribuição do RTT e o custo da API do Docker", 12)
+s = slide(); header(s, "Resultados · Dispersão e Análise do Docker", "Distribuição do RTT e custo do Docker", 12)
 plot(s, os.path.join(IMG, "boxplot_tempo_resposta.png"), Inches(0.65), Inches(1.75), Inches(7.75), Inches(4.85))
 
 card(s, Inches(8.55), Inches(1.75), Inches(4.13), Inches(1.95), VERDE, "Distribuição (boxplot)",
@@ -582,7 +592,7 @@ card(s, Inches(0.65), Inches(4.55), Inches(12.03), Inches(2.20), AZUL, "Evidênc
 
 # 15 - MEMORIA DO OBSERVADOR E DO WAF
 F = 1.1
-s = slide(); header(s, "Resultados · Sobrecarga de Memória", "Consumo de memória do observador e do WAF", 15)
+s = slide(); header(s, "Resultados · Sobrecarga de Memória", "Memória do observador e do WAF", 15)
 plot(s, os.path.join(IMG, "memoria_observador.png"), Inches(0.65), Inches(1.78), Inches(6.85), Inches(4.75))
 
 card(s, Inches(7.70), Inches(1.78), Inches(4.98), Inches(3.10), VERDE, "Memória do Observador (constante com N)",
@@ -600,7 +610,7 @@ card(s, Inches(7.70), Inches(5.02), Inches(4.98), Inches(1.51), LARANJA, "Memór
 
 # 16 - ANALISE DE SENSIBILIDADE E COLETA 100%
 F = 1.15
-s = slide(); header(s, "Resultados · Investigação Adicional", "Sensibilidade da vazão: coleta com 100% de N", 16)
+s = slide(); header(s, "Resultados · Investigação Adicional", "Sensibilidade da vazão (100% de N)", 16)
 tb, tf = textbox(s, Inches(0.65), Inches(1.72), Inches(12.03), Inches(0.85), autoshrink=True)
 para(tf, [("Na coleta oficial, o WAF inspeciona 100% de N=100k, mas só 62% a 88% para N ≥ 500k. Eliminamos o gargalo e repetimos a bateria (+480 execuções):", {"size": 15})], first=True)
 

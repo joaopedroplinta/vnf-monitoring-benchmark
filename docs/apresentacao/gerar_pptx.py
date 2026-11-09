@@ -103,6 +103,16 @@ def para(tf, runs, size=17, color=TXT, bold=False, italic=False, align=PP_ALIGN.
 
 
 def header(s, kicker, ttl, num=None):
+    # Cabeçalho e rodapé têm tamanho fixo (título 28, kicker 13, rodapé 12): o F de cada slide só vale para o conteúdo.
+    global F
+    f_slide, F = F, 1.0
+    try:
+        _header(s, kicker, ttl)
+    finally:
+        F = f_slide
+
+
+def _header(s, kicker, ttl, num=None):
     num = len(prs.slides._sldIdLst)
     # Barra superior fina verde IFPR
     topbar = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, SW, Inches(0.08))

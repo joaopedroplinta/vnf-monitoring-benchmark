@@ -76,7 +76,7 @@ A bateria completa (30 execuções por ferramenta e volume, ~14 h) e as variáve
 | [`src/`](src) | WAF, observadores (eBPF, Sysstat, Prometheus, Docker), cliente, probe e comparador |
 | [`scripts/`](scripts) | geração de payloads, execução dos testes e gráficos |
 | [`configs/`](configs) | Dockerfiles |
-| [`dashboard/`](dashboard) | dashboard interativo (Streamlit) com os resultados das 480 execuções |
+| [`dashboard/`](dashboard) | dashboard interativo (React + TypeScript) com os resultados das 960 execuções (duas baterias de 480) |
 | [`results/`](results) | resultados brutos (JSON) e agregados (CSV/JSON) das execuções |
 | [`docs/`](docs) | tese em LaTeX, diagrama C4, apresentações e documentação detalhada |
 
@@ -84,16 +84,15 @@ A bateria completa (30 execuções por ferramenta e volume, ~14 h) e as variáve
 
 **Acesse online: [https://vnf-lab.up.railway.app](https://vnf-lab.up.railway.app)**
 
-Os resultados podem ser explorados em um dashboard interativo (Streamlit + Plotly), com filtros por ferramenta e volume, IC95%, execuções individuais, download dos dados e modo claro/escuro:
+Os resultados podem ser explorados em um dashboard interativo (React, TypeScript, Tailwind CSS e Plotly), com navegação por seis abas, filtros por bateria, ferramenta e volume, IC95%, execuções individuais, download dos dados e modo claro/escuro. É uma página estática: os dados vêm de `dashboard/data.csv` e `dashboard/data_otimizada.csv`.
 
 ```bash
 cd dashboard
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-.venv/bin/streamlit run app.py
+npm install        # precisa de Node 22 ou mais recente
+npm run dev
 ```
 
-Para rodar localmente, abra `http://localhost:8501`. Detalhes, testes e instruções de hospedagem na Railway em **[dashboard/README.md](dashboard/README.md)**.
+Para rodar localmente, abra `http://localhost:5173`. Testes, geração dos dados e instruções de hospedagem na Railway em **[dashboard/README.md](dashboard/README.md)**.
 
 Documentação detalhada:
 [Reprodução](docs/reproducao.md) ·

@@ -16,3 +16,7 @@ results/waf_metrics.json
 *.env
 dashboard/.venv/
 __pycache__/
+
+# Dashboard (React)
+dashboard/node_modules/
+dashboard/dist/

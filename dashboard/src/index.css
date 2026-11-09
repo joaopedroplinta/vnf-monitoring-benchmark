@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --canvas: #f4f6fa;
+  --surface: #ffffff;
+  --sidebar: #fbfcfe;
+  --line: #dbe3ee;
+  --text: #18283d;
+  --muted: #52647c;
+  --accent: #007e8c;
+  --strip: #eef2f8;
+  --track: #dde6ef;
+  --tag-bg: #d9edf1;
+  --tag-text: #185563;
+  --tag-border: #a8ced6;
+  color-scheme: light;
+}
+
+.dark {
+  --canvas: #0a111e;
+  --surface: #131e32;
+  --sidebar: #0e1727;
+  --line: #243349;
+  --text: #eff4fc;
+  --muted: #a2b1c6;
+  --accent: #52d4df;
+  --strip: #0f1a2c;
+  --track: #2a3b55;
+  --tag-bg: #203e4c;
+  --tag-text: #d1f7fa;
+  --tag-border: #365766;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-sidebar: var(--sidebar);
+  --color-line: var(--line);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-strip: var(--strip);
+  --color-track: var(--track);
+  --color-tag: var(--tag-bg);
+  --color-tagink: var(--tag-text);
+  --color-tagline: var(--tag-border);
+}
+
+body {
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Tailwind v4 Preflight define cursor: default em botões; restaura a mãozinha em todos os controles clicáveis */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+[role="tab"]:not(:disabled),
+[role="switch"]:not(:disabled),
+select:not(:disabled),
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Remove barra de rolagem nativa nas abas horizontais em telas estreitas */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scroll discreto na sidebar sem aquela barra cinza grossa dividindo a tela */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 9999px;
+}
+
+/* Estiliza a modebar do Plotly no desktop para ficar integrada ao tema (sem fundo preto estranho) */
+.js-plotly-plot .plotly .modebar {
+  top: -2px !important;
+  right: 0 !important;
+  background: transparent !important;
+}
+.js-plotly-plot .plotly .modebar-group {
+  background: var(--strip) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 6px !important;
+  padding: 2px 4px !important;
+  margin-left: 4px !important;
+}
+.js-plotly-plot .plotly .modebar-btn path {
+  fill: var(--muted) !important;
+}
+.js-plotly-plot .plotly .modebar-btn:hover path,
+.js-plotly-plot .plotly .modebar-btn.active path {
+  fill: var(--accent) !important;
+}
+
+/* Caixa de seleção do zoom do Plotly: o padrão é transparente e fica invisível no tema */
+.js-plotly-plot .zoombox,
+.js-plotly-plot .zoombox-corners {
+  fill: color-mix(in srgb, var(--accent) 16%, transparent) !important;
+  stroke: var(--accent) !important;
+  stroke-width: 1px !important;
+}
+.js-plotly-plot .zoombox-corners {
+  fill: none !important;
+  stroke-width: 2px !important;
+}

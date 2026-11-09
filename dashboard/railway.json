@@ -1,8 +1,11 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "buildCommand": "npm run build"
+  },
   "deploy": {
-    "startCommand": "streamlit run app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true",
-    "healthcheckPath": "/_stcore/health",
+    "startCommand": "npm start",
+    "healthcheckPath": "/",
     "restartPolicyType": "ON_FAILURE"
   }
 }

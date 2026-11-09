@@ -96,18 +96,16 @@ eBPF, monitoramento de redes, NFV, sobrecarga, Docker.
 
 \noindent{\sffamily\bfseries\color{accessblue}KEYWORDS}\ eBPF, network monitoring, NFV, overhead, Docker.\normalsize
 
+% A classe ieeeaccess define \textbf como {\bf #1}, o que falha com \textbf{$N$} (ela redefine as letras matemáticas)
+% e com \textbf{\textit{...}} aninhado. Em todos os capítulos \textbf passa a só mudar a série da fonte.
+\renewcommand{\textbf}[1]{{\bfseries #1}}
 \input{\docsdir capítulos/0.Introdução}
 \widetables
 \input{\docsdir capítulos/1.RevisãoDaLiteratura}
 \narrowtables
 \input{\docsdir capítulos/2.Metodologia}
 \widetables
-% Nos cabeçalhos das tabelas do capítulo de resultados, \textbf{$N$} falha com a classe ieeeaccess (a classe redefine
-% as letras matemáticas); aqui \textbf passa a só mudar a série da fonte, o que dá o mesmo resultado.
-\let\origtextbf\textbf
-\renewcommand{\textbf}[1]{{\bfseries #1}}
 \input{\docsdir capítulos/3.Resultados}
-\let\textbf\origtextbf
 \narrowtables
 \input{\docsdir capítulos/4.ConsideraçõesFinais}
 

@@ -77,13 +77,17 @@ export function Sidebar({ filters, onChange, tab, onTab, mode, onMode, mobileOpe
 
   return (
     <>
-      {mobileOpen && <div aria-hidden="true" onClick={onCloseMobile} className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[1px] lg:hidden" />}
+      <div
+        aria-hidden="true"
+        onClick={onCloseMobile}
+        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-[1px] transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      />
 
       <aside
         aria-label="Navegação e filtros"
-        className={`fixed inset-y-0 left-0 z-50 flex w-[290px] max-w-[85vw] flex-col border-r border-line bg-sidebar shadow-2xl transition-[transform,width] duration-200 ease-out lg:sticky lg:top-0 lg:z-20 lg:h-screen lg:shrink-0 lg:translate-x-0 lg:shadow-none ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[290px] max-w-[85vw] flex-col border-r border-line bg-sidebar shadow-2xl transition-[transform,width,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none lg:visible lg:sticky lg:top-0 lg:z-20 lg:h-screen lg:shrink-0 lg:translate-x-0 lg:shadow-none ${
           collapsed ? "lg:w-[68px]" : "lg:w-[290px]"
-        } ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+        } ${mobileOpen ? "visible translate-x-0" : "invisible -translate-x-full"}`}
       >
         {/* Marca */}
         <div className={`flex h-16 shrink-0 items-center justify-between gap-2 border-b border-line px-4 ${collapsed ? "lg:justify-center lg:px-0" : ""}`}>

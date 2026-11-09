@@ -31,4 +31,4 @@ Os intervalos de confiança usam t de Student com as 30 repetições de cada com
 
 ## Hospedagem na Railway
 
-O serviço `vnf-lab` está publicado na Railway (https://vnf-lab.up.railway.app), a partir da branch `main`. Para recriá-lo, crie um serviço a partir do repositório e defina **Root Directory = `dashboard`**. O `railway.json` define o build (`npm ci && npm run build`), o comando de início (`npm start`) e o *healthcheck*. Gere o domínio público em *Settings → Networking → Generate Domain*. Para atualizar os dados, rode `build_data.py`, faça commit do `data.csv` e envie para a branch do serviço.
+O serviço `vnf-lab` está publicado na Railway (https://vnf-lab.up.railway.app), a partir da branch `main`. Para recriá-lo, crie um serviço a partir do repositório e defina **Root Directory = `dashboard`**. O `railway.json` define o build (`npm run build`), o comando de início (`npm start`) e o *healthcheck*. Gere o domínio público em *Settings → Networking → Generate Domain*. Para atualizar os dados, rode `build_data.py`, faça commit do `data.csv` e envie para a branch do serviço.

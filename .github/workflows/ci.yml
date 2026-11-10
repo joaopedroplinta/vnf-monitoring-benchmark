@@ -25,15 +25,18 @@ jobs:
 
   sintaxe:
     name: Sintaxe Python ${{ matrix.python }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           # o cliente roda em python:3.9-slim; o resto, em Python 3.12 (ubuntu:24.04)
+          # o setup-python não tem Python 3.9 para o Ubuntu 26.04 (ubuntu-latest), então esse job fica no 24.04
           - python: "3.9"
+            os: ubuntu-24.04
             paths: src/client
           - python: "3.12"
+            os: ubuntu-latest
             paths: src scripts dashboard
     steps:
       - uses: actions/checkout@v4

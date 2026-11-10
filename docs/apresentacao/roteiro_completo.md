@@ -1,7 +1,7 @@
 # ROTEIRO COMPLETO — para dominar o conteúdo (Defesa Final do TCC)
 
 **Título:** Monitoramento de Funções Virtualizadas de Redes: um estudo comparativo entre ferramentas de extração de comportamento
-**Duração-alvo:** ~20 min de fala (20 slides) + arguição da banca.
+**Duração-alvo:** ~20 min de fala (21 slides) + arguição da banca.
 
 Cada tópico tem três partes:
 - 🎯 **Objetivo do slide** — o que a banca precisa entender ao sair dele.
@@ -23,13 +23,12 @@ Cada tópico tem três partes:
 
 ---
 
-## SLIDE 2 — Roteiro da apresentação · ~0:45
+## SLIDE 2 — Roteiro da apresentação · ~0:30
 
-🎯 **Objetivo:** dar à banca o mapa dos 8 blocos e plantar a pergunta central.
+🎯 **Objetivo:** dar à banca o mapa dos 8 blocos, sem enrolar.
 
 🗣️ **O que dizer:**
-> "A apresentação está organizada em oito partes: o contexto de NFV; o problema, a hipótese e os objetivos; as quatro abordagens avaliadas; a lacuna na literatura; a metodologia e a arquitetura experimental; os resultados das 480 execuções oficiais; a análise de sensibilidade da vazão com mais 480 execuções; e por fim a síntese, as conclusões e os trabalhos futuros."
-> "E tudo gira em torno de uma pergunta central: **monitorar uma VNF tem um custo computacional — qual ferramenta cobra menos por isso?**"
+> "A apresentação está organizada em oito partes: o contexto de NFV; o problema, a hipótese e os objetivos; as quatro abordagens avaliadas; os trabalhos relacionados e a lacuna de pesquisa; a metodologia e a arquitetura experimental; os resultados das 480 execuções oficiais; a análise de sensibilidade da vazão, com mais 480 execuções; e por fim a síntese, as conclusões e os trabalhos futuros."
 
 ↪️ **Transição:** "Vamos começar pelo contexto: por que monitorar funções virtualizadas é tão sensível?"
 
@@ -37,25 +36,24 @@ Cada tópico tem três partes:
 
 ## SLIDE 3 — Contexto: Virtualização de Funções de Rede (NFV) · ~1:15
 
-🎯 **Objetivo:** explicar NFV/VNF e destacar que o monitor roda co-localizado à VNF, disputando CPU e RAM e impactando o tempo de tomada de decisão do orquestrador.
+🎯 **Objetivo:** explicar NFV, VNF e MANO com exemplos técnicos, e mostrar que o monitor roda junto da VNF.
 
 🗣️ **O que dizer:**
-> "A Virtualização de Funções de Rede, ou NFV, desacopla os serviços de rede de equipamentos proprietários e passa a executá-los como software — as VNFs — em servidores comuns. Exemplos clássicos são firewalls, detectores de intrusão, balanceadores de carga e, no nosso caso, um WAF, um Firewall de Aplicação Web."
-> "Para que essa flexibilidade funcione em ambientes de redes vivas, onde a demanda varia o tempo todo, o bloco de gerência e orquestração — o MANO — precisa monitorar continuamente CPU, memória, vazão e latência para decidir quando escalar ou recuperar uma VNF."
-> "E aqui está o ponto-chave: **o observador não é um elemento externo à infraestrutura; ele roda co-localizado à VNF no mesmo host, disputando os mesmos núcleos de CPU e a mesma memória.** Se o coletor for pesado ou lento, ele degrada justamente o serviço que deveria apenas observar e atrasa a tomada de decisão do orquestrador."
+> "A Virtualização de Funções de Rede, a NFV, tira os serviços de rede de equipamentos dedicados e passa a rodá-los como software, em servidores comuns. Cada função assim é uma VNF. Exemplos técnicos: firewall, IDS/IPS (detecção e prevenção de intrusão), balanceador de carga, a UPF do núcleo 5G (que encaminha o tráfego dos usuários) e, no nosso caso, um WAF, o Firewall de Aplicação Web."
+> "Essas funções precisam ser escaladas, migradas ou recuperadas conforme a demanda. Quem decide isso é o **MANO — Management and Orchestration**, a camada de gerência e orquestração da arquitetura NFV definida pelo ETSI. Ele cuida do ciclo de vida das VNFs (instanciar, escalar, migrar, recuperar) e, para decidir, precisa de métricas de CPU, memória, vazão e latência. Se a métrica chega atrasada, o orquestrador reage tarde e pode violar o SLA."
+> "E aqui está o ponto-chave: **a literatura mostra que o monitoramento pode sobrecarregar a VNF**, porque o observador roda co-localizado à VNF, no mesmo host, disputando os mesmos núcleos de CPU e a mesma memória."
 
-↪️ **Transição:** "É exatamente daí que emergem o nosso problema de pesquisa e a nossa hipótese."
+↪️ **Transição:** "É daí que vêm o nosso problema de pesquisa e a nossa hipótese."
 
 ---
 
-## SLIDE 4 — Problema de pesquisa, hipótese e lacuna · ~1:15
+## SLIDE 4 — Problema de pesquisa e hipótese · ~1:00
 
-🎯 **Objetivo:** apresentar a questão de pesquisa com as 4 ferramentas, a hipótese (kernel vs. espaço de usuário) e a lacuna empírica na literatura.
+🎯 **Objetivo:** apresentar a questão de pesquisa com as 4 ferramentas e a hipótese (kernel vs. espaço de usuário). A lacuna fica para o slide 7.
 
 🗣️ **O que dizer:**
-> "Diante desse impacto no gerenciamento e na tomada de decisão, nossa questão de pesquisa é: **quais são as diferenças práticas de desempenho entre o eBPF, o Sysstat, o Prometheus e a API do Docker no monitoramento de uma VNF, e qual oferece menor sobrecarga sem comprometer a qualidade da coleta?**"
-> "Nossa hipótese é que o **eBPF**, por operar no nível do *kernel* via *kprobes*, apresenta menor tempo de resposta e menor sobrecarga frente às três abordagens que operam em espaço de usuário: o Sysstat e o Prometheus, que fazem *polling* lendo e parseando arquivos do `/proc`, e a API do Docker, que consulta os *cgroups* sob demanda por meio do *daemon* `dockerd`."
-> "E a lacuna que atacamos na literatura é que, embora essas tecnologias sejam muito usadas e estudadas isoladamente, faltam comparações empíricas controladas avaliando as quatro simultaneamente sobre uma mesma VNF e com aumento progressivo de carga."
+> "Nossa questão de pesquisa é: **quais são as diferenças práticas de desempenho entre o eBPF, o Sysstat, o Prometheus e a API do Docker no monitoramento de uma VNF, e qual oferece menor sobrecarga?**"
+> "Nossa hipótese é que o **eBPF**, por operar no nível do *kernel* via *kprobes*, apresenta menor tempo de resposta e menor sobrecarga que as três abordagens em espaço de usuário: o Sysstat e o Prometheus, que fazem *polling* lendo e interpretando arquivos do `/proc`, e a API do Docker, que consulta os *cgroups* por meio do *daemon* `dockerd`."
 
 ↪️ **Transição:** "Com o problema e a hipótese definidos, estes foram os nossos objetivos."
 
@@ -73,42 +71,41 @@ Cada tópico tem três partes:
 
 ---
 
-## SLIDE 6 — As quatro abordagens comparadas · ~1:45
+## SLIDE 6 — As quatro abordagens comparadas · ~1:00
 
-🎯 **Objetivo:** explicar com clareza a diferença mecânica entre ler no kernel (eBPF), fazer parsing de `/proc` (Sysstat/Prometheus) e passar pelo daemon para ler cgroups (Docker). Esse slide explica todos os resultados.
+🎯 **Objetivo:** dar a ideia de cada abordagem em uma frase. O slide fica como está; a simplificação é só na fala.
 
-🗣️ **O que dizer:**
-> "Temos aqui as quatro arquiteturas de coleta:"
-> "1. O **eBPF** opera no nível do *kernel* usando `libbpf` com CO-RE, sem precisar do BCC ou do LLVM em tempo de execução. Anexamos *kprobes* nas funções `tcp_sendmsg` e `tcp_cleanup_rbuf` filtrando a porta 8080 do WAF. O programa BPF soma os bytes direto em um mapa `ARRAY` no kernel, e o observador em espaço de usuário só lê esse valor já acumulado."
-> "2. O **Sysstat** representa o *polling* clássico em espaço de usuário: a cada sonda, ele abre e faz o *parsing* textual de `/proc/net/dev` e consulta o `psutil`, que lê `/proc/<pid>` para obter CPU e memória do WAF."
-> "3. O **Prometheus** executa exatamente a mesma coleta do Sysstat, mas mantém um servidor HTTP ativo na porta 8000 expondo as métricas em `/metrics`. Aqui avaliamos o custo do *exporter* em execução."
-> "4. E a **API do Docker**, incluída para avaliar a coleta nativa de contêineres: o observador usa o SDK Python do Docker para chamar `stats(one_shot=True)` via socket Unix (`/var/run/docker.sock`). Quem lê os arquivos dos *cgroups* v2 do kernel é o *daemon* `dockerd`, que monta um JSON completo e devolve ao observador."
-> "Guarde esse contraste central: **ler um mapa pronto no kernel vs. parsear `/proc` no espaço de usuário vs. fazer IPC até o daemon do Docker para ler cgroups.**"
+🗣️ **O que dizer (versão curta):**
+> "São quatro formas de coletar as métricas. O **eBPF** roda dentro do kernel e lê um contador que o próprio kernel já soma. O **Sysstat** faz polling: a cada consulta, lê e interpreta arquivos do `/proc`. O **Prometheus** faz a mesma coleta do Sysstat e ainda mantém um servidor HTTP ativo para expor as métricas. E o **Docker** pergunta ao daemon do Docker, que lê os cgroups e devolve o resultado."
+> "Resumindo: ou se lê um contador pronto no kernel, ou se lê arquivo, ou se pede para um intermediário."
+
+🧠 **Se perguntarem o detalhe:** eBPF usa `libbpf` com CO-RE e kprobes em `tcp_sendmsg` e `tcp_cleanup_rbuf` (porta 8080), somando os bytes num mapa `ARRAY`; Sysstat usa `/proc/net/dev` e `psutil`; Prometheus acrescenta o endpoint `/metrics` na porta 8000; Docker usa `container.stats(one_shot=True)` pelo socket Unix, e quem lê os cgroups v2 é o `dockerd`.
 
 ↪️ **Transição:** "Mas o que a literatura já havia medido sobre isso?"
 
 ---
 
-## SLIDE 7 — Trabalhos relacionados e lacuna na literatura · ~1:00
+## SLIDE 7 — Trabalhos relacionados e lacuna · ~1:00
 
-🎯 **Objetivo:** situar o trabalho frente aos artigos da Tabela 1 do TCC (incluindo os estudos de Docker/cgroups e de NFV).
+🎯 **Objetivo:** situar o trabalho frente à literatura e trazer a lacuna de pesquisa.
 
 🗣️ **O que dizer:**
-> "Na revisão da literatura, encontramos estudos que cobrem partes desse problema: Cassagnes et al. (2020) comparam eBPF com *polling*, mas sem Prometheus ou API do Docker; Casalicchio (2017) e Wiedner et al. (2023) investigam o desempenho do Docker e a latência dos *cgroups* v1 e v2; Dinga et al. (2023) avaliam o Prometheus e outras ferramentas em microsserviços Docker, mas sem eBPF; Kannan (2024) e Shahinfar (2025) focam apenas no eBPF; e Oliveira et al. (2026) avaliam o impacto da latência do Sysstat na orquestração MANO."
-> "Como destaca a última linha da tabela, **o nosso trabalho é o primeiro benchmark controlado a comparar diretamente as quatro abordagens juntas — eBPF, Sysstat, Prometheus e API do Docker — sobre uma mesma VNF isolada sob cargas crescentes.**"
+> "A literatura cobre partes do problema: Cassagnes et al. comparam eBPF com *polling*, mas sem Prometheus nem Docker; Casalicchio e Wiedner estudam o desempenho do Docker e dos *cgroups*; Dinga et al. avaliam o Prometheus em microsserviços; Kannan e Shahinfar focam só no eBPF; e Oliveira et al. avaliam o impacto da latência de coleta do Sysstat na orquestração."
+> "**A lacuna é que nenhum desses trabalhos compara as quatro abordagens sobre a mesma VNF, com carga crescente e rigor estatístico.** É isso que este trabalho faz."
 
-↪️ **Transição:** "Vou mostrar agora a metodologia e o ambiente que construímos para fazer essa comparação de forma justa."
+↪️ **Transição:** "Vou mostrar agora a metodologia que construímos para fazer essa comparação de forma justa."
 
 ---
 
-## SLIDE 8 — Metodologia e ambiente experimental · ~1:00
+## SLIDE 8 — Metodologia e ambiente experimental · ~0:50
 
-🎯 **Objetivo:** justificar a escolha do WAF e apresentar o hardware/software padronizado (modo texto, Kernel 7.0.0-38, versões fixadas).
+🎯 **Objetivo:** justificar o WAF e dizer onde foi testado, sem listar o ambiente. O slide fica como está; a fala é geral.
 
 🗣️ **O que dizer:**
-> "Esta é uma pesquisa aplicada, quantitativa, comparativa e experimental."
-> "Como VNF representativa, implementamos um WAF em Python com `asyncio` e `ThreadPoolExecutor` que inspeciona cinco classes de ataque: SQLi, XSS, Path Traversal, RCE e Null Byte. Escolhemos um WAF justamente porque a inspeção de conteúdo é intensiva em CPU: qualquer sobrecarga adicional do coletor concorre diretamente com a VNF e se torna mensurável."
-> "Todos os testes finais rodaram em uma máquina física dedicada com Ryzen 5 5500, 16 GB de RAM, Ubuntu 26.04 operando em **modo texto** (`multi-user.target`, sem interface gráfica para eliminar ruído), Kernel Linux 7.0.0-38 e Docker Engine 29.8.2, com quatro pilhas Docker Compose independentes e versões de bibliotecas fixadas."
+> "É uma pesquisa aplicada, quantitativa, comparativa e experimental. Como VNF, usamos um WAF em Python que inspeciona ataques como SQL injection e XSS. Escolhemos um WAF porque inspecionar conteúdo gasta bastante CPU, então qualquer sobrecarga do coletor aparece."
+> "Os testes rodaram em uma única máquina física, em modo texto, para reduzir processos concorrentes durante as medições. Cada ferramenta teve a sua própria pilha de containers Docker, com as versões das bibliotecas fixadas."
+
+🧠 **Se perguntarem o hardware:** AMD Ryzen 5 5500, 6 núcleos e 12 threads, 16 GB de RAM, Ubuntu 26.04, kernel 7.0.0-38, Docker Engine 29.8.2.
 
 ↪️ **Transição:** "No próximo slide temos o diagrama C4 dessa topologia."
 
@@ -116,14 +113,14 @@ Cada tópico tem três partes:
 
 ## SLIDE 9 — Arquitetura experimental (Diagrama C4 — Nível 2) · ~1:00
 
-🎯 **Objetivo:** explicar o fluxo entre Cliente, WAF, Observador e Coletor (`probe.py`).
+🎯 **Objetivo:** explicar o fluxo entre Cliente, WAF, Observador e Probe (`probe.py`).
 
 🗣️ **O que dizer:**
 > "A topologia tem quatro componentes:"
 > "1. O **Cliente** abre 200 corrotinas assíncronas com conexões TCP persistentes para a porta 8080 do WAF, enviando mensagens com prefixo de 4 bytes."
 > "2. O **WAF** inspeciona cada carga, responde `ALLOWED` ou `BLOCKED`, e a cada 100 requisições persiste as estatísticas de inspeção em `waf_metrics.json` usando gravação atômica."
 > "3. O **Observador** é o contêiner que muda entre as quatro pilhas — eBPF, Sysstat, Prometheus ou Docker. Ele escuta na porta UDP 9999."
-> "4. E o **Coletor (`probe.py`)** é o nosso instrumento de medição: ele envia uma requisição UDP por segundo ao observador e mede o tempo de ida e volta com resolução de nanossegundos (`time.time_ns()`). **Esse RTT UDP é a nossa métrica primária**, pois mede diretamente quanto tempo cada ferramenta leva para coletar e entregar as métricas."
+> "4. E o **Probe (`probe.py`)** é o nosso instrumento de medição: ele envia uma requisição UDP por segundo ao observador e mede o tempo de ida e volta com resolução de nanossegundos (`time.time_ns()`). **Esse RTT UDP é a nossa métrica primária**, pois mede diretamente quanto tempo cada ferramenta leva para coletar e entregar as métricas."
 
 ↪️ **Transição:** "E como garantimos a validade estatística das medições?"
 
@@ -131,18 +128,33 @@ Cada tópico tem três partes:
 
 ## SLIDE 10 — Protocolo de testes e rigor estatístico · ~1:15
 
-🎯 **Objetivo:** destacar o determinismo da carga (`seed=42`), as 480 execuções oficiais, a correção atômica e o IC95%.
+🎯 **Objetivo:** destacar a carga determinística, a janela de coleta, as 480 execuções e o IC95% com t de Student.
 
 🗣️ **O que dizer:**
-> "Avaliamos quatro volumes nominais de mensagens: 100 mil, 500 mil, 1 milhão e 2 milhões. Os arquivos de carga têm 60% de mensagens benignas e 40% maliciosas, embaralhadas com semente fixa `42` — garantindo que as quatro ferramentas enfrentem exatamente a mesma sequência de requisições."
-> "Para cada uma das 16 combinações de ferramenta e volume, executamos **30 repetições independentes**, totalizando **480 execuções oficiais** (com zero falhas de leitura após a gravação atômica do `waf_metrics.json`)."
-> "A métrica primária é o RTT UDP do observador; as secundárias são CPU e memória do observador e do WAF; e usamos o tempo médio de inspeção (`~0,080 ms`) e os bytes RX/TX como métricas de validação. Tudo foi agregado pela média com **intervalo de confiança de 95% via distribuição t de Student** ($n=30$), e também disponibilizado no nosso painel interativo online."
+> "Avaliamos quatro volumes de mensagens: 100 mil, 500 mil, 1 milhão e 2 milhões. As cargas têm 60% de mensagens benignas e 40% maliciosas, embaralhadas com semente fixa `42`, então as quatro ferramentas enfrentam exatamente a mesma sequência."
+> "A **janela de coleta** é `DURATION = ⌊N / 15000⌋ + 20` segundos, ou seja, 26, 53, 86 e 153 s. O 15 mil é uma **taxa nominal** de mensagens por segundo, usada só para dimensionar o tempo; os 20 segundos são **margem** para subir e encerrar os containers."
+> "Para cada uma das 16 combinações de ferramenta e volume, fizemos **30 repetições independentes**: 480 execuções oficiais. Reportamos a média com **intervalo de confiança de 95% pela distribuição t de Student**."
 
-↪️ **Transição:** "Vamos então aos resultados das 480 execuções, começando pela métrica primária."
+🧠 **Por que t de Student e não a tabela Z?** A tabela Z exige conhecer o desvio padrão da **população**. Nós só temos o desvio padrão da **amostra** (as 30 repetições), então usamos a t de Student, que corrige essa incerteza (29 graus de liberdade, t ≈ 2,045). Com amostra grande a diferença para a Z é pequena, mas a t é a escolha correta aqui.
+
+🧠 **Por que 20 s de margem?** O coletor sobe e desce junto com os containers, e a janela precisa cobrir o envio todo. Na prática o ambiente sustentou só ~7 a 8 mil msg/s, não 15 mil, e por isso em N ≥ 500k o WAF processou 62% a 88% das mensagens dentro da janela (ver slide 17).
+
+↪️ **Transição:** "O dashboard permite explorar tudo isso. Em seguida, os resultados."
 
 ---
 
-## SLIDE 11 — Tempo de resposta do observador (RTT UDP) ⭐ · ~1:45
+## SLIDE 11 — Dashboard interativo dos resultados · ~0:30
+
+🎯 **Objetivo:** mostrar que os dados são abertos e reproduzíveis.
+
+🗣️ **O que dizer:**
+> "Todos os resultados estão num dashboard público, em React, onde dá para filtrar por bateria, ferramenta e volume, ver o intervalo de confiança, as execuções individuais e baixar os dados. O QR code leva direto para ele."
+
+↪️ **Transição:** "Agora, os resultados, começando pela métrica primária."
+
+---
+
+## SLIDE 12 — Tempo de resposta do observador (RTT UDP) ⭐ · ~1:45
 
 🎯 **Objetivo:** apresentar o resultado principal do TCC com clareza absoluta.
 
@@ -156,7 +168,7 @@ Cada tópico tem três partes:
 
 ---
 
-## SLIDE 12 — Distribuição do RTT e o custo da API do Docker · ~1:15
+## SLIDE 13 — Distribuição do RTT e o custo da API do Docker · ~1:15
 
 🎯 **Objetivo:** mostrar os boxplots (com e sem Docker) e explicar a análise isolada das etapas do Docker (`bench_docker_cgroup.py`).
 
@@ -169,7 +181,7 @@ Cada tópico tem três partes:
 
 ---
 
-## SLIDE 13 — Consumo de CPU do processo WAF (Controle) · ~0:50
+## SLIDE 14 — Consumo de CPU do processo WAF (Controle) · ~0:50
 
 🎯 **Objetivo:** mostrar que o WAF satura de forma igual nos 4 coletores (~104–110%) e que nenhum coletor interfere na VNF.
 
@@ -181,7 +193,7 @@ Cada tópico tem três partes:
 
 ---
 
-## SLIDE 14 — Consumo de CPU do próprio observador · ~0:50
+## SLIDE 15 — Consumo de CPU do próprio observador · ~0:50
 
 🎯 **Objetivo:** apresentar com rigor científico por que a CPU do observador é tratada como evidência qualitativa complementar (inconclusiva quantitativamente).
 
@@ -189,11 +201,13 @@ Cada tópico tem três partes:
 > "Na CPU do próprio processo observador, observamos médias baixas em todos os 16 grupos — de `0,05%` a `5,05%` —, porém quase sempre acompanhadas de intervalos de confiança largos, da ordem da própria média, causados por picos isolados de escalonamento."
 > "Isso ocorre pela granularidade da amostragem do `psutil` em intervalos curtos de 1 segundo e pela disputa de núcleos entre os contêineres. Além disso, no caso do Docker, quem faz a leitura do *cgroup* é o processo externo `dockerd`, cujo consumo de CPU não entra na conta do observador. Por honestidade científica, tratamos essa métrica como inconclusiva quantitativamente."
 
+🧠 **Como provar que é inconclusiva:** em **13 dos 16 grupos** o IC95% é maior ou igual a **50% da própria média** (o desvio padrão chega a 5 vezes a média). Entre as ferramentas, só **1 de 24 pares** ficou separado (eBPF vs. Prometheus em 500k, com médias de 0,05% e 0,06%, uma diferença sem importância prática). Ou seja: não dá para ordenar as ferramentas por CPU do observador.
+
 ↪️ **Transição:** "Já no consumo de memória do observador, a separação entre as quatro arquiteturas é nítida e altamente estável."
 
 ---
 
-## SLIDE 15 — Consumo de memória do observador e do WAF · ~1:00
+## SLIDE 16 — Consumo de memória do observador e do WAF · ~1:00
 
 🎯 **Objetivo:** destacar a diferença de footprint de memória do observador (13,6 vs. 15,0 vs. 24,7 vs. 30,8 MB) e a ressalva do cgroup vs. RSS na memória do WAF.
 
@@ -209,9 +223,11 @@ Cada tópico tem três partes:
 
 ---
 
-## SLIDE 16 — Análise de sensibilidade da vazão e coleta com 100% de N · ~1:15
+## SLIDE 17 — Análise de sensibilidade da vazão e coleta com 100% de N · ~1:15
 
-🎯 **Objetivo:** mostrar maturidade experimental: explicar por que a coleta oficial inspecionou 62–88% de N nos volumes maiores e mostrar a bateria extra de 480 execuções que atingiu 100% de N mantendo a mesma conclusão.
+🎯 **Objetivo:** explicar o que é o gargalo e por que repetimos a bateria. Mostrar maturidade experimental: explicar por que a coleta oficial inspecionou 62–88% de N nos volumes maiores e mostrar a bateria extra de 480 execuções que atingiu 100% de N mantendo a mesma conclusão.
+
+🧠 **Palavras-chave:** **gargalo** = o ponto que limita a vazão (aqui, o WAF com 1 processo e o cliente lendo os payloads). **proc.** = processos do sistema operacional (`WAF_PROCESSES` e `CLIENT_PROCESSES`). **Repetições** = as 30 execuções independentes de cada combinação de ferramenta e volume. **Leitura direta** = o cliente lê o arquivo de payloads direto no laço de eventos, sem passar pelo *thread pool* a cada mensagem.
 
 🗣️ **O que dizer:**
 > "Na coleta oficial, com 1 processo de WAF e 1 de cliente, a vazão sustentada foi de 7 a 8 mil mensagens por segundo. Com isso, dentro da janela `DURATION`, o WAF processou 100% das 100 mil mensagens, mas de 62% a 88% nos volumes de 500 mil a 2 milhões. Embora a carga processada tenha sido idêntica entre as 4 ferramentas, investigamos a causa desse teto."
@@ -222,7 +238,7 @@ Cada tópico tem três partes:
 
 ---
 
-## SLIDE 17 — Síntese comparativa das quatro abordagens · ~1:00
+## SLIDE 18 — Síntese comparativa das quatro abordagens · ~1:00
 
 🎯 **Objetivo:** resumir a Tabela 4 do TCC e apontar quando cada ferramenta é indicada.
 
@@ -236,7 +252,7 @@ Cada tópico tem três partes:
 
 ---
 
-## SLIDE 18 — Conclusões · ~1:00
+## SLIDE 19 — Conclusões · ~1:00
 
 🎯 **Objetivo:** responder diretamente à hipótese e destacar as contribuições concretas do TCC.
 
@@ -249,19 +265,20 @@ Cada tópico tem três partes:
 
 ---
 
-## SLIDE 19 — Limitações e trabalhos futuros · ~0:45
+## SLIDE 20 — Trabalhos futuros · ~0:45
 
-🎯 **Objetivo:** demonstrar rigor metodológico reconhecendo as ressalvas e apontando os próximos passos diretos.
+🎯 **Objetivo:** apontar os próximos passos. As limitações saem do slide e entram na fala e nas respostas.
 
 🗣️ **O que dizer:**
-> "Entre as limitações documentadas: o tráfego flui em *loopback*, sem o overhead de placas de rede físicas; o RTT do Docker inclui a consulta síncrona ao `dockerd` (não usamos cache em segundo plano para não tornar a comparação desigual); as métricas de WAF no Docker vêm do *cgroup* e não são diretamente comparáveis ao RSS do `psutil`; e o Prometheus foi avaliado como *exporter*, sem *scraping* ativo."
-> "Como trabalhos futuros, propomos: **(i)** implementar um coletor que leia os arquivos do *cgroup* v2 diretamente em `/sys/fs/cgroup/`, sem passar pelo `dockerd`; **(ii)** avaliar um WAF de maior vazão em processo único; **(iii)** medir o impacto do monitoramento na latência fim a fim das requisições do WAF; e **(iv)** estender o benchmark para cadeias completas de VNFs (SFCs) e hooks XDP/TC."
+> "Como trabalhos futuros: **(i)** coletar os dados dos cgroups v2 direto de `/sys/fs/cgroup/`, sem passar pelo `dockerd`, para isolar o custo da API do Docker; **(ii)** repetir o experimento em rede física e com o volume de pacotes de um ambiente de produção, não só em loopback; **(iii)** medir o impacto do monitoramento na latência e na vazão das requisições dos clientes do WAF; **(iv)** avaliar um WAF de alta vazão em processo único; e **(v)** estender para cadeias de VNFs, Prometheus com scraping ativo e hooks XDP/TC."
+
+🧠 **Se perguntarem sobre limitações:** não temos ambientes específicos. Acreditamos que o nosso ambiente de teste não processa a quantidade de pacotes que um ambiente de produção processa. O tráfego também é em loopback, e o Prometheus foi avaliado só como exporter, sem scraping ativo.
 
 ↪️ **Transição:** "Com isso encerramos a nossa apresentação."
 
 ---
 
-## SLIDE 20 — Encerramento · ~0:25
+## SLIDE 21 — Encerramento · ~0:25
 
 🎯 **Objetivo:** agradecer à banca e deixar os links visíveis.
 
@@ -286,3 +303,53 @@ Cada tópico tem três partes:
 
 5. **"Como vocês reduziram a memória do eBPF de ~196 MB para 15 MB?"**
    → Na versão preliminar usávamos BCC (`python3-bpfcc`), que embute o compilador LLVM/Clang inteiro dentro do processo Python em tempo de execução. Migramos para `libbpf + CO-RE` (*Compile Once – Run Everywhere*): o programa C (`ebpf_kern.c`) é compilado com `clang` e `bpftool` usando o BTF do kernel antes de iniciar o Python, e o observador carrega o `.o` via `ctypes` + `libbpf.so.1`, reduzindo 92% do uso de RAM.
+
+6. **"Por que usaram a t de Student e não a tabela Z?"**
+   → Porque a Z exige conhecer o desvio padrão da população, e nós só temos o da amostra (as 30 repetições). A t de Student leva isso em conta (29 graus de liberdade, t ≈ 2,045). Com 30 amostras a diferença é pequena, mas a t é a escolha correta.
+
+7. **"Por que usaram UDP e TCP?"**
+   → São papéis diferentes. O **UDP** é o canal de monitoramento (o `probe.py` consulta o observador): em geral os protocolos de gerenciamento de rede se baseiam em UDP, por ser leve e sem conexão, e isso mede só o custo da coleta. O **TCP** é o canal da carga de trabalho (cliente para o WAF): um firewall usa TCP para checar a conexão e inspecionar o conteúdo das requisições.
+
+8. **"Por que a janela de coleta tem 20 segundos a mais?"**
+   → `DURATION = ⌊N/15000⌋ + 20`. O 15 mil é uma taxa nominal de mensagens por segundo, só para dimensionar. Os 20 s são margem para subir e encerrar os containers. Na prática o ambiente sustentou 7 a 8 mil msg/s, e por isso o WAF processou 62% a 88% de N em N ≥ 500k.
+
+9. **"O que é o gargalo e o que são as repetições do slide 17?"**
+   → Gargalo é o que limita a vazão: o WAF com 1 processo e o cliente lendo os payloads. Eliminamos isso com 4 processos de WAF, 4 de cliente e leitura direta, e repetimos a bateria inteira (mais 480 execuções, com 30 repetições por ferramenta e volume). O WAF passou a inspecionar 100% de N e a ordem entre as ferramentas se manteve.
+
+10. **"Vocês testaram em ambiente de produção?"**
+    → Não temos ambientes específicos. Acreditamos que o nosso ambiente de teste não processa a quantidade de pacotes que um ambiente de produção processa. Por isso listamos como trabalho futuro repetir o experimento em rede física e com volume de produção.
+
+11. **"Por que a CPU do observador é inconclusiva?"**
+    → Em 13 dos 16 grupos o IC95% é maior ou igual a 50% da média, e só 1 de 24 pares de ferramentas ficou separado (eBPF vs. Prometheus em 500k, com médias de 0,05% e 0,06%). A amostragem do `psutil` em 1 s e a disputa de núcleos geram picos isolados.
+
+12. **"O que é o MANO?"**
+    → *Management and Orchestration*, a camada de gerência e orquestração da arquitetura NFV (ETSI). Gerencia o ciclo de vida das VNFs: instancia, escala, migra e recupera. Para decidir, depende das métricas de monitoramento.
+
+---
+
+## GLOSSÁRIO — saiba explicar cada palavra
+
+- **NFV** (*Network Functions Virtualization*): rodar funções de rede como software em servidores comuns, em vez de equipamento dedicado.
+- **VNF** (*Virtualized Network Function*): uma função de rede virtualizada, como firewall, IDS ou balanceador.
+- **MANO**: gerência e orquestração das VNFs (instanciar, escalar, migrar, recuperar).
+- **SLA**: acordo de nível de serviço; o desempenho mínimo prometido.
+- **WAF** (*Web Application Firewall*): firewall que inspeciona o conteúdo de requisições web (SQLi, XSS etc.).
+- **eBPF**: código que roda dentro do kernel Linux com segurança, sem alterar o kernel.
+- **kprobe**: gancho que executa um programa eBPF quando uma função do kernel é chamada (`tcp_sendmsg`, `tcp_cleanup_rbuf`).
+- **libbpf + CO-RE**: biblioteca e técnica que compilam o programa eBPF uma vez e o executam em kernels diferentes (*Compile Once, Run Everywhere*).
+- **BCC**: antiga forma de usar eBPF, que embute o compilador LLVM no processo; usava ~196 MB de RAM.
+- **`/proc`**: sistema de arquivos virtual do Linux com estatísticas de processos e de rede.
+- **psutil**: biblioteca Python que lê CPU e memória dos processos pelo `/proc`.
+- **Sysstat**: família de ferramentas de coleta no espaço de usuário, por *polling* de `/proc`.
+- **Prometheus / exporter / scraping**: sistema de monitoramento; o *exporter* expõe métricas por HTTP em `/metrics`; o *scraping* é o servidor Prometheus buscando essas métricas periodicamente.
+- **cgroup**: recurso do kernel que limita e contabiliza CPU e memória de um grupo de processos (a base dos containers).
+- **dockerd / daemon**: processo em segundo plano do Docker que gerencia os containers e responde à API.
+- **IPC**: comunicação entre processos; aqui, a conversa com o `dockerd` pelo socket Unix.
+- **RTT UDP**: tempo de ida e volta de uma consulta UDP; nossa métrica primária.
+- **UDP vs. TCP**: UDP é leve e sem conexão; TCP é orientado a conexão e confiável.
+- **Loopback (`lo`)**: interface de rede interna da máquina; o tráfego não passa por placa física.
+- **IC95%**: intervalo em que a média verdadeira está com 95% de confiança.
+- **t de Student**: distribuição usada quando só se conhece o desvio padrão da amostra.
+- **Vazão (throughput)**: mensagens processadas por segundo.
+- **SFC**: cadeia de funções de rede encadeadas.
+- **XDP/TC**: pontos de gancho eBPF na camada de rede, antes da pilha TCP/IP (XDP) e no controle de tráfego (TC).

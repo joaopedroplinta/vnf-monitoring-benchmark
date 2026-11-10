@@ -8,7 +8,7 @@
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[brazil]{babel}
+\usepackage[brazilian]{babel}
 \usepackage{cite}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
@@ -42,10 +42,10 @@
 \let\origfigure\figure \let\endorigfigure\endfigure
 \renewenvironment{figure}[1][tbp]{\origfigure[#1]\setlength{\textwidth}{\columnwidth}}{\endorigfigure}
 \let\origtable\table \let\endorigtable\endtable
-\renewenvironment{table}[1][tbp]{\origtable[#1]\setlength{\textwidth}{\columnwidth}\small}{\endorigtable}
+\renewenvironment{table}[1][tbp]{\origtable[#1]\setlength{\textwidth}{\columnwidth}\small\renewcommand{\arraystretch}{1.25}}{\endorigtable}
 % As tabelas largas (revisão da literatura e resultados) ocupam as duas colunas, na largura total da página.
-\newcommand{\widetables}{\renewenvironment{table}[1][tbp]{\csname table*\endcsname[t]\small}{\csname endtable*\endcsname}}
-\newcommand{\narrowtables}{\renewenvironment{table}[1][tbp]{\origtable[##1]\setlength{\textwidth}{\columnwidth}\small}{\endorigtable}}
+\newcommand{\widetables}{\renewenvironment{table}[1][tbp]{\csname table*\endcsname[t]\small\renewcommand{\arraystretch}{1.25}}{\csname endtable*\endcsname}}
+\newcommand{\narrowtables}{\renewenvironment{table}[1][tbp]{\origtable[##1]\setlength{\textwidth}{\columnwidth}\small\renewcommand{\arraystretch}{1.25}}{\endorigtable}}
 
 % Versão negrito da matemática, como no modelo oficial do IEEE Access.
 \makeatletter

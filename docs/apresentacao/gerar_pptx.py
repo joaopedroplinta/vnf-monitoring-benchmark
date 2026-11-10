@@ -441,7 +441,7 @@ card(s, Inches(7.75), Inches(1.85), Inches(4.93), Inches(4.65), AZUL, "Ambiente 
 # 9 - ARQUITETURA EXPERIMENTAL
 F = 1.2
 s = slide(); header(s, "Topologia", "Arquitetura experimental (Diagrama C4)", 9)
-plot(s, os.path.join(IMG, "C4model.drawio.png"), Inches(0.65), Inches(1.78), Inches(7.45), Inches(4.85))
+plot(s, os.path.join(IMG, "C4model.png"), Inches(0.65), Inches(1.78), Inches(7.45), Inches(4.85))
 card(s, Inches(8.30), Inches(1.78), Inches(4.38), Inches(4.85), VERDE, "Fluxo de comunicação e medição",
      [[("1. Cliente (TCP :8080)", {"bold": True, "color": AZUL})],
       [("200 corrotinas asyncio com conexões persistentes; framing de 4 bytes big-endian.", {})],
@@ -449,7 +449,7 @@ card(s, Inches(8.30), Inches(1.78), Inches(4.38), Inches(4.85), VERDE, "Fluxo de
       [("Inspeciona cada payload (ALLOWED / BLOCKED) e grava waf_metrics.json atomicamente a cada 100 requisições.", {})],
       [("3. Observador (UDP :9999)", {"bold": True, "color": LARANJA})],
       [("Coleta métricas com a ferramenta em teste e responde às sondas com JSON.", {})],
-      [("4. Coletor / probe.py (1 req/s)", {"bold": True, "color": ROXO})],
+      [("4. Probe (probe.py, 1 req/s)", {"bold": True, "color": ROXO})],
       [("Mede o RTT UDP com time.time_ns(), a métrica primária de sobrecarga.", {})]],
      line_size=12.5)
 

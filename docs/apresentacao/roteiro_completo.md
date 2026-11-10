@@ -113,14 +113,14 @@ Cada tópico tem três partes:
 
 ## SLIDE 9 — Arquitetura experimental (Diagrama C4 — Nível 2) · ~1:00
 
-🎯 **Objetivo:** explicar o fluxo entre Cliente, WAF, Observador e Coletor (`probe.py`).
+🎯 **Objetivo:** explicar o fluxo entre Cliente, WAF, Observador e Probe (`probe.py`).
 
 🗣️ **O que dizer:**
 > "A topologia tem quatro componentes:"
 > "1. O **Cliente** abre 200 corrotinas assíncronas com conexões TCP persistentes para a porta 8080 do WAF, enviando mensagens com prefixo de 4 bytes."
 > "2. O **WAF** inspeciona cada carga, responde `ALLOWED` ou `BLOCKED`, e a cada 100 requisições persiste as estatísticas de inspeção em `waf_metrics.json` usando gravação atômica."
 > "3. O **Observador** é o contêiner que muda entre as quatro pilhas — eBPF, Sysstat, Prometheus ou Docker. Ele escuta na porta UDP 9999."
-> "4. E o **Coletor (`probe.py`)** é o nosso instrumento de medição: ele envia uma requisição UDP por segundo ao observador e mede o tempo de ida e volta com resolução de nanossegundos (`time.time_ns()`). **Esse RTT UDP é a nossa métrica primária**, pois mede diretamente quanto tempo cada ferramenta leva para coletar e entregar as métricas."
+> "4. E o **Probe (`probe.py`)** é o nosso instrumento de medição: ele envia uma requisição UDP por segundo ao observador e mede o tempo de ida e volta com resolução de nanossegundos (`time.time_ns()`). **Esse RTT UDP é a nossa métrica primária**, pois mede diretamente quanto tempo cada ferramenta leva para coletar e entregar as métricas."
 
 ↪️ **Transição:** "E como garantimos a validade estatística das medições?"
 

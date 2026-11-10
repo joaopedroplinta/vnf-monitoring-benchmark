@@ -1,6 +1,6 @@
 # Resultados
 
-480 execuções: 4 ferramentas × 4 volumes × 30 repetições, coletadas em 08–09/10/2026 (kernel 7.0.0-38, Docker Engine 29.8.2, modo texto, WORKERS=200, libbpf+CO-RE). Esta é a recoleta com o WAF corrigido (escrita atômica de `waf_metrics.json`). A primeira coleta de 480 execuções (mesmo ambiente, com 106 resumos de inspeção zerados e recalculados) está em [`results/arquivo_primeira_coleta/`](../results/arquivo_primeira_coleta), e a de 360 execuções (kernel 7.0.0-15, sem o Docker) em [`results/arquivo_kernel15/`](../results/arquivo_kernel15).
+960 execuções em duas baterias: 480 oficiais (4 ferramentas × 4 volumes × 30 repetições) e 480 complementares, com o WAF inspecionando 100% de N (veja [Coleta complementar](#coleta-complementar-100-de-n-inspecionado)). As tabelas por volume são da coleta oficial, coletada em 08–09/10/2026 (kernel 7.0.0-38, Docker Engine 29.8.2, modo texto, WORKERS=200, libbpf+CO-RE). Esta é a recoleta com o WAF corrigido (escrita atômica de `waf_metrics.json`). A primeira coleta de 480 execuções (mesmo ambiente, com 106 resumos de inspeção zerados e recalculados) está em [`results/arquivo_primeira_coleta/`](../results/arquivo_primeira_coleta), e a de 360 execuções (kernel 7.0.0-15, sem o Docker) em [`results/arquivo_kernel15/`](../results/arquivo_kernel15).
 
 Valores exibidos como **média ± IC95%** (intervalo de confiança de 95%, t de Student, α=0,05). Em **negrito**, o menor valor médio de cada linha; isso não significa diferença estatisticamente significativa (veja as [observações](#observações)).
 
@@ -80,10 +80,36 @@ DURATION ≈ 153 s, 153 amostras por execução.
 | CPU média observador (%) | 0.557 ± 1.038 | 0.926 ± 1.244 | 0.920 ± 1.224 | **0.209 ± 0.189** |
 | Memória média observador (MB) | 15.003 ± 0.020 | **13.628 ± 0.020** | 24.656 ± 0.049 | 30.779 ± 0.047 |
 
+## Coleta complementar (100% de N inspecionado)
+
+Na coleta oficial (1 processo de WAF e 1 de cliente), o WAF sustenta 7 a 8 mil msg/s, abaixo dos 15 mil assumidos na fórmula de `DURATION`, e inspeciona só 62% a 88% de N para N ≥ 500k. Para separar esse efeito, investigou-se o gargalo com o eBPF e N = 1 milhão (`scripts/sensibilidade.py`; dados em `results/sens_cli4/`, `results/sens_waf4cli4/` e `results/exp_*/`):
+
+| Configuração | WAF | Cliente | Inspeções (média) | % de N |
+|---|:---:|:---:|---:|---:|
+| Original (coleta oficial, 30 repetições) | 1 proc. | 1 proc. | 706.407 | 71% |
+| Cliente com 4 processos (30 repetições) | 1 proc. | 4 proc. | 601.527 | 60% |
+| WAF e cliente com 4 processos (30 repetições) | 4 proc. | 4 proc. | 650.067 | 65% |
+| Cliente com leitura direta (3 repetições) | 1 proc. | 1 proc. | 736.000 | 74% |
+| Leitura direta e cliente com 4 processos (3 repetições) | 1 proc. | 4 proc. | 734.367 | 73% |
+| **WAF e cliente com 4 processos e leitura direta (30 repetições)** | 4 proc. | 4 proc. | **1.000.000** | **100%** |
+
+Multiplicar só o cliente não ajuda, porque cada processo percorre o arquivo de payloads inteiro. O gargalo são dois fatores juntos: o WAF com 1 processo e a leitura dos payloads pelo *thread pool*. Só a combinação dos três ajustes (`WAF_PROCESSES=4`, `CLIENT_PROCESSES=4` e `CLIENT_DIRECT_READ=1`) leva a 100%. As variantes com 3 repetições não permitem intervalo de confiança e servem só como indício.
+
+Com essa configuração, repetiu-se a bateria inteira (480 execuções, dados em `results/otimizada/`). O WAF inspecionou 100% de N em todas as execuções. **Tempo de resposta médio (ms), coleta oficial → complementar (± IC95% da complementar):**
+
+| N | eBPF | sysstat | Prometheus | Docker |
+|---|------|---------|------------|--------|
+| 100.000 | 0.5331 → **0.8999** ± 0.0070 | 0.6137 → 1.0183 ± 0.0079 | 0.6225 → 1.0305 ± 0.0111 | 2.5789 → 2.6453 ± 0.0098 |
+| 500.000 | 0.4964 → **0.9029** ± 0.0065 | 0.5714 → 1.0115 ± 0.0059 | 0.5832 → 1.0352 ± 0.0061 | 2.5027 → 2.6476 ± 0.0096 |
+| 1.000.000 | 0.4980 → **0.9002** ± 0.0045 | 0.5750 → 1.0140 ± 0.0042 | 0.5845 → 1.0369 ± 0.0050 | 2.4978 → 2.6584 ± 0.0088 |
+| 2.000.000 | 0.4995 → **0.9021** ± 0.0037 | 0.5725 → 1.0161 ± 0.0047 | 0.5837 → 1.0370 ± 0.0040 | 2.5055 → 2.6500 ± 0.0081 |
+
+A **ordem entre as ferramentas se mantém** (eBPF < sysstat < Prometheus < Docker) e o IC95% fica estreito (±0,004 a ±0,011 ms). O aumento de ~0,4 ms no eBPF, no sysstat e no Prometheus vem do `psutil` consultar os 4 processos do WAF a cada sonda, em vez de 1; o Docker consulta o contêiner por uma única chamada e sobe pouco. A memória do observador é a mesma da coleta oficial. Por isso os valores absolutos da coleta oficial, com 1 processo, são os que se reportam.
+
 ## Observações
 
 - **Tempo de resposta:** o eBPF lidera nos quatro volumes, com IC95 sem sobreposição em relação às demais: 13% abaixo do sysstat, 14–15% abaixo do Prometheus e ~80% abaixo do Docker. Sysstat e Prometheus também ficam separados (1,4% a 2,1%).
-- **Docker:** ~2,5 ms, cerca de cinco vezes o eBPF. A consulta ao daemon (socket Unix → dockerd → cgroup → JSON) está dentro do RTT medido; a decomposição desse tempo não foi medida. Alternativas (ler `/sys/fs/cgroup` direto, cache em segundo plano) não foram avaliadas.
+- **Docker:** ~2,5 ms, cerca de cinco vezes o eBPF. A consulta ao daemon (socket Unix → dockerd → cgroup → JSON) está dentro do RTT medido. Na decomposição isolada (`scripts/bench_docker_cgroup.py`), ler `cpu.stat` e `memory.current` direto de `/sys/fs/cgroup` leva ~0,04–0,05 ms, uma requisição vazia ao daemon (`/_ping`) ~0,5–0,6 ms e `stats(one_shot=True)` ~1,4–1,7 ms (~30× a leitura direta): o custo está no caminho até o `dockerd`, não no cgroup. Usar a leitura direta como coletor e o cache em segundo plano não foram avaliados.
 - **N=100k:** todos os coletores têm RTT maior que nos demais volumes; a partir de 500k o RTT é praticamente constante.
 - **CPU do observador é inconclusiva:** médias baixas com desvios muito altos; os IC95 do sysstat, do Prometheus e do Docker são da ordem da média ou incluem o valor do eBPF.
 - **Memória do observador:** sysstat ~14 MB, eBPF ~15 MB (libbpf, sem BCC/LLVM), Prometheus ~25 MB, Docker ~31 MB, estável em todos os volumes.

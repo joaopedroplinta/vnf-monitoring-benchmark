@@ -278,7 +278,7 @@ left_items = [
     "Contexto: NFV e o monitoramento de VNFs",
     "Problema, hipótese e objetivos",
     "As quatro abordagens comparadas",
-    "Lacuna na literatura",
+    "Trabalhos relacionados e lacuna de pesquisa",
 ]
 right_items = [
     "Metodologia e arquitetura experimental",
@@ -293,11 +293,6 @@ tb2, tf2 = textbox(s, Inches(6.85), Inches(1.85), Inches(5.9), Inches(3.6))
 for i, t in enumerate(right_items, 5):
     para(tf2, [(f"{i}.  ", {"size": 17, "color": IFPR_VERDE, "bold": True}), (t, {"size": 17})], space_after=14, first=(i == 5))
 
-card(s, Inches(0.65), Inches(5.65), Inches(12.03), Inches(1.0), AZUL, "",
-     [[("Pergunta central:  ", {"size": 15, "bold": True, "color": AZUL}),
-       ("monitorar uma VNF tem um custo computacional: qual ferramenta cobra menos por isso?", {"size": 15})]],
-     bg_color=PANEL_ALT)
-
 
 # 3 - CONTEXTO NFV
 F = 1.3
@@ -305,9 +300,9 @@ s = slide(); header(s, "Motivação", "Virtualização de Funções de Rede (NFV
 tb, tf = textbox(s, Inches(0.65), Inches(1.85), Inches(7.0), Inches(4.8))
 for i, b in enumerate([
     [("A ", {}), ("NFV desacopla", {"bold": True, "color": VERDE}), (" funções de rede de hardwares proprietários e passam a rodar como software (", {}), ("VNFs", {"bold": True}), (") em servidores comuns.", {})],
-    [("Exemplos de VNFs: firewall, IDS, balanceador de carga, ", {}), ("WAF", {"bold": True, "color": VERDE}), (" (Web Application Firewall).", {})],
+    [("Exemplos de VNFs: firewall, IDS/IPS, balanceador de carga, UPF do 5G e ", {}), ("WAF", {"bold": True, "color": VERDE}), (" (Web Application Firewall).", {})],
     [("A elasticidade depende de ", {}), ("monitoramento contínuo", {"bold": True}), (": CPU, memória, vazão e latência.", {})],
-    [("O orquestrador (", {}), ("MANO", {"bold": True, "color": AZUL}), (") usa essas métricas para escalar ou recuperar a VNF em tempo hábil.", {})],
+    [("O ", {}), ("MANO", {"bold": True, "color": AZUL}), (" (Management and Orchestration, do ETSI) é a camada que gerencia o ciclo de vida das VNFs: usa essas métricas para decidir escalar, migrar ou recuperar uma VNF em tempo hábil.", {})],
 ]):
     para(tf, b, size=16.5, bullet=True, space_after=15, first=(i == 0))
 
@@ -316,36 +311,27 @@ card(s, Inches(7.95), Inches(1.90), Inches(4.73), Inches(4.3), VERDE, "O ponto-c
       [("", {})],
       [("O observador não é externo: roda ", {}), ("co-localizado à VNF", {"bold": True, "color": VERDE}), (", disputando os mesmos núcleos de CPU e memória do host.", {})],
       [("", {})],
-      [("Um coletor pesado degrada justamente o serviço que deveria apenas observar.", {"italic": True, "color": MUT})]],
+      [("A literatura mostra que o monitoramento pode sobrecarregar a VNF.", {"italic": True, "color": MUT})]],
      line_size=13.5)
 
 
 # 4 - PROBLEMA E HIPOTESE
 F = 1.25
-s = slide(); header(s, "Definição do problema", "Problema de pesquisa, hipótese e lacuna", 4)
-card(s, Inches(0.65), Inches(1.78), Inches(12.03), Inches(1.18), AZUL, "Questão de pesquisa",
-     [[("A escolha da ferramenta impacta o gerenciamento e o ", {"size": 14}),
-       ("tempo de tomada de decisão em redes vivas", {"size": 14, "bold": True}),
-       (": quais são as diferenças práticas de desempenho entre ", {"size": 14}),
-       ("eBPF, Sysstat, Prometheus e API do Docker", {"size": 14, "bold": True, "color": AZUL}),
-       (" no monitoramento de uma VNF, e qual oferece ", {"size": 14}),
-       ("menor sobrecarga", {"size": 14, "bold": True}), ("?", {"size": 14})]])
+s = slide(); header(s, "Definição do problema", "Problema de pesquisa e hipótese", 4)
+card(s, Inches(0.65), Inches(1.78), Inches(12.03), Inches(1.75), AZUL, "Questão de pesquisa",
+     [[("A escolha da ferramenta impacta o gerenciamento e o ", {"size": 16}),
+       ("tempo de tomada de decisão em redes vivas", {"size": 16, "bold": True}),
+       (": quais são as diferenças práticas de desempenho entre ", {"size": 16}),
+       ("eBPF, Sysstat, Prometheus e API do Docker", {"size": 16, "bold": True, "color": AZUL}),
+       (" no monitoramento de uma VNF, e qual oferece ", {"size": 16}),
+       ("menor sobrecarga", {"size": 16, "bold": True}), ("?", {"size": 16})]], head_size=18)
 
-card(s, Inches(0.65), Inches(3.20), Inches(5.88), Inches(3.45), VERDE, "Hipótese",
+card(s, Inches(0.65), Inches(3.75), Inches(12.03), Inches(2.9), VERDE, "Hipótese",
      [[("O ", {}), ("eBPF", {"bold": True, "color": VERDE}), (", por operar em nível de ", {}), ("kernel", {"bold": True, "color": VERDE}),
        (" via kprobes, apresenta menor tempo de resposta e menor sobrecarga em comparação às abordagens em espaço de usuário:", {})],
       [("• ", {"bold": True}), ("Sysstat e Prometheus: ", {"bold": True}), ("polling via leitura e parsing de /proc;", {})],
       [("• ", {"bold": True}), ("API do Docker: ", {"bold": True}), ("consulta sob demanda aos cgroups intermediada pelo daemon dockerd.", {})]],
-     line_size=13.5)
-
-card(s, Inches(6.80), Inches(3.20), Inches(5.88), Inches(3.45), LARANJA, "Lacuna na literatura",
-     [[("Embora o eBPF e ferramentas tradicionais sejam estudados isoladamente, faltam ", {}),
-       ("comparações empíricas controladas", {"bold": True, "color": LARANJA}),
-       (" que avaliem as quatro abordagens simultaneamente:", {})],
-      [("• Sobre uma ", {}), ("mesma VNF", {"bold": True}), (" (WAF);", {})],
-      [("• Com ", {}), ("aumento progressivo de carga", {"bold": True}), (" (100k a 2M msgs);", {})],
-      [("• Com ", {}), ("rigor estatístico", {"bold": True}), (" (30 repetições, IC95%).", {})]],
-     line_size=13.5)
+     line_size=17, head_size=18)
 
 
 # 5 - OBJETIVOS
@@ -422,10 +408,10 @@ table(s, rows, Inches(0.65), Inches(1.80), Inches(12.03), Inches(3.85),
       [Inches(2.85), Inches(3.60), Inches(2.90), Inches(2.68)], hi_last=True, head_size=12, body_size=11.5)
 
 tb, tf = textbox(s, Inches(0.65), Inches(5.80), Inches(12.03), Inches(0.95))
-para(tf, [("Diferencial: ", {"size": 15, "bold": True, "color": VERDE}),
-          ("primeiro benchmark controlado a comparar diretamente as ", {"size": 15}),
+para(tf, [("Lacuna: ", {"size": 15, "bold": True, "color": LARANJA}),
+          ("nenhum trabalho compara as ", {"size": 15}),
           ("quatro abordagens", {"size": 15, "bold": True, "color": VERDE}),
-          (" sobre uma mesma VNF sob cargas crescentes.", {"size": 15})], first=True)
+          (" sobre uma mesma VNF, com carga crescente e rigor estatístico. Este trabalho preenche essa lacuna.", {"size": 15})], first=True)
 
 
 # 8 - METODOLOGIA E AMBIENTE
@@ -475,7 +461,7 @@ tb, tf = textbox(s, Inches(0.65), Inches(1.85), Inches(7.0), Inches(4.8))
 for i, b in enumerate([
     [("Variável independente (N): ", {"bold": True}), ("100.000, 500.000, 1.000.000 e 2.000.000 mensagens.", {})],
     [("Cargas determinísticas: ", {"bold": True}), ("60% benignas + 40% maliciosas, pré-geradas com ", {}), ("seed=42", {"bold": True, "color": VERDE}), (" (sequência idêntica entre ferramentas).", {})],
-    [("Janela de coleta: ", {"bold": True}), ("DURATION = ⌊N / 15000⌋ + 20 s (26 s, 53 s, 86 s e 153 s).", {})],
+    [("Janela de coleta: ", {"bold": True}), ("DURATION = ⌊N / 15000⌋ + 20 s (26, 53, 86 e 153 s): taxa nominal de 15 mil msg/s, mais 20 s de margem para subir e encerrar os contêineres.", {})],
     [("Repetições: ", {"bold": True}), ("30 execuções independentes por cenário → ", {}), ("480 execuções oficiais", {"bold": True, "color": VERDE}), (" (4 ferramentas × 4 volumes × 30).", {})],
     [("Validação e reprodutibilidade: ", {"bold": True}), ("escrita atômica em waf_metrics.json (0 falhas nas 480 execuções) + dashboard em ", {}), ("vnf-lab.up.railway.app", {"bold": True, "color": AZUL}), (".", {})],
 ]):
@@ -612,14 +598,14 @@ card(s, Inches(7.70), Inches(5.02), Inches(4.98), Inches(1.51), LARANJA, "Memór
 F = 1.15
 s = slide(); header(s, "Resultados · Investigação Adicional", "Sensibilidade da vazão (100% de N)", 16)
 tb, tf = textbox(s, Inches(0.65), Inches(1.72), Inches(12.03), Inches(0.85), autoshrink=True)
-para(tf, [("Na coleta oficial, o WAF inspeciona 100% de N=100k, mas só 62% a 88% para N ≥ 500k. Eliminamos o gargalo e repetimos a bateria (+480 execuções):", {"size": 15})], first=True)
+para(tf, [("Gargalo: na coleta oficial o WAF (1 processo) não dá conta da vazão e inspeciona só 62% a 88% de N para N ≥ 500k. Multiplicamos os processos (proc.) e repetimos a bateria, com 30 repetições por ferramenta e volume (+480 execuções):", {"size": 14})], first=True)
 
 rows_sens = [
     ("eBPF, N = 1M", "WAF", "Cliente", "Inspeções", "% de N"),
     ("Original (oficial, 30 rep.)", "1 proc.", "1 proc.", "706.407", "71%"),
     ("Cliente multiprocesso", "1 proc.", "4 proc.", "601.527", "60%"),
     ("WAF e cliente multiproc.", "4 proc.", "4 proc.", "650.067", "65%"),
-    ("4 proc. + leitura direta", "4 proc.", "4 proc.", "1.000.000", "100%"),
+    ("WAF e cliente 4 proc. + leitura direta", "4 proc.", "4 proc.", "1.000.000", "100%"),
 ]
 table(s, rows_sens, Inches(0.65), Inches(2.70), Inches(5.45), Inches(2.55),
       [Inches(1.75), Inches(0.8), Inches(0.8), Inches(1.2), Inches(0.9)], hi_last=True, head_size=11, body_size=10.5)
@@ -683,21 +669,14 @@ for i, b in enumerate([
 
 # 19 - LIMITACOES E TRABALHOS FUTUROS
 F = 1.5
-s = slide(); header(s, "Honestidade científica", "Limitações e trabalhos futuros", 19)
-card(s, Inches(0.65), Inches(1.85), Inches(5.88), Inches(4.85), LARANJA, "Limitações do Estudo",
-     [[("• ", {"bold": True}), ("Tráfego em loopback (lo): ", {"bold": True}), ("sem overhead de drivers de NIC física e interrupções de hardware.", {})],
-      [("• ", {"bold": True}), ("Consulta síncrona ao dockerd: ", {"bold": True}), ("o RTT do Docker inclui o IPC até o daemon.", {})],
-      [("• ", {"bold": True}), ("Cgroup vs. RSS: ", {"bold": True}), ("memória e CPU do WAF no Docker não são comparáveis ao psutil.", {})],
-      [("• ", {"bold": True}), ("CPU do observador ruidosa: ", {"bold": True}), ("não permite comparação quantitativa fina.", {})],
-      [("• ", {"bold": True}), ("Prometheus sem scraping ativo: ", {"bold": True}), ("avaliado apenas como exporter.", {})]],
-     line_size=12.5)
-
-card(s, Inches(6.80), Inches(1.85), Inches(5.88), Inches(4.85), VERDE, "Trabalhos Futuros",
-     [[("• ", {"bold": True}), ("Leitura direta de cgroups v2: ", {"bold": True}), ("coletar de /sys/fs/cgroup/ sem passar pelo dockerd para isolar o custo da API.", {})],
-      [("• ", {"bold": True}), ("WAF de alta vazão em processo único: ", {"bold": True}), ("atingir 100% de N sem multiplicar processos monitorados pelo psutil.", {})],
+s = slide(); header(s, "Próximos passos", "Trabalhos futuros", 19)
+card(s, Inches(0.65), Inches(1.85), Inches(12.03), Inches(4.85), VERDE, "",
+     [[("• ", {"bold": True}), ("Leitura direta de cgroups v2: ", {"bold": True}), ("coletar de /sys/fs/cgroup/ sem passar pelo dockerd, para isolar o custo da API do Docker (~2,5 ms).", {})],
+      [("• ", {"bold": True}), ("Ambiente de produção: ", {"bold": True}), ("repetir o experimento em rede física e com o volume de pacotes de produção, não só em loopback.", {})],
       [("• ", {"bold": True}), ("Impacto fim a fim na VNF: ", {"bold": True}), ("medir como o monitoramento afeta a latência e a vazão das requisições dos clientes do WAF.", {})],
-      [("• ", {"bold": True}), ("Novos cenários: ", {"bold": True}), ("avaliar cadeias SFC completas, rede física, scraping ativo no Prometheus e hooks XDP/TC.", {})]],
-     line_size=12.5)
+      [("• ", {"bold": True}), ("WAF de alta vazão em processo único: ", {"bold": True}), ("atingir 100% de N sem multiplicar os processos monitorados pelo psutil.", {})],
+      [("• ", {"bold": True}), ("Novos cenários: ", {"bold": True}), ("cadeias SFC completas, Prometheus com scraping ativo e hooks XDP/TC no eBPF.", {})]],
+     line_size=14)
 
 
 # 20 - ENCERRAMENTO

@@ -441,7 +441,7 @@ card(s, Inches(7.75), Inches(1.85), Inches(4.93), Inches(4.65), AZUL, "Ambiente 
 # 9 - ARQUITETURA EXPERIMENTAL
 F = 1.2
 s = slide(); header(s, "Topologia", "Arquitetura experimental (Diagrama C4)", 9)
-plot(s, os.path.join(IMG, "C4model.png"), Inches(0.65), Inches(1.78), Inches(7.45), Inches(4.85))
+plot(s, os.path.join(IMG, "C4model-resposta.png"), Inches(0.65), Inches(1.78), Inches(7.45), Inches(4.85))
 card(s, Inches(8.30), Inches(1.78), Inches(4.38), Inches(4.85), VERDE, "Fluxo de comunicação e medição",
      [[("1. Cliente (TCP :8080)", {"bold": True, "color": AZUL})],
       [("200 corrotinas asyncio com conexões persistentes; framing de 4 bytes big-endian.", {})],

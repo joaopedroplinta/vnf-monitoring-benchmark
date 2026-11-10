@@ -39,11 +39,11 @@ A métrica principal é o **tempo de resposta do observador**: o RTT de um probe
 ## Como funciona
 
 <p align="center">
-  <img src="docs/C4model.drawio.svg" width="720" alt="Diagrama de contêineres (C4, Nível 2) da topologia experimental">
+  <img src="docs/imagens/C4model.drawio.svg" width="720" alt="Diagrama de contêineres (C4, Nível 2) da topologia experimental">
 </p>
 
 - O **cliente** envia payloads pré-gerados (60% benignos, 40% maliciosos) ao **WAF** por conexões TCP persistentes.
-- O **WAF** inspeciona cada payload (SQLi, XSS, Path Traversal, RCE, Null Byte) com `asyncio` + `ThreadPoolExecutor`.
+- O **WAF** inspeciona cada payload (SQLi, XSS, Path Traversal, RCE, Null Byte) com `asyncio` + `ThreadPoolExecutor` e responde ao cliente `ALLOWED` ou `BLOCKED`.
 - O **observador** coleta métricas do WAF com a ferramenta em teste e responde a requisições UDP com um JSON.
 - O **probe** envia uma requisição UDP por segundo e mede o RTT. O mesmo script é usado nas quatro ferramentas.
 
@@ -103,20 +103,24 @@ Documentação detalhada:
 
 ## Resultados
 
-480 execuções (4 ferramentas × 4 volumes × 30 repetições), com média ± IC95%, no kernel 7.0.0-38 em modo texto (recoleta com o WAF corrigido; a primeira coleta está arquivada em `results/arquivo_primeira_coleta/`).
+960 execuções em duas baterias, ambas com média ± IC95% (t de Student, 30 repetições por combinação), no kernel 7.0.0-38 em modo texto:
 
-**Tempo de resposta médio do observador (ms, menor é melhor):**
+- **Coleta oficial:** 480 execuções (4 ferramentas × 4 volumes × 30), com WAF e cliente em 1 processo (recoleta com o WAF corrigido; a primeira coleta está arquivada em `results/arquivo_primeira_coleta/`).
+- **Coleta complementar:** mais 480 execuções, com WAF e cliente em 4 processos e leitura direta, em que o WAF inspeciona 100% de N.
+
+**Tempo de resposta médio do observador na coleta oficial (ms, menor é melhor):**
 
 | Volume de mensagens | eBPF | Sysstat | Prometheus | Docker |
 |---|:---:|:---:|:---:|:---:|
-| 100.000 | **0,531** | 0,614 | 0,625 | 2,577 |
-| 500.000 | **0,497** | 0,576 | 0,589 | 2,507 |
-| 1.000.000 | **0,499** | 0,574 | 0,587 | 2,508 |
-| 2.000.000 | **0,497** | 0,576 | 0,587 | 2,508 |
+| 100.000 | **0,533** | 0,614 | 0,622 | 2,579 |
+| 500.000 | **0,496** | 0,571 | 0,583 | 2,503 |
+| 1.000.000 | **0,498** | 0,575 | 0,585 | 2,498 |
+| 2.000.000 | **0,500** | 0,572 | 0,584 | 2,506 |
 
-- O **eBPF teve o menor tempo de resposta nos quatro volumes**, com IC95 sem sobreposição. A vantagem é de 13% a 16% sobre Sysstat e Prometheus e de ~80% sobre o Docker, cujo RTT (~2,5 ms) inclui a consulta ao daemon.
+- O **eBPF teve o menor tempo de resposta nos quatro volumes**, com IC95 sem sobreposição. A vantagem é de 13% a 15% sobre Sysstat e Prometheus e de ~80% sobre o Docker, cujo RTT (~2,5 ms) inclui a consulta ao daemon.
 - **Memória do observador:** Sysstat ~14 MB, eBPF ~15 MB, Prometheus ~25 MB (o custo do servidor HTTP), Docker ~31 MB.
-- **CPU do WAF** equivalente entre as ferramentas. **CPU do observador** inconclusiva.
+- **CPU do WAF** equivalente entre as ferramentas. **CPU do observador** inconclusiva: em 13 dos 16 grupos o IC95% é maior ou igual a 50% da média.
+- **Coleta complementar (100% de N inspecionado):** a ordem se mantém (eBPF ~0,90 ms, Sysstat ~1,01, Prometheus ~1,04 e Docker ~2,65). O aumento de ~0,4 ms nos três primeiros vem do `psutil` consultar 4 processos do WAF por sonda, e o Docker faz uma única chamada.
 
 <p align="center">
   <img src="results/plots/tempo_resposta_por_n.png" width="560" alt="Tempo de resposta médio do observador por volume de mensagens">
@@ -128,8 +132,9 @@ Tabelas completas por volume, gráficos e observações: **[docs/resultados.md](
 
 - **Loopback:** o tráfego passa pela interface `lo`, sem o overhead de drivers de NIC físico; valores absolutos seriam diferentes em rede real.
 - **Recursos compartilhados:** cliente, WAF e observador dividem kernel e núcleos de CPU.
-- **WAF simplificado:** implementação em Python, idêntica em todos os experimentos, então as diferenças refletem o custo de cada ferramenta.
-- **Volume nominal:** para N ≥ 500k o WAF processa só 62% a 87% de N; veja [resultados](docs/resultados.md#n-nominal--mensagens-processadas).
+- **WAF simplificado:** implementação em Python, idêntica em todos os experimentos, então as diferenças refletem o custo de cada ferramenta. Não há servidor de aplicação atrás dele: o WAF só classifica e responde.
+- **Ambiente único:** os testes rodaram em uma máquina, sem ambiente de produção; o volume de pacotes de produção seria maior.
+- **Volume nominal:** na coleta oficial, para N ≥ 500k o WAF processa só 62% a 88% de N (a janela supõe 15 mil msg/s e o ambiente sustentou 7 a 8 mil); a coleta complementar elimina esse limite e preserva a ordem. Veja [resultados](docs/resultados.md#n-nominal--mensagens-processadas).
 - **Lotes não intercalados:** cada combinação ferramenta × volume foi coletada em sequência, o que mistura a ferramenta com o estado da máquina naquele momento.
 - **Docker:** memória e CPU do WAF vêm do cgroup, não do processo, e não são comparáveis às das demais ferramentas; o socket do Docker exige privilégio.
 - **Prometheus sem scraping:** é avaliado só como exporter; nenhum servidor consulta o endpoint durante os testes.
@@ -145,7 +150,7 @@ Trabalho de Conclusão de Curso do Bacharelado em Ciência da Computação, IFPR
 | **Autores** | João Pedro dos Santos Henrique Plinta · Rafael Correia Alves |
 | **Orientador** | Prof. Guilherme Werneck de Oliveira |
 
-O texto da tese está em [`docs/`](docs) (LaTeX) e é compilado no Overleaf: o `docs/main.tex` referencia `capítulos/` com nomes acentuados e os logotipos não estão versionados, então a pasta não compila sozinha. Slides e roteiros estão em [`docs/apresentacao/`](docs/apresentacao).
+O texto da tese está em [`docs/`](docs) (LaTeX) e é compilado no Overleaf: o `docs/main.tex` referencia `capítulos/` com nomes acentuados e os logotipos não estão versionados, então a pasta não compila sozinha. O artigo no modelo IEEE Access está em [`docs/ieee/`](docs/ieee) e compila com `docs/ieee/compilar.sh` (pdfLaTeX, também no CI). Slides (21), PDF e roteiros estão em [`docs/apresentacao/`](docs/apresentacao).
 
 ## Licença
 

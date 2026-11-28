@@ -128,6 +128,13 @@
 }
 
 %% ---- FOLHA DE APROVAÇÃO ----
+%% Membros da banca: \bancaum{Nome}{Instituição} e \bancadois{Nome}{Instituição} no main.tex
+\newcommand{\imprimirbancaum}{\textbf{Prof. Componente de Banca 1}\\Instituição a que pertence}
+\newcommand{\imprimirbancadois}{\textbf{Prof. Componente de Banca 2}\\Instituição a que pertence}
+\newcommand{\bancaum}[2]{\renewcommand{\imprimirbancaum}{\textbf{#1}\\#2}}
+\newcommand{\bancadois}[2]{\renewcommand{\imprimirbancadois}{\textbf{#1}\\#2}}
+\newcommand{\imprimirdataaprovacao}{\imprimirdata}
+\newcommand{\dataaprovacao}[1]{\renewcommand{\imprimirdataaprovacao}{#1}}
 \newcommand{\imprimirfolhadeaprovacao}{%
   \begin{folhadeaprovacao}
     \begin{center}
@@ -147,14 +154,14 @@
 
     \vspace{2cm}
     \begin{center}
-      \assinatura{\textbf{Prof. Componente de Banca 1}\\Instituição a que pertence}
-      \assinatura{\textbf{Prof. Componente de Banca 2}\\Instituição a que pertence}
-      \assinatura{\textbf{Prof. Orientador}\\Guilherme Werneck de Oliveira}
+      \assinatura{\imprimirbancaum}
+      \assinatura{\imprimirbancadois}
+      \assinatura{\textbf{\imprimirorientador}\\Orientador\\\ifpr\ -- \campus}
     \end{center}
 
     \begin{center}
       \vspace{1cm}
-      {\imprimirlocal, \imprimirdata}
+      {\imprimirlocal, \imprimirdataaprovacao}
     \end{center}
   \end{folhadeaprovacao}
 }
